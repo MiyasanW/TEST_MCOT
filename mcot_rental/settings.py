@@ -232,3 +232,4 @@ JAZZMIN_UI_TWEAKS = {
     }
 }
 
+CART_SESSION_ID = 'cart'

@@ -1,0 +1,171 @@
+{% extends 'rentals/public/base.html' %}
+
+{% block content %}
+<div class="bg-light py-5">
+    <div class="container">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'equipment_catalog' %}"
+                        class="text-decoration-none text-muted">สินค้าทั้งหมด</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'equipment_catalog' %}?category={{ product.category }}"
+                        class="text-decoration-none text-muted">{{ product.get_category_display }}</a></li>
+                <li class="breadcrumb-item active text-primary" aria-current="page">{{ product.name }}</li>
+            </ol>
+        </nav>
+
+        <div class="row g-5">
+            <!-- Product Image -->
+            <div class="col-lg-7">
+                <div class="card border-0 shadow-lg overflow-hidden rounded-4">
+                    {% if product.image %}
+                    <img src="{{ product.image.url }}" class="img-fluid w-100 object-fit-cover" alt="{{ product.name }}"
+                        style="max-height: 600px;">
+                    {% else %}
+                    <div class="bg-white d-flex align-items-center justify-content-center text-muted"
+                        style="height: 500px;">
+                        <i class="fas fa-camera fa-5x opacity-25"></i>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Product Details -->
+            <div class="col-lg-5">
+                <div class="d-flex flex-column h-100">
+                    <div class="mb-auto">
+                        <div class="mb-3">
+                            <span class="badge bg-primary rounded-pill px-3 py-2 text-uppercase">{{ product.category
+                                }}</span>
+                            {% if product.quantity <= 0 or not product.is_active %} <span
+                                class="badge bg-secondary rounded-pill px-3 py-2 ms-2">สินค้าหมด</span>
+                                {% else %}
+                                <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3 py-2 ms-2">
+                                    <i class="fas fa-check-circle me-1"></i>พร้อมเช่า {{ product.quantity }} ชิ้น
+                                </span>
+                                {% endif %}
+                        </div>
+
+                        <h1 class="display-5 fw-bold mb-3 text-dark">{{ product.name }}</h1>
+
+                        <div class="d-flex align-items-baseline mb-4">
+                            <h2 class="text-primary fw-bold mb-0 me-2">฿{{ product.price|floatformat:0 }}</h2>
+                            <span class="text-muted fs-5">/ วัน</span>
+                        </div>
+
+                        <div class="mb-4 text-secondary lh-lg">
+                            {% if product.description and product.description != "None" %}
+                            {{ product.description|linebreaks }}
+                            {% else %}
+                            <p class="text-muted fst-italic">ไม่มีรายละเอียดสินค้าเพิ่มเติม</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Add to Cart Form -->
+                        <div class="card border-0 bg-white shadow-sm p-4 rounded-4 mb-4">
+                            {% if product.is_active and product.quantity > 0 %}
+                            <form action="{% url 'cart_add' product.id %}" method="POST">
+                                {% csrf_token %}
+                                <div class="row g-3 align-items-end">
+                                    <div class="col-5">
+                                        <label for="quantity"
+                                            class="form-label fw-bold small text-uppercase text-muted">จำนวน</label>
+                                        <div class="input-group">
+                                            <button class="btn btn-outline-secondary" type="button"
+                                                onclick="decrement()">-</button>
+                                            <input type="number" name="quantity" id="quantity"
+                                                class="form-control text-center border-secondary" value="1" min="1"
+                                                max="{{ product.quantity }}">
+                                            <button class="btn btn-outline-secondary" type="button"
+                                                onclick="increment()">+</button>
+                                        </div>
+                                    </div>
+                                    <div class="col-7">
+                                        <button type="submit"
+                                            class="btn btn-primary w-100 btn-lg rounded-3 shadow-sm hover-elevate">
+                                            <i class="fas fa-cart-plus me-2"></i>ใส่ตะกร้า
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                            {% else %}
+                            <button class="btn btn-secondary w-100 btn-lg disabled">สินค้าไม่พร้อมให้บริการ</button>
+                            {% endif %}
+                        </div>
+
+                        <!-- Contact for Info -->
+                        <div class="d-flex align-items-center text-muted small">
+                            <i class="fab fa-line fa-lg me-2 text-success"></i>
+                            <span>สอบถามเพิ่มเติม Line: @mcotrental</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Related Products -->
+        {% if related_products %}
+        <div class="mt-5 pt-5 border-top">
+            <h3 class="fw-bold mb-4">สินค้าที่คุณอาจสนใจ</h3>
+            <div class="row g-4">
+                {% for item in related_products %}
+                <div class="col-md-3 col-6">
+                    <div class="card border-0 shadow-sm h-100 hover-up">
+                        <a href="{% url 'product_detail' item.id %}" class="text-decoration-none text-dark">
+                            {% if item.image %}
+                            <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.name }}"
+                                style="height: 200px; object-fit: cover;">
+                            {% else %}
+                            <div class="bg-light text-muted d-flex align-items-center justify-content-center"
+                                style="height: 200px;">
+                                <i class="fas fa-image fa-2x opacity-25"></i>
+                            </div>
+                            {% endif %}
+                            <div class="card-body">
+                                <h6 class="card-title text-truncate">{{ item.name }}</h6>
+                                <p class="card-text text-primary fw-bold">฿{{ item.price|floatformat:0 }}</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+
+<script>
+    function increment() {
+        const input = document.getElementById('quantity');
+        if (input.value < parseInt(input.max)) {
+            input.value = parseInt(input.value) + 1;
+        }
+    }
+    function decrement() {
+        const input = document.getElementById('quantity');
+        if (input.value > 1) {
+            input.value = parseInt(input.value) - 1;
+        }
+    }
+</script>
+
+<style>
+    .hover-elevate:hover {
+        transform: translateY(-2px);
+    }
+
+    .object-fit-cover {
+        object-fit: cover;
+    }
+
+    .hover-up {
+        transition: transform 0.2s;
+    }
+
+    .hover-up:hover {
+        transform: translateY(-5px);
+    }
+</style>
+{% endblock %}

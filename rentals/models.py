@@ -47,20 +47,11 @@ class Staff(models.Model):
         return f"{self.name} ({self.get_position_display()})"
 
 
-class Equipment(models.Model):
+class Product(models.Model):
     """
-    โมเดลสำหรับจัดการอุปกรณ์
-    เก็บข้อมูลชื่ออุปกรณ์ หมายเลขซีเรียล ราคาต่อวัน และสถานะ
+    โมเดลสำหรับ "สินค้า" (Product Type)
+    ใช้สำหรับแสดงผลหน้าเว็บและกำหนดข้อมูลทางการตลาด (ชื่อ, ราคา, รายละเอียด)
     """
-    
-    # ตัวเลือกสถานะอุปกรณ์
-    STATUS_CHOICES = [
-        ('available', 'Available'),
-        ('maintenance', 'Maintenance'),
-        ('lost', 'Lost'),
-    ]
-
-    # ตัวเลือกหมวดหมู่อุปกรณ์
     CATEGORY_CHOICES = [
         ('camera', 'กล้อง (Camera)'),
         ('lens', 'เลนส์ (Lens)'),
@@ -69,8 +60,8 @@ class Equipment(models.Model):
         ('grip', 'อุปกรณ์ประกอบ (Grip)'),
         ('other', 'อื่นๆ (Other)'),
     ]
-    
-    name = models.CharField(max_length=200, verbose_name="ชื่ออุปกรณ์")
+
+    name = models.CharField(max_length=200, verbose_name="ชื่อสินค้า")
     description = models.TextField(verbose_name="รายละเอียด", blank=True, null=True)
     category = models.CharField(
         max_length=50,
@@ -78,16 +69,41 @@ class Equipment(models.Model):
         default='other',
         verbose_name="หมวดหมู่"
     )
-    image = models.ImageField(upload_to='equipment/', null=True, blank=True, verbose_name="รูปภาพ")
+    image = models.ImageField(upload_to='products/', null=True, blank=True, verbose_name="รูปภาพ")
+    price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        verbose_name="ราคาเช่าต่อวัน"
+    )
+    quantity = models.IntegerField(default=1, verbose_name="จำนวนทั้งหมด")
+    is_active = models.BooleanField(default=True, verbose_name="เปิดให้เช่า")
+
+    def __str__(self):
+        return self.name
+
+
+class Equipment(models.Model):
+    """
+    โมเดลสำหรับ "อุปกรณ์รายชิ้น" (Physical Item)
+    ใช้สำหรับจัดการ Inventory และ Serial Number
+    """
+    STATUS_CHOICES = [
+        ('available', 'Available'),
+        ('maintenance', 'Maintenance'),
+        ('lost', 'Lost'),
+    ]
+
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name='items',
+        verbose_name="สินค้า (Product)",
+        null=True # Nullable for migration purposes, ideally strictly required
+    )
     serial_number = models.CharField(
         max_length=100,
         unique=True,
         verbose_name="หมายเลขซีเรียล"
-    )
-    daily_rate = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        verbose_name="ราคาเช่าต่อวัน"
     )
     status = models.CharField(
         max_length=20,
@@ -103,16 +119,16 @@ class Equipment(models.Model):
         verbose_name="เพิ่มโดย"
     )
     
-    # Audit Trail - บันทึกประวัติการเปลี่ยนแปลงทั้งหมด
+    # Audit Trail
     history = HistoricalRecords()
     
     class Meta:
-        verbose_name = "อุปกรณ์"
-        verbose_name_plural = "อุปกรณ์"
-        ordering = ['name']
+        verbose_name = "อุปกรณ์ (Item)"
+        verbose_name_plural = "อุปกรณ์ (Items)"
+        ordering = ['product__name', 'serial_number']
     
     def __str__(self):
-        return f"{self.name} (฿{self.daily_rate:,.0f}/วัน)"
+        return f"{self.product.name if self.product else 'Unknown'} - {self.serial_number}"
 
 
 class Studio(models.Model):
@@ -213,6 +229,53 @@ class Booking(models.Model):
     
     def __str__(self):
         return f"{self.customer_name} - {self.start_time.strftime('%d/%m/%Y %H:%M')}"
+
+class BookingItem(models.Model):
+    """
+    รายการสินค้าในใบจอง (Product + Quantity)
+    ใช้สำหรับบันทึกว่าลูกค้าต้องการจองอะไรบ้าง (ก่อนระบุ Serial Number)
+    """
+    booking = models.ForeignKey(Booking, on_delete=models.CASCADE, related_name='items')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    price_at_booking = models.DecimalField(max_digits=10, decimal_places=2, null=True, help_text="ราคาต่อหน่วย ณ วันที่จอง")
+
+    def save(self, *args, **kwargs):
+        if not self.price_at_booking and self.product:
+            self.price_at_booking = self.product.price
+        super().save(*args, **kwargs)
+
+    def total_price(self):
+        return (self.price_at_booking or 0) * self.quantity
+    
+    def __str__(self):
+        return f"{self.product.name} ({self.quantity})"
+
+class Package(models.Model):
+    """
+    โมเดลสำหรับ "แพ็คเกจโปรโมชั่น" (Bundles)
+    เช่น "Set A: กล้อง + เลนส์ + ไฟ" ในราคาพิเศษ
+    """
+    name = models.CharField(max_length=200, verbose_name="ชื่อแพ็คเกจ")
+    description = models.TextField(verbose_name="รายละเอียด", blank=True, null=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="ราคาเหมาจ่าย")
+    image = models.ImageField(upload_to='packages/', null=True, blank=True, verbose_name="รูปภาพแพ็คเกจ")
+    is_active = models.BooleanField(default=True, verbose_name="เปิดใช้งาน")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+class PackageItem(models.Model):
+    """
+    รายการสินค้าในแพ็คเกจ (Product + Quantity)
+    """
+    package = models.ForeignKey(Package, on_delete=models.CASCADE, related_name='items')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name="สินค้า")
+    quantity = models.PositiveIntegerField(default=1, verbose_name="จำนวน")
+
+    def __str__(self):
+        return f"{self.product.name} x {self.quantity}"
     
     def get_issues(self):
         """
@@ -303,16 +366,20 @@ class Booking(models.Model):
         # คำนวณจำนวนวัน (ปัดขึ้น)
         duration = self.end_time - self.start_time
         days = duration.total_seconds() / (24 * 3600)
-        if days < 1:
-            days = 1  # ขั้นต่ำ 1 วัน
-        else:
-            days = int(days) + (1 if days % 1 > 0 else 0)  # ปัดขึ้น
+        days = max(1, int(days) + (1 if days % 1 > 0 else 0))
         
         total = 0
         
-        # คำนวณราคาอุปกรณ์
-        for equip in self.equipment.all():
-            total += equip.daily_rate * days
+        # วิธีที่ 1: คำนวณจาก BookingItem (รายการที่ลูกค้าเลือก)
+        for item in self.items.all():
+            total += item.total_price() * days
+
+        # วิธีที่ 2: ถ้าไม่มี BookingItem (แบบเก่า) ให้คำนวณจาก Equipment โดยตรง (ถ้ามี)
+        # หรือถ้าเป็นการ Assign ของเพิ่มทีหลัง อาจจะคิดแยก
+        if not self.items.exists(): 
+             for equip in self.equipment.all():
+                 if equip.product:
+                     total += equip.product.price * days
         
         # คำนวณราคาสตูดิโอ
         for studio in self.studios.all():

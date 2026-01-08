@@ -6,12 +6,20 @@ from . import public_views  # Import public views
 urlpatterns = [
     # --- Public Customer Pages (หน้าบ้านลูกค้า) ---
     path('', public_views.home, name='home'),
+    path('about/', public_views.about, name='about'),
     path('catalog/', public_views.equipment_catalog, name='equipment_catalog'),
+    path('catalog/<int:product_id>/', public_views.product_detail, name='product_detail'),
     path('studios/', public_views.studios, name='studios'),
     path('packages/', public_views.packages, name='packages'),
     path('portfolio/', public_views.portfolio, name='portfolio'),
     path('faq/', public_views.faq, name='faq'),
     path('contact/', public_views.contact, name='contact'),
+    
+    # Cart & Checkout
+    path('cart/add/<int:product_id>/', public_views.cart_add, name='cart_add'),
+    path('cart/remove/<int:product_id>/', public_views.cart_remove, name='cart_remove'),
+    path('cart/', public_views.cart_detail, name='cart_detail'),
+    path('checkout/', public_views.checkout, name='checkout'),
 
     # --- Staff & Admin Pages ---
     path('staff/dashboard/', views.dashboard, name='staff_dashboard'),  # Explicitly named staff_dashboard

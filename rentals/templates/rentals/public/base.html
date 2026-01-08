@@ -52,9 +52,33 @@
         .navbar {
             transition: all 0.3s ease-in-out;
             padding: 1.2rem 0;
-            background-color: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            /* More spacious */
+            background-color: rgba(255, 255, 255, 0.90);
+            /* Slightly less transparent for readability */
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            box-shadow: 0 4px 40px rgba(0, 0, 0, 0.05);
+            /* Softer, wider shadow */
+            border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .navbar.scrolled {
+            padding: 0.8rem 0;
+            /* Shrink on scroll if JS implemented, but sticking to base for now */
+        }
+
+        /* ... existing code ... */
+        .btn-brand {
+            background: linear-gradient(135deg, var(--mcot-blue) 0%, #003399 100%);
+            color: white;
+            border-radius: 50px;
+            padding: 12px 35px;
+            /* Larger click area */
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            /* Bouncy effect */
+            box-shadow: 0 10px 20px rgba(0, 71, 186, 0.2);
+            border: none;
         }
 
         .navbar-brand img {
@@ -102,14 +126,11 @@
             width: 100%;
         }
 
-        .btn-brand {
-            background-color: var(--mcot-blue);
+        .btn-brand:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(0, 71, 186, 0.3);
             color: white;
-            border-radius: 50px;
-            padding: 10px 30px;
-            font-weight: 600;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(0, 71, 186, 0.3);
+            filter: brightness(1.1);
         }
 
         .btn-brand:hover {
@@ -164,6 +185,15 @@
             background-color: #f0f7ff;
             color: var(--mcot-blue);
         }
+
+        /* Utility Classes */
+        .bg-brand {
+            background-color: var(--mcot-blue) !important;
+        }
+
+        .text-brand {
+            color: var(--mcot-blue) !important;
+        }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
@@ -188,41 +218,31 @@
 
             <!-- รายการเมนู -->
             <div class="collapse navbar-collapse" id="navbarContent">
-                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0 align-items-center">
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}"
                             href="{% url 'home' %}">หน้าแรก</a>
                     </li>
 
-                    <!-- Dropdown บริการของเรา -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle {% if 'studios' in request.path or 'catalog' in request.path or 'packages' in request.path %}active{% endif %}"
-                            href="#" id="servicesDropdown" role="button" data-bs-toggle="dropdown"
-                            aria-expanded="false">
-                            บริการ
-                        </a>
-                        <ul class="dropdown-menu border-0 shadow-lg" aria-labelledby="servicesDropdown"
-                            style="border-radius: 12px; overflow: hidden;">
-                            <li>
-                                <a class="dropdown-item py-2 px-3 hover-brand" href="{% url 'studios' %}">
-                                    <i class="fas fa-warehouse me-2 text-primary" style="width: 20px;"></i>สตูดิโอ
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item py-2 px-3 hover-brand" href="{% url 'equipment_catalog' %}">
-                                    <i class="fas fa-camera me-2 text-success" style="width: 20px;"></i>เช่าอุปกรณ์
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item py-2 px-3 hover-brand" href="{% url 'packages' %}">
-                                    <i class="fas fa-cubes me-2 text-info" style="width: 20px;"></i>แพ็คเกจ
-                                </a>
-                            </li>
-                        </ul>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'studios' in request.path %}active{% endif %}"
+                            href="{% url 'studios' %}">สตูดิโอ</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'catalog' in request.path %}active{% endif %}"
+                            href="{% url 'equipment_catalog' %}">เช่าอุปกรณ์</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'packages' in request.path %}active{% endif %}"
+                            href="{% url 'packages' %}">แพ็คเกจ</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if 'portfolio' in request.path %}active{% endif %}"
                             href="{% url 'portfolio' %}">ผลงาน</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'about' in request.path %}active{% endif %}"
+                            href="{% url 'about' %}">เกี่ยวกับเรา</a>
                     </li>
 
                     <!-- Dropdown เมนูช่วยเหลือ -->
@@ -254,18 +274,19 @@
                             </li>
                         </ul>
                     </li>
-                    <li class="nav-item ms-lg-3">
-                        <a href="{% url 'contact' %}" class="btn btn-brand">
-                            <i class="fas fa-paper-plane me-2"></i>ขอใบเสนอราคา
-                        </a>
-                    </li>
                 </ul>
+                <div class="d-flex ms-lg-3">
+                    <a href="{% url 'contact' %}" class="btn btn-brand rounded-pill px-4">
+                        <i class="fas fa-paper-plane me-2"></i>ขอใบเสนอราคา
+                    </a>
+                </div>
             </div>
         </div>
     </nav>
 
     <!-- พื้นที่สำหรับเนื้อหาหลักในแต่ละหน้า -->
-    <main style="padding-top: 80px;">
+    <!-- พื้นที่สำหรับเนื้อหาหลักในแต่ละหน้า -->
+    <main style="padding-top: 130px;">
         {% block content %}{% endblock %}
     </main>
 

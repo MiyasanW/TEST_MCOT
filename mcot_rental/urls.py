@@ -24,6 +24,7 @@ urlpatterns = [
     
     # Public Website (Customer Facing)
     path('', public_views.home, name='public_home'),
+    path('about/', public_views.about, name='public_about'),
     path('catalog/', public_views.equipment_catalog, name='public_catalog'),
     path('studios/', public_views.studios, name='public_studios'),
     path('packages/', public_views.packages, name='public_packages'),

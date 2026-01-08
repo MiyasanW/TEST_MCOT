@@ -4,7 +4,7 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe  # สำหรับ render HTML ใน description
 from django.db.models import Q
 from simple_history.admin import SimpleHistoryAdmin  # สำหรับแสดง History ใน Admin
-from .models import Staff, Equipment, Studio, Booking, IssueReport
+from .models import Staff, Equipment, Studio, Booking, IssueReport, Product, BookingItem, Package, PackageItem
 from .forms import BookingAdminForm, EquipmentAdminForm, StudioAdminForm, StaffAdminForm  # Forms ปรับแต่ง
 
 
@@ -34,24 +34,45 @@ class StaffAdmin(SimpleHistoryAdmin):
     is_active_display.short_description = 'สถานะ'
 
 
+@admin.register(Product)
+class ProductAdmin(SimpleHistoryAdmin):
+    """
+    การจัดการหน้า Admin สำหรับสินค้า (Product)
+    """
+    list_display = ['id', 'name', 'category', 'price_display', 'quantity', 'is_active']
+    list_filter = ['category', 'is_active']
+    search_fields = ['name']
+    
+    def price_display(self, obj):
+        return f"฿{obj.price:,.2f}"
+    price_display.short_description = 'ราคาเช่าต่อวัน'
+
+class PackageItemInline(admin.TabularInline):
+    model = PackageItem
+    extra = 1
+    autocomplete_fields = ['product']
+
+@admin.register(Package)
+class PackageAdmin(SimpleHistoryAdmin):
+    """
+    การจัดการแพ็คเกจ
+    """
+    list_display = ['name', 'price', 'is_active', 'created_at']
+    search_fields = ['name']
+    inlines = [PackageItemInline]
+
 @admin.register(Equipment)
 class EquipmentAdmin(SimpleHistoryAdmin):
     """
-    การจัดการหน้า Admin สำหรับอุปกรณ์
-    แสดงข้อมูลอุปกรณ์พร้อมสถานะและราคา มีฟิลเตอร์และการค้นหา
+    การจัดการหน้า Admin สำหรับอุปกรณ์ (Physical Items)
     """
     # ใช้ Form ปรับแต่ง
     form = EquipmentAdminForm
-    
-    list_display = ['name', 'serial_number', 'daily_rate_display', 'status_display']
-    list_filter = ['status']
-    search_fields = ['name', 'serial_number']  # สำหรับ autocomplete
-    ordering = ['name']
-    
-    def daily_rate_display(self, obj):
-        """แสดงราคาในรูปแบบเงินบาท"""
-        return f"฿{obj.daily_rate:,.2f}"
-    daily_rate_display.short_description = 'ราคาต่อวัน'
+
+    list_display = ['product', 'serial_number', 'status_display']
+    list_filter = ['status', 'product__category']
+    search_fields = ['product__name', 'serial_number']
+    autocomplete_fields = ['product'] # ต้องมี search_fields ใน ProductAdmin
     
     def status_display(self, obj):
         """แสดงสถานะด้วยสีเพื่อให้เห็นชัดเจนขึ้น"""
@@ -94,14 +115,21 @@ class StudioAdmin(SimpleHistoryAdmin):
         super().save_model(request, obj, form, change)
 
 
+class BookingItemInline(admin.TabularInline):
+    """
+    ตารางรายการสินค้าในหน้า Booking
+    """
+    model = BookingItem
+    extra = 1
+    autocomplete_fields = ['product']
+
 @admin.register(Booking)
 class BookingAdmin(SimpleHistoryAdmin):
     """
     การจัดการหน้า Admin สำหรับการจอง
-    ออกแบบให้ผู้บริหารใช้งานง่าย มีฟีเจอร์ครบครัน
     """
-    # ใช้ Form ปรับแต่ง
     form = BookingAdminForm
+    inlines = [BookingItemInline]
     
     def validation_status(self, obj):
         """แสดงสถานะความถูกต้องของการจอง"""
@@ -138,7 +166,7 @@ class BookingAdmin(SimpleHistoryAdmin):
     date_hierarchy = 'start_time'
     
     # กำหนดฟิลด์ที่สามารถค้นหาได้
-    search_fields = ['customer_name', 'customer_phone', 'customer_email', 'equipment__name', 'studios__name']
+    search_fields = ['customer_name', 'customer_phone', 'customer_email', 'equipment__serial_number', 'studios__name']
     
     # กำหนดการเรียงลำดับเริ่มต้น
     ordering = ['-start_time']
@@ -199,15 +227,13 @@ class BookingAdmin(SimpleHistoryAdmin):
                 '</div>'
             ),
         }),
-        ('🎬 เลือกรายการที่ต้องการจอง', {
+        ('🎬 เลือกรายการที่ต้องการจอง (ระบุ Serial Number)', {
             'fields': ('equipment', 'studios', 'staff'),
             'description': mark_safe(
                 '<div style="background: #d4edda; padding: 12px; border-radius: 5px; margin-bottom: 15px;">'
                 '<strong>✨ วิธีใช้:</strong><br>'
-                '• พิมพ์ชื่อในช่องค้นหา แล้วผลลัพธ์จะขึ้นทันที<br>'
-                '• สามารถเลือกได้หลายรายการ (กด Ctrl/Cmd + คลิก)<br>'
-                '• <strong>อุปกรณ์ที่อยู่ในสถานะ "Maintenance" จะไม่สามารถจองได้</strong><br>'
-                '💰 <em>ราคาจะแสดงพร้อมกับชื่อรายการ</em>'
+                '• เลือก <strong>Product</strong> ที่ต้องการในตารางด้านบน (รายการสินค้า)<br>'
+                '• เมื่อถึงวันรับของ ให้ระบุ <strong>Serial Number</strong> ในช่อง Equipment ด้านล่างนี้<br>'
                 '</div>'
             ),
             'classes': ('wide',),
@@ -332,7 +358,7 @@ class BookingAdmin(SimpleHistoryAdmin):
         if equip_count > 0:
             html += "<ul>"
             for eq in obj.equipment.all():
-                html += f"<li>{eq.name} (฿{eq.daily_rate:,.0f}/วัน)</li>"
+                html += f"<li>{eq.product.name if eq.product else 'Unknown'} - {eq.serial_number}</li>"
             html += "</ul>"
         
         # สตูดิโอ

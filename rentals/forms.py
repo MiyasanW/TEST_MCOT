@@ -4,6 +4,7 @@ Custom Forms สำหรับ MCOT Rental System
 """
 
 from django import forms
+from django.contrib import admin
 from django.contrib.admin import widgets as admin_widgets
 from .models import Booking, Equipment, Studio, Staff
 from .widgets import DateTimePickerWidget  # Custom widget พร้อมปุ่ม Today/Now
@@ -80,7 +81,7 @@ class BookingAdminForm(forms.ModelForm):
         if 'equipment' in self.fields:
              self.fields['equipment'].queryset = Equipment.objects.exclude(
                 status__in=['lost']
-            ).order_by('name')
+            ).order_by('product__name', 'serial_number')
             
         if 'staff' in self.fields:
             self.fields['staff'].queryset = Staff.objects.filter(
@@ -107,10 +108,11 @@ class BookingAdminForm(forms.ModelForm):
         
         # ตรวจสอบสถานะอุปกรณ์ (Maintenance/Lost)
         for equip in equipment:
+            equip_name = equip.product.name if equip.product else "Unknown"
             if equip.status == 'maintenance':
-                raise forms.ValidationError(f"อุปกรณ์ '{equip.name}' ซ่อมบำรุง (Maintenance)")
+                raise forms.ValidationError(f"อุปกรณ์ '{equip_name} - {equip.serial_number}' ซ่อมบำรุง (Maintenance)")
             elif equip.status == 'lost':
-                raise forms.ValidationError(f"อุปกรณ์ '{equip.name}' สูญหาย (Lost)")
+                raise forms.ValidationError(f"อุปกรณ์ '{equip_name} - {equip.serial_number}' สูญหาย (Lost)")
 
         # ตรวจสอบการจองซ้อน (Conflict) - เฉพาะ Approved
         if status == 'approved' and start_time and end_time:
@@ -128,8 +130,9 @@ class BookingAdminForm(forms.ModelForm):
             for equip in equipment:
                 conflict = overlapping_bookings.filter(equipment=equip).first()
                 if conflict:
+                    equip_name = equip.product.name if equip.product else "Unknown"
                     raise forms.ValidationError(
-                        f"อุปกรณ์ '{equip.name}' ถูกจองแล้วโดย {conflict.customer_name}"
+                        f"อุปกรณ์ '{equip_name} - {equip.serial_number}' ถูกจองแล้วโดย {conflict.customer_name}"
                     )
             
             # เช็คสตูดิโอชน
@@ -161,28 +164,21 @@ class EquipmentAdminForm(forms.ModelForm):
         model = Equipment
         fields = '__all__'
         widgets = {
-            'name': forms.TextInput(attrs={
-                'placeholder': 'ชื่ออุปกรณ์ เช่น Sony A7S III Camera',
-                'style': 'width: 100%; font-size: 16px; padding: 10px;',
-            }),
+            'product': admin_widgets.AutocompleteSelect(
+                Equipment._meta.get_field('product').remote_field,
+                admin.site,
+            ),
             'serial_number': forms.TextInput(attrs={
                 'placeholder': 'หมายเลขซีเรียล เช่น CAM-001',
                 'style': 'width: 100%; font-size: 16px; padding: 10px;',
-            }),
-            'daily_rate': forms.NumberInput(attrs={
-                'placeholder': '5000',
-                'style': 'width: 100%; font-size: 16px; padding: 10px;',
-                'min': '0',
-                'step': '0.01',
             }),
             'status': forms.Select(attrs={
                 'style': 'width: 100%; font-size: 16px; padding: 10px;',
             }),
         }
         help_texts = {
-            'name': '📷 ชื่อเต็มของอุปกรณ์',
-            'serial_number': '🔢 หมายเลขซีเรียลเพื่อระบุอุปกรณ์ (ต้องไม่ซ้ำ)',
-            'daily_rate': '💰 ราคาเช่าต่อวัน (บาท)',
+            'product': '📷 เลือกสินค้า (Product)',
+            'serial_number': '🔢 หมายเลขซีเรียลเพื่อระบุชิ้นงาน (ต้องไม่ซ้ำ)',
             'status': '🚦 Available = พร้อมใช้งาน | Maintenance = ซ่อมบำรุง | Lost = สูญหาย',
         }
 

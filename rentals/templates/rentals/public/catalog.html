@@ -3,120 +3,139 @@
 {% block title %}รายการอุปกรณ์ | MCOT Rental{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <!-- Header -->
-    <div class="text-center mb-5">
-        <h1 class="fw-bold mb-3">รายการ<span class="text-brand">อุปกรณ์</span></h1>
-        <p class="text-muted">ค้นหาและเลือกดูอุปกรณ์คุณภาพสูงสำหรับงานโปรดักชั่นของคุณ</p>
-    </div>
-
-    <div class="row">
-        <!-- Sidebar Filters -->
-        <div class="col-lg-3 mb-4">
-            <div class="card border-0 shadow-sm sticky-top" style="top: 100px;">
-                <div class="card-body">
-                    <h5 class="fw-bold mb-3"><i class="fas fa-filter text-brand me-2"></i> ตัวกรอง</h5>
-
-                    <!-- Search -->
-                    <form method="get" class="mb-4">
-                        <div class="input-group">
-                            <input type="text" name="q" class="form-control" placeholder="ค้นหา..."
-                                value="{{ query|default:'' }}">
-                            <button class="btn btn-brand" type="submit"><i class="fas fa-search"></i></button>
-                        </div>
-                    </form>
-
-                    <!-- Categories -->
-                    <h6 class="fw-bold text-muted mb-2">หมวดหมู่</h6>
-                    <div class="list-group list-group-flush">
-                        <a href="?q={{ query|default:'' }}"
-                            class="list-group-item list-group-item-action {% if not current_category %}active bg-light border-0 text-brand fw-bold{% else %}border-0 text-secondary{% endif %}">
-                            ทั้งหมด
-                        </a>
-                        {% for cat_val, cat_label in categories %}
-                        <a href="?category={{ cat_val }}&q={{ query|default:'' }}"
-                            class="list-group-item list-group-item-action {% if current_category == cat_val %}active bg-light border-0 text-brand fw-bold{% else %}border-0 text-secondary{% endif %}">
-                            {{ cat_label }}
-                        </a>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
+<div class="bg-light min-vh-100 py-5">
+    <div class="container">
+        <!-- Header -->
+        <div class="text-center mb-5">
+            <h1 class="fw-bold mb-3 display-5">รายการ<span class="text-brand">อุปกรณ์</span></h1>
+            <p class="text-muted fs-5 fw-light">ค้นหาและเลือกดูอุปกรณ์คุณภาพสูงสำหรับงานโปรดักชั่นของคุณ</p>
         </div>
 
-        <!-- Product Grid -->
-        <div class="col-lg-9">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <span class="text-muted">พบ {{ equipment_list.count }} รายการ</span>
-                <div class="dropdown">
-                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button"
-                        data-bs-toggle="dropdown">
-                        เรียงตาม: ล่าสุด
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="#">ล่าสุด</a></li>
-                        <li><a class="dropdown-item" href="#">ราคา: ต่ำ-สูง</a></li>
-                        <li><a class="dropdown-item" href="#">ราคา: สูง-ต่ำ</a></li>
-                    </ul>
-                </div>
-            </div>
+        <div class="row">
+            <!-- Sidebar Filters -->
+            <div class="col-lg-3 mb-4">
+                <div class="card border-0 shadow-sm sticky-top rounded-4 overflow-hidden" style="top: 100px;">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-3 text-dark"><i class="fas fa-filter text-brand me-2"></i> ตัวกรอง</h5>
 
-            <div class="row g-4">
-                {% for item in equipment_list %}
-                <div class="col-md-4 col-sm-6">
-                    <div class="card h-100 border-0 shadow-sm hover-up transition-all">
-                        <div class="position-relative">
-                            {% if item.image %}
-                            <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.name }}"
-                                style="height: 200px; object-fit: cover;">
-                            {% else %}
-                            <div class="bg-light text-muted d-flex align-items-center justify-content-center"
-                                style="height: 200px;">
-                                <i class="fas fa-image fa-2x opacity-25"></i>
+                        <!-- Search -->
+                        <form method="get" class="mb-4">
+                            <div class="input-group">
+                                <input type="text" name="q" class="form-control bg-light border-0 py-2"
+                                    placeholder="ค้นหา..." value="{{ query|default:'' }}">
+                                <button class="btn btn-brand" type="submit"><i class="fas fa-search"></i></button>
                             </div>
-                            {% endif %}
+                        </form>
 
-                            {% if item.status == 'available' %}
-                            <span class="badge bg-success position-absolute top-0 end-0 m-2 shadow-sm">ว่าง</span>
-                            {% else %}
-                            <span class="badge bg-secondary position-absolute top-0 end-0 m-2 shadow-sm">ไม่ว่าง</span>
-                            {% endif %}
-                        </div>
-
-                        <div class="card-body">
-                            <div class="mb-2">
-                                <span class="badge bg-light text-dark border">{{ item.category }}</span>
-                            </div>
-                            <h5 class="card-title fw-bold text-truncate" title="{{ item.name }}">{{ item.name }}</h5>
-                            <p class="card-text text-muted small mb-3 text-truncate-2">
-                                {% if item.description and item.description != "None" %}
-                                {{ item.description }}
-                                {% else %}
-                                <span class="opacity-50">-</span>
+                        <!-- Categories -->
+                        <h6 class="fw-bold text-muted mb-3 text-uppercase small ls-1">หมวดหมู่</h6>
+                        <div class="list-group list-group-flush gap-2">
+                            <a href="?q={{ query|default:'' }}"
+                                class="list-group-item list-group-item-action rounded-3 px-3 py-2 d-flex align-items-center justify-content-between {% if not current_category %}active-category{% else %}text-secondary{% endif %}">
+                                <span>ทั้งหมด</span>
+                                <i class="fas fa-chevron-right small opacity-50"></i>
+                            </a>
+                            {% for cat_val, cat_label in categories %}
+                            <a href="?category={{ cat_val }}&q={{ query|default:'' }}"
+                                class="list-group-item list-group-item-action rounded-3 px-3 py-2 d-flex align-items-center justify-content-between {% if current_category == cat_val %}active-category{% else %}text-secondary{% endif %}">
+                                <span>{{ cat_label }}</span>
+                                {% if current_category == cat_val %}
+                                <i class="fas fa-chevron-right small"></i>
                                 {% endif %}
-                            </p>
-
-                            <div class="d-flex justify-content-between align-items-end mt-auto">
-                                <div>
-                                    <small class="text-muted d-block">ราคาเช่า</small>
-                                    <span class="text-brand fw-bold fs-5">฿{{ item.daily_rate|floatformat:0 }}</span>
-                                    <small class="text-muted">/วัน</small>
-                                </div>
-                                <button class="btn btn-outline-brand btn-sm rounded-pill px-3">
-                                    ดูรายละเอียด
-                                </button>
-                            </div>
+                            </a>
+                            {% endfor %}
                         </div>
                     </div>
                 </div>
-                {% empty %}
-                <div class="col-12 text-center py-5">
-                    <div class="display-1 text-muted opacity-25 mb-3"><i class="fas fa-box-open"></i></div>
-                    <h4>ไม่พบอุปกรณ์ที่ค้นหา</h4>
-                    <p class="text-muted">ลองค้นหาด้วยคำอื่น หรือเลือกหมวดหมู่อื่นดูนะครับ</p>
-                    <a href="/catalog/" class="btn btn-brand rounded-pill px-4 mt-2">ดูทั้งหมด</a>
+            </div>
+
+            <!-- Product Grid -->
+            <div class="col-lg-9">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <span class="text-muted">พบ {{ equipment_list.count }} รายการ</span>
+                    <div class="dropdown">
+                        <button class="btn btn-white border shadow-sm dropdown-toggle px-3 py-2 rounded-pill"
+                            type="button" data-bs-toggle="dropdown">
+                            เรียงตาม: ล่าสุด
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-4 mt-2">
+                            <li><a class="dropdown-item py-2" href="#">ล่าสุด</a></li>
+                            <li><a class="dropdown-item py-2" href="#">ราคา: ต่ำ-สูง</a></li>
+                            <li><a class="dropdown-item py-2" href="#">ราคา: สูง-ต่ำ</a></li>
+                        </ul>
+                    </div>
                 </div>
-                {% endfor %}
+
+                <div class="row g-4">
+                    {% for item in equipment_list %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card h-100 border-0 shadow-hover product-card rounded-4 overflow-hidden bg-white">
+                            <a href="{% url 'product_detail' item.id %}" class="text-decoration-none">
+                                <div class="position-relative overflow-hidden product-image-container">
+                                    {% if item.image %}
+                                    <img src="{{ item.image.url }}"
+                                        class="card-img-top object-fit-cover w-100 h-100 transition-transform"
+                                        alt="{{ item.name }}">
+                                    {% else %}
+                                    <div
+                                        class="bg-light text-muted d-flex align-items-center justify-content-center w-100 h-100">
+                                        <i class="fas fa-image fa-2x opacity-25"></i>
+                                    </div>
+                                    {% endif %}
+
+                                    <!-- Status Badge -->
+                                    <div class="position-absolute top-0 end-0 m-3">
+                                        {% if item.is_active and item.quantity > 0 %}
+                                        <span
+                                            class="badge bg-white text-success shadow-sm rounded-pill px-3 py-2 d-flex align-items-center gap-1">
+                                            <i class="fas fa-circle small" style="font-size: 0.5rem;"></i> ว่าง {{
+                                            item.quantity }}
+                                        </span>
+                                        {% else %}
+                                        <span
+                                            class="badge bg-white text-secondary shadow-sm rounded-pill px-3 py-2">หมด</span>
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- Overlay Action -->
+                                    <div class="product-overlay d-flex align-items-center justify-content-center">
+                                        <span
+                                            class="btn btn-light rounded-pill px-4 shadow-sm fw-bold custom-btn">ดูรายละเอียด</span>
+                                    </div>
+                                </div>
+
+                                <div class="card-body p-4 d-flex flex-column">
+                                    <div class="mb-2">
+                                        <small class="text-brand text-uppercase fw-bold ls-1"
+                                            style="font-size: 0.75rem;">{{ item.category }}</small>
+                                    </div>
+                                    <h5 class="card-title fw-bold text-dark mb-2 text-truncate">{{ item.name }}</h5>
+
+                                    <div
+                                        class="mt-auto pt-3 border-top border-light d-flex justify-content-between align-items-center">
+                                        <div class="d-flex flex-column">
+                                            <small class="text-muted" style="font-size: 0.8rem;">ราคาเช่า</small>
+                                            <span class="text-dark fw-bolder fs-5">฿{{ item.price|floatformat:0 }}<small
+                                                    class="text-muted fw-normal fs-6">/วัน</small></span>
+                                        </div>
+                                        <div
+                                            class="btn-icon rounded-circle bg-light text-brand d-flex align-items-center justify-content-center transition-colors">
+                                            <i class="fas fa-arrow-right"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12 text-center py-5">
+                        <div class="display-1 text-muted opacity-25 mb-3"><i class="fas fa-ghost"></i></div>
+                        <h4 class="text-dark fw-bold">ไม่พบอุปกรณ์ที่ค้นหา</h4>
+                        <p class="text-muted">ลองค้นหาด้วยคำอื่น หรือเลือกหมวดหมู่อื่นดูนะครับ</p>
+                        <a href="/catalog/" class="btn btn-brand rounded-pill px-4 mt-3">ดูรายการทั้งหมด</a>
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
         </div>
     </div>
@@ -125,29 +144,85 @@
 
 {% block extra_css %}
 <style>
-    .text-truncate-2 {
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
+    /* Custom Utilities */
+    .ls-1 {
+        letter-spacing: 1px;
     }
 
-    .hover-up:hover {
-        transform: translateY(-5px);
+    .text-brand {
+        color: var(--mcot-brand);
     }
 
-    .transition-all {
+    .bg-light {
+        background-color: #f8f9fa !important;
+    }
+
+    /* Active Category */
+    .active-category {
+        background-color: rgba(0, 71, 186, 0.1) !important;
+        color: var(--mcot-brand) !important;
+        font-weight: 600;
+        border: none;
+    }
+
+    /* Product Card */
+    .product-card {
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        border: 1px solid rgba(0, 0, 0, 0.04) !important;
+    }
+
+    .product-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08) !important;
+        border-color: transparent !important;
+    }
+
+    /* Image Container & Hover Zoom */
+    .product-image-container {
+        height: 260px;
+        background-color: #fff;
+    }
+
+    .product-image-container img {
+        transition: transform 0.6s cubic-bezier(0.215, 0.610, 0.355, 1.000);
+    }
+
+    .product-card:hover .product-image-container img {
+        transform: scale(1.08);
+    }
+
+    /* Overlay */
+    .product-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.0);
+        opacity: 0;
         transition: all 0.3s ease;
     }
 
-    .btn-outline-brand {
-        color: var(--mcot-brand);
-        border-color: var(--mcot-brand);
+    .product-card:hover .product-overlay {
+        background: rgba(0, 0, 0, 0.2);
+        opacity: 1;
     }
 
-    .btn-outline-brand:hover {
-        background-color: var(--mcot-brand);
-        color: white;
+    .custom-btn {
+        transform: translateY(20px);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .product-card:hover .custom-btn {
+        transform: translateY(0);
+    }
+
+    /* Arrow Icon */
+    .btn-icon {
+        width: 40px;
+        height: 40px;
+    }
+
+    .product-card:hover .btn-icon {
+        background-color: var(--mcot-brand) !important;
+        color: white !important;
     }
 </style>
 {% endblock %}

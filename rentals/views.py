@@ -122,7 +122,9 @@ def booking_api(request):
         if booking.created_by:
             creator_name = booking.created_by.first_name or booking.created_by.username
             
-        title = f"{booking.customer_name} ({booking.equipment.count()} รายการ)"
+        # ใช้ items.count() ถ้ามี หรือ equipment.count() ถ้ายังไม่ได้ใช้ BookingItem
+        item_count = booking.items.count() or booking.equipment.count()
+        title = f"{booking.customer_name} ({item_count} รายการ)"
         if booking.created_by:
              title += f" [โดย: {creator_name}]"
             
@@ -160,14 +162,30 @@ def staff_quotation(request, booking_id):
     items = []
     
     # Equipment
+    # Equipment (จากที่ Assign แล้ว)
     for eq in booking.equipment.all():
+        product_name = eq.product.name if eq.product else "Unknown Item"
+        product_price = eq.product.price if eq.product else 0
         items.append({
-            'name': eq.name,
+            'name': product_name,
             'details': f"S/N: {eq.serial_number}",
-            'price': eq.daily_rate,
-            'total': eq.daily_rate * days,
+            'price': product_price,
+            'total': product_price * days,
             'type': 'Equipment'
         })
+        
+    # Booking Items (จากที่ลูกค้าเลือก แต่ยังไม่ได้ Assign Serial)
+    # เฉพาะกรณีที่ยังไม่ได้ Assign equipment (เพื่อไม่ให้ซ้ำ)
+    # หรือถ้าเราเปลี่ยน Logic การคิดเงิน 
+    if not booking.equipment.exists():
+        for item in booking.items.all():
+            items.append({
+                'name': item.product.name,
+                'details': f"Quantity: {item.quantity}",
+                'price': item.price_at_booking or item.product.price,
+                'total': item.total_price() * days,
+                'type': 'Product'
+            })
         
     # Studios
     for st in booking.studios.all():
@@ -216,13 +234,25 @@ def staff_work_order(request, booking_id):
     
     # Equipment
     for eq in booking.equipment.all():
+        product_name = eq.product.name if eq.product else "Unknown Item"
         items.append({
-            'name': eq.name,
+            'name': product_name,
             'details': f"S/N: {eq.serial_number}",
             'type': 'Equipment',
             'qty': 1, # สมมติ 1 ชิ้นต่อ record
             'unit': 'ชุด/ชิ้น'
         })
+
+    # ถ้ายังไม่ได้ assign serial ให้แสดงรายการที่จองแทน
+    if not booking.equipment.exists():
+        for item in booking.items.all():
+            items.append({
+                'name': item.product.name,
+                'details': "Waiting for assignment",
+                'type': 'Product',
+                'qty': item.quantity,
+                'unit': 'ชุด/ชิ้น'
+            })
         
     # Studios (ถ้าต้องเตรียมห้อง)
     for st in booking.studios.all():

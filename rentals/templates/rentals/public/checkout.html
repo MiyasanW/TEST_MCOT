@@ -1,0 +1,92 @@
+{% extends 'rentals/public/base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="mb-4 text-center">Checkout / ยืนยันการจอง</h2>
+
+    <div class="row g-5">
+        <div class="col-md-5 col-lg-4 order-md-last">
+            <h4 class="d-flex justify-content-between align-items-center mb-3">
+                <span class="text-primary">ตะกร้าของคุณ</span>
+                <span class="badge bg-primary rounded-pill">{{ cart|length }}</span>
+            </h4>
+            <ul class="list-group mb-3">
+                {% for item in cart %}
+                <li class="list-group-item d-flex justify-content-between lh-sm">
+                    <div>
+                        <h6 class="my-0">{{ item.product.name }}</h6>
+                        <small class="text-muted">จำนวน: {{ item.quantity }}</small>
+                    </div>
+                    <span class="text-muted">฿{{ item.total_price|floatformat:2 }}</span>
+                </li>
+                {% endfor %}
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>ยอดรวม (ต่อวัน)</span>
+                    <strong>฿{{ cart.get_total_price|floatformat:2 }}</strong>
+                </li>
+            </ul>
+        </div>
+
+        <div class="col-md-7 col-lg-8">
+            <h4 class="mb-3">ข้อมูลผู้จอง</h4>
+            {% if error %}
+            <div class="alert alert-danger">{{ error }}</div>
+            {% endif %}
+
+            <form method="POST" class="needs-validation" novalidate>
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label for="customer_name" class="form-label">ชื่อ-นามสกุล / ชื่อองค์กร</label>
+                        <input type="text" class="form-control" id="customer_name" name="customer_name" placeholder=""
+                            required>
+                        <div class="invalid-feedback">
+                            กรุณาระบุชื่อผู้จอง
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="customer_phone" class="form-label">เบอร์โทรศัพท์</label>
+                        <input type="text" class="form-control" id="customer_phone" name="customer_phone"
+                            placeholder="08x-xxx-xxxx" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="customer_email" class="form-label">อีเมล (ถ้ามี)</label>
+                        <input type="email" class="form-control" id="customer_email" name="customer_email"
+                            placeholder="you@example.com">
+                    </div>
+
+                    <div class="col-12">
+                        <hr class="my-4">
+                        <h4 class="mb-3">ระยะเวลาการเช่า</h4>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="start_date" class="form-label">วันที่รับของ</label>
+                        <input type="date" class="form-control" id="start_date" name="start_date" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="start_time" class="form-label">เวลารับของ</label>
+                        <input type="time" class="form-control" id="start_time" name="start_time" value="09:00"
+                            required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="end_date" class="form-label">วันที่คืนของ</label>
+                        <input type="date" class="form-control" id="end_date" name="end_date" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="end_time" class="form-label">เวลาคืนของ</label>
+                        <input type="time" class="form-control" id="end_time" name="end_time" value="18:00" required>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <button class="w-100 btn btn-primary btn-lg" type="submit">ยืนยันการจอง (Request Booking)</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
