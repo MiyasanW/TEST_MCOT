@@ -27,6 +27,8 @@
             /* สีน้ำเงิน MCOT */
             --mcot-gold: #FFD700;
             /* สีทองสำหรับตัดขอบ */
+            --mcot-brand: #0047BA;
+            /* Alias for brand color */
             --brand-dark: #1a1a1a;
         }
 
@@ -72,7 +74,19 @@
         }
 
         /* Hover Effect เส้นขีดล่าง */
-        .nav-link::after {
+        .nav-active {
+            position: relative;
+        }
+
+        .nav-link {
+            font-weight: 500;
+            color: var(--brand-dark) !important;
+            margin: 0 10px;
+            position: relative;
+        }
+
+        /* Use ::before for underline to avoid conflict with Bootstrap's ::after caret */
+        .nav-link::before {
             content: '';
             position: absolute;
             width: 0;
@@ -83,8 +97,8 @@
             transition: width 0.3s;
         }
 
-        .nav-link:hover::after,
-        .nav-link.active::after {
+        .nav-link:hover::before,
+        .nav-link.active::before {
             width: 100%;
         }
 
@@ -144,6 +158,12 @@
             background: var(--mcot-blue);
             transform: translateY(-3px);
         }
+
+        /* Dropdown Hover Effect */
+        .hover-brand:hover {
+            background-color: #f0f7ff;
+            color: var(--mcot-blue);
+        }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
@@ -173,25 +193,66 @@
                         <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}"
                             href="{% url 'home' %}">หน้าแรก</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if 'packages' in request.path %}active{% endif %}"
-                            href="{% url 'packages' %}">แพ็คเกจ</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if 'studios' in request.path %}active{% endif %}"
-                            href="{% url 'studios' %}">สตูดิโอ</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if 'catalog' in request.path %}active{% endif %}"
-                            href="{% url 'equipment_catalog' %}">อุปกรณ์</a>
+
+                    <!-- Dropdown บริการของเรา -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if 'studios' in request.path or 'catalog' in request.path or 'packages' in request.path %}active{% endif %}"
+                            href="#" id="servicesDropdown" role="button" data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                            บริการ
+                        </a>
+                        <ul class="dropdown-menu border-0 shadow-lg" aria-labelledby="servicesDropdown"
+                            style="border-radius: 12px; overflow: hidden;">
+                            <li>
+                                <a class="dropdown-item py-2 px-3 hover-brand" href="{% url 'studios' %}">
+                                    <i class="fas fa-warehouse me-2 text-primary" style="width: 20px;"></i>สตูดิโอ
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item py-2 px-3 hover-brand" href="{% url 'equipment_catalog' %}">
+                                    <i class="fas fa-camera me-2 text-success" style="width: 20px;"></i>เช่าอุปกรณ์
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item py-2 px-3 hover-brand" href="{% url 'packages' %}">
+                                    <i class="fas fa-cubes me-2 text-info" style="width: 20px;"></i>แพ็คเกจ
+                                </a>
+                            </li>
+                        </ul>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if 'portfolio' in request.path %}active{% endif %}"
                             href="{% url 'portfolio' %}">ผลงาน</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if 'contact' in request.path %}active{% endif %}"
-                            href="{% url 'contact' %}">ติดต่อเรา</a>
+
+                    <!-- Dropdown เมนูช่วยเหลือ -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if 'faq' in request.path or 'contact' in request.path %}active{% endif %}"
+                            href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            ช่วยเหลือ
+                        </a>
+                        <ul class="dropdown-menu border-0 shadow-lg" aria-labelledby="navbarDropdown"
+                            style="border-radius: 12px; overflow: hidden;">
+                            <li>
+                                <a class="dropdown-item py-2 px-3 hover-brand" href="{% url 'faq' %}">
+                                    <i class="fas fa-question-circle me-2 text-warning"
+                                        style="width: 20px;"></i>คำถามที่พบบ่อย
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item py-2 px-3 hover-brand" href="{% url 'contact' %}">
+                                    <i class="fas fa-envelope me-2 text-danger" style="width: 20px;"></i>ติดต่อเรา
+                                </a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider my-1">
+                            </li>
+                            <li>
+                                <a class="dropdown-item py-2 px-3 text-muted small" href="#">
+                                    <i class="fas fa-file-alt me-2" style="width: 20px;"></i>เงื่อนไขการให้บริการ
+                                </a>
+                            </li>
+                        </ul>
                     </li>
                     <li class="nav-item ms-lg-3">
                         <a href="{% url 'contact' %}" class="btn btn-brand">

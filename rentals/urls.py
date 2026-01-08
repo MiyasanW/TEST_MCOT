@@ -10,6 +10,7 @@ urlpatterns = [
     path('studios/', public_views.studios, name='studios'),
     path('packages/', public_views.packages, name='packages'),
     path('portfolio/', public_views.portfolio, name='portfolio'),
+    path('faq/', public_views.faq, name='faq'),
     path('contact/', public_views.contact, name='contact'),
 
     # --- Staff & Admin Pages ---

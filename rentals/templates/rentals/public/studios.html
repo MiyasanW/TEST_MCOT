@@ -1,12 +1,13 @@
 {% extends 'rentals/public/base.html' %}
+{% load static %}
 
 {% block title %}สตูดิโอ | MCOT Rental{% endblock %}
 
 {% block content %}
 <!-- Hero -->
-<header class="py-5 bg-dark-custom text-white mb-5 text-center">
+<header class="py-5 bg-dark text-white mb-5 text-center" style="background: linear-gradient(45deg, #0047BA, #000);">
     <div class="container">
-        <h1 class="display-4 fw-bold mb-3">Professional <span class="text-brand">Studios</span></h1>
+        <h1 class="display-4 fw-bold mb-3">Professional <span class="text-warning">Studios</span></h1>
         <p class="lead text-light opacity-75">พื้นที่สร้างสรรค์งานคุณภาพ รองรับทุกสเกลการผลิต</p>
     </div>
 </header>
@@ -15,55 +16,65 @@
     <div class="row g-5">
         {% for studio in studios %}
         <div class="col-12">
-            <div class="card border-0 shadow-lg overflow-hidden row g-0">
-                <div class="col-lg-7 position-relative">
-                    {% if studio.image %}
-                    <img src="{{ studio.image.url }}" class="h-100 w-100 object-fit-cover" style="min-height: 400px;"
-                        alt="{{ studio.name }}">
-                    {% else %}
-                    <div class="bg-secondary h-100 w-100 d-flex align-items-center justify-content-center text-white"
-                        style="min-height: 400px;">
-                        <div class="text-center">
-                            <i class="fas fa-warehouse fa-3x mb-3"></i>
-                            <p>No Image Available</p>
+            <div class="card border-0 shadow-lg overflow-hidden">
+                <div class="row g-0">
+                    <!-- Image Column -->
+                    <div class="col-lg-7 position-relative">
+                        {% if studio.image %}
+                        <img src="{{ studio.image.url }}" class="h-100 w-100 object-fit-cover"
+                            style="min-height: 400px;" alt="{{ studio.name }}">
+                        {% else %}
+                        <div class="bg-secondary h-100 w-100 d-flex align-items-center justify-content-center text-white"
+                            style="min-height: 400px;">
+                            <div class="text-center">
+                                <i class="fas fa-warehouse fa-3x mb-3"></i>
+                                <p>No Image Available</p>
+                            </div>
                         </div>
+                        {% endif %}
+                        <span
+                            class="position-absolute top-0 start-0 bg-brand text-white px-3 py-2 m-3 rounded-pill fw-bold shadow-sm">
+                            Available
+                        </span>
                     </div>
-                    {% endif %}
-                    <span
-                        class="position-absolute top-0 start-0 bg-brand text-white px-3 py-2 m-3 rounded-pill fw-bold shadow-sm">
-                        Available
-                    </span>
-                </div>
-                <div class="col-lg-5">
-                    <div class="card-body p-5 d-flex flex-column h-100">
-                        <h2 class="fw-bold mb-3">{{ studio.name }}</h2>
-                        <div class="mb-4">
-                            <span class="text-brand fs-3 fw-bold">฿{{ studio.daily_rate|floatformat:0 }}</span>
-                            <span class="text-muted">/วัน</span>
-                        </div>
 
-                        <p class="text-secondary mb-4" style="line-height: 1.8;">
-                            {{ studio.description|default:"สตูดิโอมาตรฐานสูง พร้อมระบบไฟและเครื่องปรับอากาศ
-                            พื้นที่กว้างขวาง เหมาะสำหรับงานถ่ายทำรายการ ถ่ายภาพนิ่ง หรือ Live Streaming" }}
-                        </p>
-
-                        <div class="mt-auto">
-                            <h6 class="fw-bold mb-3 text-muted">สิ่งอำนวยความสะดวก</h6>
-                            <div class="row g-2 mb-4">
-                                <div class="col-6"><i class="fas fa-check text-success me-2"></i> ห้องแต่งตัว</div>
-                                <div class="col-6"><i class="fas fa-check text-success me-2"></i> ที่จอดรถ VIP</div>
-                                <div class="col-6"><i class="fas fa-check text-success me-2"></i>
-                                    อินเทอร์เน็ตความเร็วสูง</div>
-                                <div class="col-6"><i class="fas fa-check text-success me-2"></i> ระบบไฟฟ้า 3 เฟส</div>
+                    <!-- Content Column -->
+                    <div class="col-lg-5">
+                        <div class="card-body p-5 d-flex flex-column h-100">
+                            <h2 class="fw-bold mb-3">{{ studio.name }}</h2>
+                            <div class="mb-4">
+                                <span class="text-brand fs-3 fw-bold">฿{{ studio.daily_rate|floatformat:0 }}</span>
+                                <span class="text-muted">/วัน</span>
                             </div>
 
-                            <div class="d-grid gap-2">
-                                <a href="/contact/" class="btn btn-brand btn-lg rounded-pill">
-                                    <i class="far fa-calendar-alt me-2"></i> จองสตูดิโอนี้
-                                </a>
-                                <button class="btn btn-outline-dark btn-lg rounded-pill">
-                                    <i class="fas fa-info-circle me-2"></i> สอบถามข้อมูลเพิ่มเติม
-                                </button>
+                            <p class="text-secondary mb-4" style="line-height: 1.8;">
+                                {% if studio.description and studio.description != "None" %}
+                                {{ studio.description }}
+                                {% else %}
+                                สตูดิโอมาตรฐานสูง พร้อมระบบไฟและเครื่องปรับอากาศ พื้นที่กว้างขวาง
+                                เหมาะสำหรับงานถ่ายทำรายการ ถ่ายภาพนิ่ง หรือ Live Streaming
+                                {% endif %}
+                            </p>
+
+                            <div class="mt-auto">
+                                <h6 class="fw-bold mb-3 text-muted">สิ่งอำนวยความสะดวก</h6>
+                                <div class="row g-2 mb-4">
+                                    <div class="col-6"><i class="fas fa-check text-success me-2"></i> ห้องแต่งตัว</div>
+                                    <div class="col-6"><i class="fas fa-check text-success me-2"></i> ที่จอดรถ VIP</div>
+                                    <div class="col-6"><i class="fas fa-check text-success me-2"></i>
+                                        อินเทอร์เน็ตความเร็วสูง</div>
+                                    <div class="col-6"><i class="fas fa-check text-success me-2"></i> ระบบไฟฟ้า 3 เฟส
+                                    </div>
+                                </div>
+
+                                <div class="d-grid gap-2">
+                                    <a href="/contact/" class="btn btn-brand btn-lg rounded-pill">
+                                        <i class="far fa-calendar-alt me-2"></i> จองสตูดิโอนี้
+                                    </a>
+                                    <button class="btn btn-outline-dark btn-lg rounded-pill">
+                                        <i class="fas fa-info-circle me-2"></i> สอบถามข้อมูลเพิ่มเติม
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>

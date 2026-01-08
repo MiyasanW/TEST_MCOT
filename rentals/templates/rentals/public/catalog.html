@@ -88,8 +88,13 @@
                                 <span class="badge bg-light text-dark border">{{ item.category }}</span>
                             </div>
                             <h5 class="card-title fw-bold text-truncate" title="{{ item.name }}">{{ item.name }}</h5>
-                            <p class="card-text text-muted small mb-3 text-truncate-2">{{ item.description|default:"-"
-                                }}</p>
+                            <p class="card-text text-muted small mb-3 text-truncate-2">
+                                {% if item.description and item.description != "None" %}
+                                {{ item.description }}
+                                {% else %}
+                                <span class="opacity-50">-</span>
+                                {% endif %}
+                            </p>
 
                             <div class="d-flex justify-content-between align-items-end mt-auto">
                                 <div>
