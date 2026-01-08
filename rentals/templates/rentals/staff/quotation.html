@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <title>ใบเสนอราคา (Quotation)</title>
+    <!-- Google Fonts: Sarabun -->
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* A4 Page Settings */
+        @page {
+            size: A4;
+            margin: 0;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Sarabun', sans-serif;
+            background-color: #eee;
+            color: #333;
+            -webkit-print-color-adjust: exact;
+        }
+
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm;
+            margin: 10mm auto;
+            background: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                background: white;
+                margin: 0;
+            }
+
+            .page {
+                width: 100%;
+                margin: 0;
+                box-shadow: none;
+                min-height: auto;
+                page-break-after: always;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #8e44ad;
+            padding-bottom: 10px;
+        }
+
+        .company-info h1 {
+            color: #8e44ad;
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .company-info p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #555;
+            line-height: 1.4;
+        }
+
+        .doc-title {
+            text-align: right;
+        }
+
+        .doc-title h2 {
+            margin: 0;
+            font-size: 20px;
+            color: #333;
+            text-transform: uppercase;
+        }
+
+        .doc-details {
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .doc-details table {
+            float: right;
+        }
+
+        .doc-details td {
+            text-align: right;
+            padding: 2px 0 2px 10px;
+        }
+
+        /* Client Info */
+        .client-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .client-info strong {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 16px;
+            color: #8e44ad;
+        }
+
+        /* Table */
+        table.items {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        table.items th {
+            background-color: #8e44ad;
+            color: white;
+            padding: 10px;
+            text-align: left;
+        }
+
+        table.items td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            vertical-align: top;
+        }
+
+        table.items th:last-child,
+        table.items td:last-child {
+            text-align: right;
+        }
+
+        table.items th:nth-child(3),
+        table.items td:nth-child(3),
+        table.items th:nth-child(4),
+        table.items td:nth-child(4) {
+            text-align: right;
+        }
+
+        /* Totals */
+        .totals-section {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 50px;
+        }
+
+        .totals-table {
+            width: 40%;
+            border-collapse: collapse;
+        }
+
+        .totals-table td {
+            padding: 8px 10px;
+            font-size: 14px;
+        }
+
+        .totals-table tr.grand-total td {
+            background-color: #f8f0fc;
+            color: #8e44ad;
+            font-weight: bold;
+            font-size: 16px;
+            border-top: 2px solid #8e44ad;
+            border-bottom: 2px solid #8e44ad;
+        }
+
+        /* Signatures */
+        .signature-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 50px;
+            page-break-inside: avoid;
+        }
+
+        .signature-box {
+            width: 30%;
+            text-align: center;
+        }
+
+        .signature-line {
+            border-bottom: 1px dashed #333;
+            height: 40px;
+            margin-bottom: 15px;
+        }
+
+        .signature-box p {
+            font-size: 12px;
+            margin: 5px 0;
+            color: #555;
+        }
+
+        /* Footer */
+        .footer {
+            position: absolute;
+            bottom: 20mm;
+            left: 20mm;
+            right: 20mm;
+            text-align: center;
+            font-size: 12px;
+            color: #777;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+
+        .print-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: #8e44ad;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+
+        .print-btn:hover {
+            background: #732d91;
+        }
+    </style>
+</head>
+
+<body>
+
+    <button onclick="window.print()" class="print-btn no-print">🖨️ Print / Save PDF</button>
+
+    <div class="page">
+        <!-- Header -->
+        <div class="header">
+            <div class="company-info">
+                <h1>MCOT Enterprise</h1>
+                <p>
+                    63/1 ถ.พระราม 9 แขวงห้วยขวาง<br>
+                    เขตห้วยขวาง กรุงเทพฯ 10310<br>
+                    โทร: 02-201-6000<br>
+                    เลขประจำตัวผู้เสียภาษี: 0107547000745
+                </p>
+            </div>
+            <div class="doc-title">
+                <h2>ใบเสนอราคา</h2>
+                <span class="text-secondary" style="font-size: 14px; color: #777;">QUOTATION</span>
+                <div class="doc-details">
+                    <table>
+                        <tr>
+                            <td><strong>เลขที่ (No.):</strong></td>
+                            <td>QT-{{ booking.start_time|date:"Ymd" }}-{{ booking.id }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>วันที่ (Date):</strong></td>
+                            <td>{% load i18n %}{% now "j F Y" %}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Client Info -->
+        <div class="client-section">
+            <div class="client-info">
+                <strong>ลูกค้า (Customer):</strong>
+                {{ booking.customer_name }}<br>
+                {% if booking.customer_address %}
+                {{ booking.customer_address|linebreaksbr }}<br>
+                {% else %}
+                - ไม่ระบุที่อยู่ -<br>
+                {% endif %}
+                {% if booking.customer_phone %}โทร: {{ booking.customer_phone }}<br>{% endif %}
+                {% if booking.customer_email %}อีเมล: {{ booking.customer_email }}<br>{% endif %}
+            </div>
+            <div class="rental-info" style="text-align: right;">
+                <strong>ระยะเวลาเช่า (Rental Period):</strong>
+                {{ booking.start_time|date:"d/m/Y H:i" }} - {{ booking.end_time|date:"d/m/Y H:i" }}<br>
+                <strong>รวมจำนวนวัน (Duration):</strong> {{ days }} วัน
+            </div>
+        </div>
+
+        <!-- Items Table -->
+        <table class="items">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">#</th>
+                    <th style="width: 50%;">รายการ (Description)</th>
+                    <th style="width: 15%;">ราคาต่อหน่วย<br>(Unit Price)</th>
+                    <th style="width: 10%;">จำนวน<br>(Days)</th>
+                    <th style="width: 20%;">จำนวนเงิน<br>(Amount)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>
+                        <strong>{{ item.name }}</strong>
+                        {% if item.details %}
+                        <div style="font-size: 12px; color: #666; margin-top: 3px;">
+                            {{ item.details }}
+                        </div>
+                        {% endif %}
+                    </td>
+                    <td>฿{{ item.price|floatformat:2 }}</td>
+                    <td>{{ days }}</td>
+                    <td>฿{{ item.total|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Totals -->
+        <div class="totals-section">
+            <table class="totals-table">
+                <tr>
+                    <td style="text-align: right;">รวมเป็นเงิน (Subtotal):</td>
+                    <td style="text-align: right;">฿{{ subtotal|floatformat:2 }}</td>
+                </tr>
+                <tr>
+                    <td style="text-align: right;">ภาษีมูลค่าเพิ่ม 7% (VAT):</td>
+                    <td style="text-align: right;">฿{{ vat|floatformat:2 }}</td>
+                </tr>
+                <tr class="grand-total">
+                    <td style="text-align: right;">จำนวนเงินรวมทั้งสิ้น (Grand Total):</td>
+                    <td style="text-align: right;">฿{{ grand_total|floatformat:2 }}</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Signatures -->
+        <div class="signature-section">
+            <div class="signature-box">
+                <div class="signature-line"></div>
+                <strong>{{ user.get_full_name|default:user.username }}</strong>
+                <p>ผู้จัดทำ (Prepared By)</p>
+                <p>วันที่: {% now "d/m/Y" %}</p>
+            </div>
+            <div class="signature-box">
+                <div class="signature-line"></div>
+                <strong>(.......................................................)</strong>
+                <p>ผู้มีอำนาจลงนาม (Authorized Signature)</p>
+                <p>วันที่: ....../....../......</p>
+            </div>
+            <div class="signature-box">
+                <div class="signature-line"></div>
+                <strong>(.......................................................)</strong>
+                <p>ลูกค้ายอมรับใบเสนอราคา (Customer Acceptance)</p>
+                <p>วันที่: ....../....../......</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>
+                เอกสารนี้สร้างขึ้นโดยระบบ MCOT Enterprise Rental System<br>
+                ขอบคุณที่ใช้บริการ
+            </p>
+        </div>
+    </div>
+
+</body>
+
+</html>

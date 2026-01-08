@@ -1,0 +1,96 @@
+{% extends 'rentals/public/base.html' %}
+
+{% block title %}คำถามที่พบบ่อย | MCOT Rental{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold mb-3">คำถาม <span class="text-brand">ที่พบบ่อย</span></h1>
+        <p class="text-muted">รวบรวมข้อสงสัยเกี่ยวกับการเช่า การชำระเงิน และเงื่อนไขต่างๆ</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="accordion accordion-flush" id="faqAccordion">
+
+                <!-- Category 1: Rental Process -->
+                <h5 class="fw-bold text-brand mt-4 mb-3">ขั้นตอนการเช่า (Rental Process)</h5>
+
+                <div class="accordion-item shadow-sm mb-3 border rounded">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#faq1">
+                            1. ต้องจองล่วงหน้ากี่วัน?
+                        </button>
+                    </h2>
+                    <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body text-secondary">
+                            เราแนะนำให้จองล่วงหน้าอย่างน้อย <strong>3-5 วันทำการ</strong>
+                            เพื่อให้มั่นใจว่าอุปกรณ์ที่คุณต้องการจะว่างและเรามีเวลาตรวจเช็คสภาพให้พร้อมก่อนส่งมอบครับ
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item shadow-sm mb-3 border rounded">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#faq2">
+                            2. เอกสารที่ต้องใช้มีอะไรบ้าง?
+                        </button>
+                    </h2>
+                    <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body text-secondary">
+                            <ul>
+                                <li>สำเนาบัตรประชาชน (สำหรับบุคคลธรรมดา)</li>
+                                <li>หนังสือรับรองบริษัท (สำหรับนิติบุคคล)</li>
+                                <li>ใบสั่งจ้าง (Purchase Order) หากมี</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Category 2: Payment -->
+                <h5 class="fw-bold text-brand mt-4 mb-3">การชำระเงิน (Payment)</h5>
+
+                <div class="accordion-item shadow-sm mb-3 border rounded">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#faq3">
+                            3. ต้องมัดจำเท่าไหร่?
+                        </button>
+                    </h2>
+                    <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body text-secondary">
+                            ค่ามัดจำอุปกรณ์อยู่ที่ <strong>30% ของราคาเช่า</strong> หรือตามมูลค่าของอุปกรณ์บางรายการ
+                            โดยจะคืนให้ทันทีเมื่อคืนของและตรวจสอบสภาพเรียบร้อยแล้ว
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item shadow-sm mb-3 border rounded">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#faq4">
+                            4. รับบัตรเครดิตหรือไม่?
+                        </button>
+                    </h2>
+                    <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body text-secondary">
+                            ยินดีรับบัตรเครดิตทุกธนาคารครับ (มีค่าธรรมเนียม 3%)
+                            หรือสามารถโอนเงินผ่านบัญชีธนาคารได้โดยไม่มีค่าธรรมเนียม
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Still have questions? -->
+            <div class="text-center mt-5 p-4 bg-white rounded shadow-sm border">
+                <h5 class="fw-bold">ยังไม่พบคำตอบที่คุณต้องการ?</h5>
+                <p class="text-muted mb-3">สอบถามทีมงานของเราได้โดยตรง</p>
+                <a href="/contact/" class="btn btn-brand rounded-pill px-4">ติดต่อเรา</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

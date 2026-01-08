@@ -1,0 +1,280 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+    /* Reuse Dashboard Styles */
+    * {
+        font-family: 'Inter', sans-serif;
+    }
+
+    .reports-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 40px 20px;
+    }
+
+    .reports-inner {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 30px 40px;
+        margin-bottom: 30px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .page-header h1 {
+        font-size: 32px;
+        font-weight: 800;
+        margin: 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .btn-back {
+        padding: 10px 20px;
+        background: #f0f2f5;
+        border-radius: 10px;
+        color: #333;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+
+    .btn-back:hover {
+        background: #e4e6eb;
+        transform: translateX(-2px);
+    }
+
+    /* Charts Grid */
+    .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 25px;
+        margin-bottom: 30px;
+    }
+
+    .chart-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .chart-card h2 {
+        font-size: 18px;
+        margin: 0 0 20px 0;
+        color: #333;
+        border-bottom: 2px solid #f0f0f0;
+        padding-bottom: 15px;
+    }
+
+    /* Table Card */
+    .table-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .table-card h2 {
+        font-size: 24px;
+        margin: 0 0 25px 0;
+        color: #333;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th {
+        text-align: left;
+        padding: 15px;
+        background: #f8f9fa;
+        color: #666;
+        font-weight: 600;
+    }
+
+    td {
+        padding: 15px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    @media (max-width: 768px) {
+        .charts-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .page-header {
+            flex-direction: column;
+            text-align: center;
+            gap: 15px;
+        }
+
+        .table-card {
+            overflow-x: auto;
+        }
+
+        table {
+            min-width: 600px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="reports-container">
+    <div class="reports-inner">
+        <div class="page-header">
+            <div>
+                <h1><i class="fas fa-chart-line"></i> รายงานและการวิเคราะห์</h1>
+                <p style="margin: 5px 0 0 0; color: #666;">สรุปข้อมูลสถิติและการใช้งานระบบ</p>
+            </div>
+            <a href="{% url 'dashboard' %}" class="btn-back">
+                <i class="fas fa-arrow-left"></i> กลับหน้าหลัก
+            </a>
+        </div>
+
+        <!-- Filters & Actions -->
+        <div class="table-card" style="margin-bottom: 30px;">
+            <form method="get" style="display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end;">
+                <div>
+                    <label
+                        style="display: block; margin-bottom: 5px; font-weight: 600; color: #666;">วันเริ่มต้น</label>
+                    <input type="date" name="start_date" value="{{ start_date }}"
+                        style="padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 5px; font-weight: 600; color: #666;">วันสิ้นสุด</label>
+                    <input type="date" name="end_date" value="{{ end_date }}"
+                        style="padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" class="action-btn"
+                        style="padding: 10px 20px; font-size: 14px; background: #667eea; border: none; cursor: pointer; color: white;">
+                        <i class="fas fa-filter" style="font-size: 16px; display: inline; margin-right: 5px;"></i>
+                        กรองข้อมูล
+                    </button>
+                    <a href="?export=csv&start_date={{ start_date }}&end_date={{ end_date }}" class="action-btn"
+                        style="padding: 10px 20px; font-size: 14px; background: #28a745; text-decoration: none; display: flex; align-items: center; color: white;">
+                        <i class="fas fa-file-csv" style="font-size: 16px; display: inline; margin-right: 5px;"></i>
+                        Export CSV
+                    </a>
+                    <a href="{% url 'reports_maintenance' %}" class="action-btn"
+                        style="padding: 10px 20px; font-size: 14px; background: #dc3545; text-decoration: none; display: flex; align-items: center; color: white;">
+                        <i class="fas fa-tools" style="font-size: 16px; display: inline; margin-right: 5px;"></i>
+                        รายงานปัญหา
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <div class="charts-grid">
+            <!-- Revenue Chart -->
+            <div class="chart-card">
+                <h2>รายได้รายเดือน (ประมาณการ)</h2>
+                <canvas id="revenueChart"></canvas>
+            </div>
+
+            <!-- Status Chart -->
+            <div class="chart-card">
+                <h2>สัดส่วนสถานะการจอง</h2>
+                <canvas id="statusChart"></canvas>
+            </div>
+        </div>
+
+        <div class="charts-grid">
+            <!-- Top Equipment -->
+            <div class="table-card">
+                <h2><i class="fas fa-crown" style="color: #ffc107;"></i> อุปกรณ์ยอดนิยม 5 อันดับ</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ชื่ออุปกรณ์</th>
+                            <th>รหัส</th>
+                            <th>จำนวนการจอง</th>
+                            <th>สถานะปัจจุบัน</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for equip in top_equipment %}
+                        <tr>
+                            <td style="font-weight: 600;">{{ equip.name }}</td>
+                            <td><span
+                                    style="background: #eef; padding: 4px 8px; border-radius: 4px; font-size: 12px;">{{
+                                    equip.serial_number }}</span></td>
+                            <td>{{ equip.usage_count }} ครั้ง</td>
+                            <td>
+                                {% if equip.status == 'available' %}
+                                <span style="color: #28a745;">พร้อมใช้งาน</span>
+                                {% else %}
+                                <span style="color: #dc3545;">{{ equip.get_status_display }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Revenue Chart
+    const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+    const revenueData = {
+        labels: [{% for item in monthly_data %}"{{ item.month }}", {% endfor %}],
+    datasets: [{
+        label: 'รายได้ (บาท)',
+        data: [{% for item in monthly_data %}{{ item.revenue }}, {% endfor %}],
+        borderColor: '#667eea',
+            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                tension: 0.4,
+                    fill: true
+        }]
+    };
+    new Chart(revenueCtx, {
+        type: 'line',
+        data: revenueData,
+        options: { responsive: true, plugins: { legend: { display: false } } }
+    });
+
+    // Status Chart
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+    const statusData = {
+        labels: [{% for item in status_counts %}"{{ item.status }}", {% endfor %}],
+    datasets: [{
+        data: [{% for item in status_counts %}{{ item.total }}, {% endfor %}],
+        backgroundColor: [
+            '#ffc107', // draft
+            '#28a745', // approved
+            '#17a2b8', // completed
+            '#dc3545'  // cancelled
+        ]
+        }]
+    };
+    new Chart(statusCtx, {
+        type: 'doughnut',
+        data: statusData,
+        options: { responsive: true }
+    });
+</script>
+{% endblock %}

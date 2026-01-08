@@ -1,0 +1,95 @@
+{% extends 'rentals/public/base.html' %}
+
+{% block title %}โปรโมชั่น & แพ็คเกจ | MCOT Rental{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold mb-3">โปรโมชั่น <span class="text-brand">สุดคุ้ม</span></h1>
+        <p class="text-muted">แพ็คเกจราคาพิเศษสำหรับกองถ่ายทุกขนาด</p>
+    </div>
+
+    <!-- Pricing Cards -->
+    <div class="row g-4 align-items-center">
+        <!-- Starter Set -->
+        <div class="col-md-4">
+            <div class="card border-0 shadow h-100 hover-up">
+                <div class="card-body p-4 text-center">
+                    <h5 class="fw-bold text-muted">Starter Set</h5>
+                    <h2 class="display-5 fw-bold text-brand my-3">฿4,500</h2>
+                    <p class="text-muted mb-4">สำหรับงานสัมภาษณ์ / Vlog</p>
+                    <hr class="w-25 mx-auto mb-4">
+                    <ul class="list-unstyled mb-4">
+                        <li class="mb-2"><i class="fas fa-camera text-success me-2"></i> กล้อง Sony A7S III (1 ชุด)</li>
+                        <li class="mb-2"><i class="fas fa-microphone text-success me-2"></i> ไมค์ Wireless (2 ตัว)</li>
+                        <li class="mb-2"><i class="fas fa-lightbulb text-success me-2"></i> ไฟ LED (2 ดวง)</li>
+                        <li class="mb-2 text-muted"><i class="fas fa-times me-2"></i> ไม่รวมช่างภาพ</li>
+                    </ul>
+                    <a href="/contact/?package=starter"
+                        class="btn btn-outline-brand rounded-pill w-100">จองแพ็คเกจนี้</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pro Production (Highlight) -->
+        <div class="col-md-4">
+            <div class="card border-0 shadow-lg h-100 transform-scale-sm"
+                style="background: linear-gradient(135deg, #2c2a38 0%, #4a148c 100%);">
+                <div class="position-absolute top-0 start-50 translate-middle">
+                    <span class="badge bg-warning text-dark px-3 py-2 rounded-pill shadow-sm">ขายดี ⭐</span>
+                </div>
+                <div class="card-body p-5 text-center text-white">
+                    <h5 class="fw-bold text-white-50">Pro Production</h5>
+                    <h2 class="display-4 fw-bold text-white my-3">฿12,000</h2>
+                    <p class="text-white-50 mb-4">สำหรับงานโฆษณา / MV</p>
+                    <hr class="w-25 mx-auto border-light mb-4">
+                    <ul class="list-unstyled mb-4 text-start d-inline-block">
+                        <li class="mb-2"><i class="fas fa-camera text-warning me-2"></i> กล้อง RED Komodo (1 ชุด)</li>
+                        <li class="mb-2"><i class="fas fa-lightbulb text-warning me-2"></i> ชุดไฟ Aputure (ชุดใหญ่)</li>
+                        <li class="mb-2"><i class="fas fa-microphone text-warning me-2"></i> บันทึกเสียงแยก (Boom)</li>
+                        <li class="mb-2"><i class="fas fa-user-friends text-warning me-2"></i> ผู้ช่วยกล้อง 1 ท่าน</li>
+                    </ul>
+                    <a href="/contact/?package=pro"
+                        class="btn btn-light text-brand fw-bold rounded-pill w-100 py-2 shadow">จองแพ็คเกจนี้</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Studio Live -->
+        <div class="col-md-4">
+            <div class="card border-0 shadow h-100 hover-up">
+                <div class="card-body p-4 text-center">
+                    <h5 class="fw-bold text-muted">Studio Live</h5>
+                    <h2 class="display-5 fw-bold text-brand my-3">฿25,000</h2>
+                    <p class="text-muted mb-4">พร้อมออกอากาศทันที</p>
+                    <hr class="w-25 mx-auto mb-4">
+                    <ul class="list-unstyled mb-4">
+                        <li class="mb-2"><i class="fas fa-warehouse text-success me-2"></i> สตูดิโอขนาดกลาง (10 ชม.)
+                        </li>
+                        <li class="mb-2"><i class="fas fa-video text-success me-2"></i> กล้อง Broadcast (3 ตัว)</li>
+                        <li class="mb-2"><i class="fas fa-sliders-h text-success me-2"></i> Switcher + Streaming</li>
+                        <li class="mb-2"><i class="fas fa-users text-success me-2"></i> ทีมงานเทคนิค 3 ท่าน</li>
+                    </ul>
+                    <a href="/contact/?package=live" class="btn btn-outline-brand rounded-pill w-100">จองแพ็คเกจนี้</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .transform-scale-sm {
+        transform: scale(1.05);
+        z-index: 10;
+    }
+
+    @media (max-width: 768px) {
+        .transform-scale-sm {
+            transform: scale(1);
+            z-index: 1;
+        }
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,24 @@
+from django.urls import path
+from . import views
+from . import reports_views
+from . import public_views  # Import public views
+
+urlpatterns = [
+    # --- Public Customer Pages (หน้าบ้านลูกค้า) ---
+    path('', public_views.home, name='home'),
+    path('catalog/', public_views.equipment_catalog, name='equipment_catalog'),
+    path('studios/', public_views.studios, name='studios'),
+    path('packages/', public_views.packages, name='packages'),
+    path('portfolio/', public_views.portfolio, name='portfolio'),
+    path('contact/', public_views.contact, name='contact'),
+
+    # --- Staff & Admin Pages ---
+    path('staff/dashboard/', views.dashboard, name='staff_dashboard'),  # Explicitly named staff_dashboard
+    path('dashboard/', views.dashboard, name='dashboard'),  # Keep legacy for compatibility
+    path('calendar/', views.calendar_view, name='calendar'),
+    path('api/bookings/', views.booking_api, name='booking_api'),
+    path('reports/', reports_views.reports_dashboard, name='reports_dashboard'),
+    path('reports/maintenance/', reports_views.reports_maintenance, name='reports_maintenance'),
+    path('staff/quotation/<int:booking_id>/', views.staff_quotation, name='staff_quotation'),
+    path('staff/work_order/<int:booking_id>/', views.staff_work_order, name='staff_work_order'),
+]

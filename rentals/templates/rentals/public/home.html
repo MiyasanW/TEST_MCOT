@@ -1,0 +1,221 @@
+{% extends 'rentals/public/base.html' %}
+{% load static %}
+
+
+{% block title %}หน้าแรก | MCOT Rental บริการเช่าอุปกรณ์และสตูดิโอครบวงจร{% endblock %}
+<!-- Verified Updated -->
+
+{% block extra_css %}
+<style>
+    /* Hero Section: ส่วนภาพปกหน้าแรก */
+    .hero-section {
+        background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1590250935518-e3db792f3989?q=80&w=2070&auto=format&fit=crop');
+        background-size: cover;
+        background-position: center;
+        height: 85vh;
+        display: flex;
+        align-items: center;
+        color: white;
+        position: relative;
+    }
+
+    /* Animation สำหรับข้อความ Fade In ขึ้นมา */
+    .fade-up {
+        animation: fadeUp 1s ease-out;
+    }
+
+    @keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Feature Card: การ์ดบริการ */
+    .feature-card {
+        border: none;
+        border-radius: 20px;
+        transition: all 0.3s ease;
+        background: white;
+        overflow: hidden;
+        height: 100%;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+
+    .feature-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .feature-icon-wrapper {
+        width: 80px;
+        height: 80px;
+        background: var(--mcot-blue);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+        color: white;
+        font-size: 2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- 1. Hero Section (ส่วนหัวเว็บไซต์ขนาดใหญ่) -->
+<header class="hero-section">
+    <div class="container text-center fade-up">
+        <span class="badge bg-warning text-dark mb-3 px-3 py-2 rounded-pill fw-bold">Professional Broadcast
+            Solution</span>
+        <h1 class="display-3 fw-bold mb-4">MCOT Enterprise Rental</h1>
+        <p class="lead mb-5 mx-auto" style="max-width: 700px;">
+            ยกระดับงานโปรดักชั่นของคุณด้วยอุปกรณ์มาตรฐานระดับโลก<br>
+            พร้อมสตูดิโอขนาดใหญ่และการดูแลจากทีมวิศวกรมืออาชีพของ อสมท
+        </p>
+        <div class="d-flex justify-content-center gap-3">
+            <a href="{% url 'studios' %}" class="btn btn-brand btn-lg px-5 py-3">
+                <i class="fas fa-search me-2"></i>ค้นหาสตูดิโอ
+            </a>
+            <a href="{% url 'equipment_catalog' %}" class="btn btn-outline-light btn-lg px-5 py-3 rounded-pill fw-bold">
+                <i class="fas fa-camera me-2"></i>ดูรายการอุปกรณ์
+            </a>
+        </div>
+    </div>
+</header>
+
+<!-- 2. Services Section (บริการหลักของเรา) -->
+<section class="py-5 bg-light">
+    <div class="container py-5">
+        <div class="text-center mb-5">
+            <h6 class="text-primary fw-bold text-uppercase ls-wide">Our Services</h6>
+            <h2 class="display-5 fw-bold text-dark">บริการที่คุณวางใจ</h2>
+        </div>
+
+        <div class="row g-4">
+            <!-- บริการเช่าอุปกรณ์ -->
+            <div class="col-md-4">
+                <div class="feature-card p-5 text-center">
+                    <div class="feature-icon-wrapper mx-auto bg-primary">
+                        <i class="fas fa-video"></i>
+                    </div>
+                    <h4>เช่าอุปกรณ์ถ่ายทำ</h4>
+                    <p class="text-muted mt-3">กล้อง ARRI, Sony, เลนส์ Cinema และอุปกรณ์ไฟครบครัน
+                        มาตรฐานเดียวกับที่ใช้ในสถานีโทรทัศน์</p>
+                    <a href="{% url 'equipment_catalog' %}"
+                        class="btn btn-link text-decoration-none fw-bold mt-2">ดูรายละเอียด <i
+                            class="fas fa-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+
+            <!-- บริการเช่าสตูดิโอ -->
+            <div class="col-md-4">
+                <div class="feature-card p-5 text-center">
+                    <div class="feature-icon-wrapper mx-auto bg-success">
+                        <i class="fas fa-warehouse"></i>
+                    </div>
+                    <h4>เช่าสตูดิโอ</h4>
+                    <p class="text-muted mt-3">สตูดิโอขนาดใหญ่ 12 ห้อง พร้อมระบบไฟ ห้องควบคุม และห้องแต่งตัว
+                        รองรับการถ่ายทำทุกรูปแบบ</p>
+                    <a href="{% url 'studios' %}"
+                        class="btn btn-link text-decoration-none fw-bold mt-2 text-success">ดูรายละเอียด <i
+                            class="fas fa-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+
+            <!-- บริการรถ OB -->
+            <div class="col-md-4">
+                <div class="feature-card p-5 text-center">
+                    <div class="feature-icon-wrapper mx-auto bg-warning">
+                        <i class="fas fa-truck"></i>
+                    </div>
+                    <h4>รถถ่ายทอดสด (OB)</h4>
+                    <p class="text-muted mt-3">บริการรถถ่ายทอดสดนอกสถานที่ พร้อมทีมงานวิศวกรผู้เชี่ยวชาญ ระบบดาวเทียมและ
+                        Streaming</p>
+                    <a href="#" class="btn btn-link text-decoration-none fw-bold mt-2 text-warning">ดูรายละเอียด <i
+                            class="fas fa-arrow-right ms-1"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 3. Why Us (ทำไมต้องเลือกเรา) -->
+<section class="py-5 bg-white">
+    <div class="container py-5">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <img src="https://images.unsplash.com/photo-1542621334-a259160943f6?q=80&w=2069&auto=format&fit=crop"
+                    class="img-fluid rounded-4 shadow-lg mb-4 mb-lg-0" alt="MCOT Team">
+            </div>
+            <div class="col-lg-6 ps-lg-5">
+                <span
+                    class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-2 mb-3">Why
+                    Choose Us</span>
+                <h2 class="display-5 fw-bold mb-4">ทำไมต้องเลือก MCOT Rental?</h2>
+
+                <div class="d-flex mb-4">
+                    <div class="flex-shrink-0">
+                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
+                            style="width: 50px; height: 50px;">
+                            <i class="fas fa-check"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h5 class="fw-bold">มาตรฐานระดับ Broadcast</h5>
+                        <p class="text-muted">อุปกรณ์ทุกชิ้นได้รับการดูแลและ Calibrate โดยทีมวิศวกรของ อสมท
+                            มั่นใจได้ในคุณภาพ</p>
+                    </div>
+                </div>
+
+                <div class="d-flex mb-4">
+                    <div class="flex-shrink-0">
+                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
+                            style="width: 50px; height: 50px;">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h5 class="fw-bold">ทีมงานมืออาชีพดูแล 24 ชม.</h5>
+                        <p class="text-muted">ไม่ว่าจะเป็นการถ่ายทำนอกเวลาหรือวันหยุด เรามีทีม Support
+                            พร้อมแก้ไขปัญหาตลอดเวลา</p>
+                    </div>
+                </div>
+
+                <div class="d-flex mb-4">
+                    <div class="flex-shrink-0">
+                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
+                            style="width: 50px; height: 50px;">
+                            <i class="fas fa-hand-holding-dollar"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h5 class="fw-bold">ราคาเป็นกันเอง</h5>
+                        <p class="text-muted">มีแพ็คเกจหลากหลาย รองรับทั้งงานสเกลเล็กและใหญ่
+                            ในราคาที่จับต้องได้สำหรับทุกคน</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 4. Call to Action (ส่วนเชิญชวน) -->
+<section class="py-5 bg-dark text-white text-center"
+    style="background-image: linear-gradient(45deg, #0047BA, #000); background-size: cover;">
+    <div class="container py-5">
+        <h2 class="display-4 fw-bold mb-3">พร้อมที่จะเริ่มโปรเจกต์ของคุณหรือยัง?</h2>
+        <p class="lead mb-4 text-white-50">ติดต่อเราวันนี้เพื่อรับใบเสนอราคาและคำปรึกษาฟรี</p>
+        <a href="{% url 'contact' %}" class="btn btn-light btn-lg rounded-pill px-5 fw-bold text-primary">
+            ติดต่อเราทันที
+        </a>
+    </div>
+</section>
+
+{% endblock %}

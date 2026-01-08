@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <title>ใบงาน / ใบเบิกของ (Work Order)</title>
+    <!-- Google Fonts: Sarabun -->
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* A4 Page Settings (Same as Quotation) */
+        @page {
+            size: A4;
+            margin: 0;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Sarabun', sans-serif;
+            background-color: #eee;
+            color: #333;
+            -webkit-print-color-adjust: exact;
+        }
+
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm;
+            margin: 10mm auto;
+            background: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        @media print {
+            body {
+                background: white;
+                margin: 0;
+                padding: 0;
+            }
+
+            .page {
+                width: 100%;
+                margin: 0;
+                box-shadow: none;
+                min-height: auto;
+                page-break-after: always;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e67e22;
+            /* Orange for Work Order */
+            padding-bottom: 10px;
+        }
+
+        .company-info h1 {
+            color: #e67e22;
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .doc-title {
+            text-align: right;
+        }
+
+        .doc-title h2 {
+            margin: 0;
+            font-size: 20px;
+            color: #333;
+            text-transform: uppercase;
+        }
+
+        /* Info Section */
+        .info-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-size: 14px;
+            background: #fff8e1;
+            /* Light Orange Background */
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #ffe0b2;
+        }
+
+        .info-group strong {
+            color: #e67e22;
+            display: inline-block;
+            width: 100px;
+        }
+
+        /* Checkbox Table */
+        table.items {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        table.items th {
+            background-color: #e67e22;
+            color: white;
+            padding: 10px;
+            text-align: left;
+        }
+
+        table.items td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            vertical-align: middle;
+        }
+
+        .checkbox-col {
+            width: 30px;
+            text-align: center;
+        }
+
+        .checkbox-box {
+            width: 15px;
+            height: 15px;
+            border: 1px solid #333;
+            display: inline-block;
+        }
+
+        /* Signatures */
+        .signature-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 50px;
+            page-break-inside: avoid;
+        }
+
+        .signature-box {
+            width: 30%;
+            text-align: center;
+        }
+
+        .signature-line {
+            border-bottom: 1px dashed #333;
+            height: 40px;
+            margin-bottom: 15px;
+        }
+
+        .signature-box p {
+            font-size: 12px;
+            margin: 5px 0;
+            color: #555;
+        }
+
+        /* Footer */
+        .footer {
+            position: absolute;
+            bottom: 20mm;
+            left: 20mm;
+            right: 20mm;
+            text-align: center;
+            font-size: 12px;
+            color: #777;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+
+        .print-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: #e67e22;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+    </style>
+</head>
+
+<body>
+    <button onclick="window.print()" class="print-btn no-print">🖨️ Print Work Order</button>
+
+    <div class="page">
+        <!-- Header -->
+        <div class="header">
+            <div class="company-info">
+                <h1>MCOT Enterprise</h1>
+                <p>ใบเบิกของ / ใบส่งมอบงาน</p>
+            </div>
+            <div class="doc-title">
+                <h2>WORK ORDER</h2>
+                <div style="font-size: 14px; margin-top: 5px;">
+                    <strong>เลขที่ (No.):</strong> WO-{{ booking.start_time|date:"Ymd" }}-{{ booking.id }}<br>
+                    <strong>วันที่ (Date):</strong> {% now "d/m/Y" %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Booking Info -->
+        <div class="info-section">
+            <div class="left-col">
+                <div><strong>ลูกค้า:</strong> {{ booking.customer_name }}</div>
+                <div><strong>เบอร์โทร:</strong> {{ booking.customer_phone }}</div>
+                <div><strong>ผู้จอง:</strong> {{ booking.created_by.get_full_name|default:booking.created_by.username }}
+                </div>
+            </div>
+            <div class="right-col">
+                <div><strong>เริ่มใช้งาน:</strong> {{ booking.start_time|date:"d/m/Y H:i" }}</div>
+                <div><strong>สิ้นสุด:</strong> {{ booking.end_time|date:"d/m/Y H:i" }}</div>
+                <div><strong>สถานที่:</strong> MCOT Studio</div>
+            </div>
+        </div>
+
+        <!-- Items Table -->
+        <table class="items">
+            <thead>
+                <tr>
+                    <th class="checkbox-col">✓</th>
+                    <th style="width: 40%;">รายการ (Item Name)</th>
+                    <th style="width: 25%;">หมายเลขเครื่อง (Serial No.)</th>
+                    <th style="width: 10%;">จำนวน</th>
+                    <th style="width: 20%;">สถานะ/หมายเหตุ (Condition)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td class="checkbox-col">
+                        <div class="checkbox-box"></div>
+                    </td>
+                    <td>
+                        <strong>{{ item.name }}</strong>
+                        {% if item.type == 'Studio' %}
+                        <span style="color:#e67e22; font-size:12px;">(Studio)</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ item.details }}</td>
+                    <td style="text-align: center;">{{ item.qty }} {{ item.unit }}</td>
+                    <td>__________________</td>
+                </tr>
+                {% endfor %}
+                <!-- Blank rows for extra items -->
+                <tr>
+                    <td class="checkbox-col">
+                        <div class="checkbox-box"></div>
+                    </td>
+                    <td>__________________________</td>
+                    <td>__________________</td>
+                    <td style="text-align: center;">___</td>
+                    <td>__________________</td>
+                </tr>
+                <tr>
+                    <td class="checkbox-col">
+                        <div class="checkbox-box"></div>
+                    </td>
+                    <td>__________________________</td>
+                    <td>__________________</td>
+                    <td style="text-align: center;">___</td>
+                    <td>__________________</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Signatures -->
+        <div class="signature-section">
+            <div class="signature-box">
+                <div class="signature-line"></div>
+                <strong>เจ้าหน้าที่จัดของ (Prepared By)</strong>
+                <p>วันที่: ....../....../......</p>
+            </div>
+            <div class="signature-box">
+                <div class="signature-line"></div>
+                <strong>ผู้ตรวจสอบ (Checked By)</strong>
+                <p>วันที่: ....../....../......</p>
+            </div>
+            <div class="signature-box">
+                <div class="signature-line"></div>
+                <strong>ผู้รับของ/ลูกค้า (Received By)</strong>
+                <p>วันที่: ....../....../......</p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>กรุณาตรวจสอบความถูกต้องและสภาพอุปกรณ์ก่อนเซ็นรับของ | MCOT Rental System</p>
+        </div>
+    </div>
+</body>
+
+</html>
