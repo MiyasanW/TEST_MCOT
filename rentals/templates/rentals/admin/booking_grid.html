@@ -1,0 +1,216 @@
+{% extends "admin/change_list.html" %}
+{% load i18n static admin_list humanize %}
+
+{% block result_list %}
+<style>
+    /* Grid Container */
+    .booking-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 20px;
+        padding: 20px 0;
+    }
+
+    /* Card Styling */
+    .booking-card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s, box-shadow 0.2s;
+        border: 1px solid #eee;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        text-decoration: none !important;
+        color: inherit !important;
+        position: relative;
+        border-left: 5px solid #ccc;
+        /* Default Border Color */
+        padding: 20px;
+    }
+
+    .booking-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Status Colors */
+    .status-draft {
+        border-left-color: #f1c40f;
+    }
+
+    /* Yellow */
+    .status-approved {
+        border-left-color: #27ae60;
+    }
+
+    /* Green */
+    .status-completed {
+        border-left-color: #3498db;
+    }
+
+    /* Blue */
+    .status-cancelled {
+        border-left-color: #e74c3c;
+    }
+
+    /* Red */
+
+    /* Card Header */
+    .card-header-Grid {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .booking-id {
+        font-size: 12px;
+        color: #95a5a6;
+        font-weight: bold;
+        letter-spacing: 1px;
+    }
+
+    .status-badge {
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 11px;
+        text-transform: uppercase;
+        font-weight: 800;
+        background: #f8f9fa;
+        color: #666;
+    }
+
+    .badge-draft {
+        background: #fff8e1;
+        color: #f39c12;
+    }
+
+    .badge-approved {
+        background: #e8f8f5;
+        color: #27ae60;
+    }
+
+    .badge-completed {
+        background: #ebf5fb;
+        color: #2980b9;
+    }
+
+    /* Customer Info */
+    .customer-name {
+        font-size: 18px;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 5px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .customer-details {
+        font-size: 13px;
+        color: #7f8c8d;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+    /* Date Section */
+    .date-range {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 6px;
+        font-size: 13px;
+        color: #34495e;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #f1f2f6;
+    }
+
+    .date-range i {
+        color: #a4b0be;
+    }
+
+    /* Footer */
+    .card-footer-Grid {
+        margin-top: auto;
+        padding-top: 15px;
+        border-top: 1px solid #f0f0f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+    }
+
+    .total-price {
+        font-size: 18px;
+        color: #2c3e50;
+        font-weight: 800;
+    }
+
+    .total-price small {
+        font-size: 12px;
+        color: #95a5a6;
+        font-weight: normal;
+    }
+
+    .created-at {
+        font-size: 11px;
+        color: #bdc3c7;
+        text-align: right;
+    }
+</style>
+
+<div class="booking-grid">
+    {% for result in cl.result_list %}
+    <div onclick="window.location.href='{% url 'admin:rentals_booking_change' result.id %}'"
+        class="booking-card status-{{ result.status }}" style="cursor: pointer;">
+
+        <div class="card-header-Grid">
+            <span class="booking-id">#{{ result.id }}</span>
+            <span class="status-badge badge-{{ result.status }}">
+                {{ result.get_status_display }}
+            </span>
+        </div>
+
+        <div class="customer-name">
+            <i class="fas fa-user-circle" style="color: #ddd; margin-right: 5px;"></i>
+            {{ result.customer_name }}
+        </div>
+        <div class="customer-details">
+            {% if result.customer_phone %}
+            <span><i class="fas fa-phone-alt"></i> {{ result.customer_phone }}</span>
+            {% endif %}
+        </div>
+
+        <div class="date-range">
+            <i class="far fa-calendar-alt"></i>
+            <div>
+                <div><strong>Start:</strong> {{ result.start_time|date:"d M Y, H:i" }}</div>
+                <div style="color: #95a5a6; font-size: 11px;">To: {{ result.end_time|date:"d M Y, H:i" }}</div>
+            </div>
+        </div>
+
+        <div class="card-footer-Grid">
+            <div class="total-price">
+                <small>Total:</small> ฿{{ result.calculate_total_price|intcomma }}
+            </div>
+            <div class="created-at">
+                <i class="far fa-clock"></i> Booked {{ result.created_at|timesince }} ago
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div style="text-align: center; padding: 50px; grid-column: 1 / -1; color: #7f8c8d;">
+        <i class="fas fa-clipboard-list" style="font-size: 48px; margin-bottom: 20px;"></i>
+        <h3>No bookings found</h3>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% block pagination %}{% pagination cl %}{% endblock %}
+
+{% endblock %}

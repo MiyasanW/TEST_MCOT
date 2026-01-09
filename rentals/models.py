@@ -78,6 +78,11 @@ class Product(models.Model):
     quantity = models.IntegerField(default=1, verbose_name="จำนวนทั้งหมด")
     is_active = models.BooleanField(default=True, verbose_name="เปิดให้เช่า")
 
+    class Meta:
+        verbose_name = "คลังอุปกรณ์ (Inventory)"
+        verbose_name_plural = "คลังอุปกรณ์ (Inventory)"
+        ordering = ['name']
+
     def __str__(self):
         return self.name
 
@@ -123,8 +128,8 @@ class Equipment(models.Model):
     history = HistoricalRecords()
     
     class Meta:
-        verbose_name = "อุปกรณ์ (Item)"
-        verbose_name_plural = "อุปกรณ์ (Items)"
+        verbose_name = "รายการอุปกรณ์ (Equipment)"
+        verbose_name_plural = "รายการอุปกรณ์ (Equipment Items)"
         ordering = ['product__name', 'serial_number']
     
     def __str__(self):
@@ -199,6 +204,10 @@ class Booking(models.Model):
         verbose_name="จองโดย"
     )
     
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="สร้างเมื่อ")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="แก้ไขล่าสุด")
+    
     # ความสัมพันธ์กับโมเดลอื่น (Many-to-Many)
     equipment = models.ManyToManyField(
         Equipment,
@@ -219,13 +228,44 @@ class Booking(models.Model):
         related_name='bookings'
     )
     
+    def calculate_total_price(self):
+        """
+        คำนวณราคารวม (Estimate)
+        """
+        if not self.start_time or not self.end_time:
+            return 0
+            
+        duration = self.end_time - self.start_time
+        days = duration.total_seconds() / (24 * 3600)
+        days = int(days) + (1 if days % 1 > 0 else 0) or 1
+        
+        total = 0
+        # Items
+        for item in self.items.all():
+            total += (item.price_at_booking or 0) * item.quantity
+            
+        # Studios
+        for studio in self.studios.all():
+            total += studio.daily_rate
+            
+        return total * days
+
+    def get_issues(self):
+        """
+        ตรวจสอบปัญหาของการจอง (เช่น อุปกรณ์ชน, สถานะไม่พร้อม)
+        """
+        issues = []
+        # TODO: Implement complex conflict logic here
+        # For now return empty list to prevent crash
+        return issues
+
     # Audit Trail - บันทึกประวัติการเปลี่ยนแปลงทั้งหมด
     history = HistoricalRecords()
     
     class Meta:
         verbose_name = "การจอง"
         verbose_name_plural = "การจอง"
-        ordering = ['-start_time']
+        ordering = ['-created_at']
     
     def __str__(self):
         return f"{self.customer_name} - {self.start_time.strftime('%d/%m/%Y %H:%M')}"

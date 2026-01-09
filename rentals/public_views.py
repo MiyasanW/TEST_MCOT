@@ -11,9 +11,15 @@ from .services.notify import send_line_notify
 
 def home(request):
     """
-    หน้าแรกของเว็บไซต์ (Home Page)
+    Landing page view.
     """
-    return render(request, 'rentals/public/home.html')
+    # Fetch featured equipment (Top 4 active items, ordered by newest)
+    featured_equipment = Product.objects.filter(is_active=True).order_by('-id')[:4]
+    
+    context = {
+        'featured_equipment': featured_equipment,
+    }
+    return render(request, 'rentals/public/home.html', context)
 
 def about(request):
     """
@@ -131,7 +137,7 @@ def checkout(request):
         return redirect('equipment_catalog')
         
     if request.method == 'POST':
-        # รับข้อมูลจากฟอร์ม Checkout
+        # รับข้อมูลจากฟอร์ม Checkout (หรือใช้ข้อมูลจาก User ถ้าไม่ได้กรอก)
         customer_name = request.POST.get('customer_name')
         customer_phone = request.POST.get('customer_phone')
         customer_email = request.POST.get('customer_email')
@@ -146,14 +152,20 @@ def checkout(request):
             end_dt = datetime.strptime(f"{end_date} {end_time}", "%Y-%m-%d %H:%M")
             
             # Create Booking
-            booking = Booking.objects.create(
-                customer_name=customer_name,
-                customer_phone=customer_phone,
-                customer_email=customer_email,
-                start_time=start_dt,
-                end_time=end_dt,
-                status='draft' # Pending Approval
-            )
+            booking_data = {
+                'customer_name': customer_name,
+                'customer_phone': customer_phone,
+                'customer_email': customer_email,
+                'start_time': start_dt,
+                'end_time': end_dt,
+                'status': 'draft'
+            }
+            
+            # Associate with User if logged in
+            if request.user.is_authenticated:
+                booking_data['created_by'] = request.user
+                
+            booking = Booking.objects.create(**booking_data)
             
             # Create BookingItems
             for item in cart:
@@ -169,7 +181,7 @@ def checkout(request):
             
             # Notify
             message = f"\n📦 New Booking Request #{booking.id}\n" \
-                      f"customer: {booking.customer_name}\n" \
+                      f"Customer: {booking.customer_name}\n" \
                       f"Items: {booking.items.count()} items\n" \
                       f"Date: {start_dt.strftime('%d/%m')} - {end_dt.strftime('%d/%m')}"
             send_line_notify(message)
@@ -180,5 +192,36 @@ def checkout(request):
             # Handle Date parsing error
             error = "รูปแบบวันที่หรือเวลาไม่ถูกต้อง"
             return render(request, 'rentals/public/checkout.html', {'cart': cart, 'error': error})
-            
-    return render(request, 'rentals/public/checkout.html', {'cart': cart})
+    
+    # Pre-fill data for GET request
+    context = {'cart': cart, 'today': timezone.now().date().isoformat()}
+    if request.user.is_authenticated:
+        context['initial_name'] = f"{request.user.first_name} {request.user.last_name}".strip() or request.user.username
+        context['initial_email'] = request.user.email
+        # Phone might be in Profile model if extended, but for now leave empty
+        
+    return render(request, 'rentals/public/checkout.html', context)
+
+# --- Authentication & Legal ---
+from .forms import RegisterForm
+from django.contrib.auth import login
+
+def register_view(request):
+    """
+    หน้าลงทะเบียนลูกค้าใหม่
+    """
+    if request.method == 'POST':
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user) # Auto login after register
+            return redirect('home')
+    else:
+        form = RegisterForm()
+    return render(request, 'rentals/public/register.html', {'form': form})
+
+def terms_of_use(request):
+    """
+    หน้าเงื่อนไขการใช้งาน
+    """
+    return render(request, 'rentals/public/terms.html')

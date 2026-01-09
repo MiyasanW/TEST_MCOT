@@ -1,31 +1,12 @@
 {% extends 'rentals/public/base.html' %}
 {% load static %}
 
-
 {% block title %}หน้าแรก | MCOT Rental บริการเช่าอุปกรณ์และสตูดิโอครบวงจร{% endblock %}
-<!-- Verified Updated -->
 
 {% block extra_css %}
 <style>
-    /* Hero Section: ส่วนภาพปกหน้าแรก */
-    .hero-section {
-        background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
-        url("{% static 'rentals/images/hero_bg.png' %}");
-        background-size: cover;
-        background-position: center;
-        height: 85vh;
-        display: flex;
-        align-items: center;
-        color: white;
-        position: relative;
-    }
-
-    /* Animation สำหรับข้อความ Fade In ขึ้นมา */
-    .fade-up {
-        animation: fadeUp 1s ease-out;
-    }
-
-    @keyframes fadeUp {
+    /* Global Animations */
+    @keyframes fadeInUp {
         from {
             opacity: 0;
             transform: translateY(30px);
@@ -37,186 +18,355 @@
         }
     }
 
-    /* Feature Card: การ์ดบริการ */
-    .feature-card {
+    .animate-up {
+        animation: fadeInUp 0.8s ease-out forwards;
+        opacity: 0;
+    }
+
+    .delay-100 {
+        animation-delay: 0.1s;
+    }
+
+    .delay-200 {
+        animation-delay: 0.2s;
+    }
+
+    .delay-300 {
+        animation-delay: 0.3s;
+    }
+
+    /* Hero Section */
+    .hero-section {
+        min-height: 90vh;
+        /* Mobile Friendly: min-height */
+        background: radial-gradient(circle at center, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.8) 100%),
+        url("{% static 'rentals/images/hero_bg.png' %}");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        /* Parallax effect */
+        color: white;
+        display: flex;
+        align-items: center;
+        position: relative;
+    }
+
+    .hero-overlay-bottom {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 150px;
+        background: linear-gradient(to top, #f8f9fa, transparent);
+        pointer-events: none;
+    }
+
+    /* Service Cards */
+    .service-card {
         border: none;
         border-radius: 20px;
-        transition: all 0.3s ease;
         background: white;
-        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         height: 100%;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+        position: relative;
+        z-index: 1;
     }
 
-    .feature-card:hover {
+    .service-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(0, 71, 186, 0.05) 0%, rgba(0, 71, 186, 0) 100%);
+        opacity: 0;
+        transition: opacity 0.3s;
+        z-index: -1;
+    }
+
+    .service-card:hover {
         transform: translateY(-10px);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+        /* Soft Shadow */
     }
 
-    .feature-icon-wrapper {
-        width: 80px;
-        height: 80px;
-        background: var(--mcot-blue);
-        border-radius: 50%;
+    .service-card:hover::before {
+        opacity: 1;
+    }
+
+    .icon-box {
+        width: 70px;
+        height: 70px;
+        border-radius: 16px;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 20px;
-        color: white;
-        font-size: 2rem;
+        font-size: 1.8rem;
+        margin-bottom: 1.5rem;
+        transition: transform 0.4s;
+    }
+
+    .service-card:hover .icon-box {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    /* Stats Counter */
+    .stat-item {
+        padding: 2rem;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: transform 0.3s;
+    }
+
+    .stat-item:hover {
+        transform: translateY(-5px);
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Client Logos (Grayscale to Color) */
+    .client-logo {
+        height: 40px;
+        width: auto;
+        opacity: 0.5;
+        filter: grayscale(100%);
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+
+    .client-logo:hover {
+        opacity: 1;
+        filter: grayscale(0%);
+        transform: scale(1.05);
+    }
+
+    /* Decoration Circle */
+    .deco-circle {
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        border-radius: 50%;
+        background: linear-gradient(45deg, var(--mcot-blue), transparent);
+        opacity: 0.05;
+        z-index: 0;
+    }
+
+    /* Product Card Mini (Reuse styles from catalog roughly, but lighter) */
+    .product-mini-card {
+        border: none;
+        border-radius: 16px;
+        overflow: hidden;
+        transition: transform 0.3s, box-shadow 0.3s;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .product-mini-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .product-mini-img {
+        height: 200px;
+        object-fit: cover;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-
-<!-- 1. Hero Section (ส่วนหัวเว็บไซต์ขนาดใหญ่) -->
+<!-- 1. HERO SECTION -->
 <header class="hero-section">
-    <div class="container text-center fade-up">
-        <span class="badge bg-warning text-dark mb-3 px-3 py-2 rounded-pill fw-bold">Professional Broadcast
-            Solution</span>
-        <h1 class="display-3 fw-bold mb-4">MCOT Enterprise Rental</h1>
-        <p class="lead mb-5 mx-auto" style="max-width: 700px;">
-            ยกระดับงานโปรดักชั่นของคุณด้วยอุปกรณ์มาตรฐานระดับโลก<br>
-            พร้อมสตูดิโอขนาดใหญ่และการดูแลจากทีมวิศวกรมืออาชีพของ อสมท
-        </p>
-        <div class="d-flex justify-content-center gap-3">
-            <a href="{% url 'studios' %}" class="btn btn-brand btn-lg px-5 py-3">
-                <i class="fas fa-search me-2"></i>ค้นหาสตูดิโอ
-            </a>
-            <a href="{% url 'equipment_catalog' %}" class="btn btn-outline-light btn-lg px-5 py-3 rounded-pill fw-bold">
-                <i class="fas fa-camera me-2"></i>ดูรายการอุปกรณ์
-            </a>
+    <div class="container position-relative z-2">
+        <div class="row align-items-center">
+            <div class="col-lg-8 text-center text-lg-start animate-up">
+                <div
+                    class="d-inline-block mb-3 px-3 py-1 rounded-pill bg-white bg-opacity-10 backdrop-blur border border-white border-opacity-25 text-white small fw-bold ls-1">
+                    <i class="fas fa-star text-warning me-2"></i> Professional Broadcast Solutions
+                </div>
+                <h1 class="display-3 fw-bolder mb-3 lh-sm text-shadow">
+                    MCOT <span class="text-white-50">Enterprise</span> <br>
+                    <span class="text-gradient-gold"
+                        style="background: linear-gradient(45deg, #fff, #ddd); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Rental
+                        Service</span>
+                </h1>
+                <p class="lead text-white-50 mb-5" style="max-width: 600px; font-weight: 300;">
+                    บริการเช่าอุปกรณ์ถ่ายทำและสตูดิโอมาตรฐานระดับสากล
+                    พร้อมทีมวิศวกรและผู้เชี่ยวชาญดูแลตลอดการใช้งาน
+                </p>
+                <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center justify-content-lg-start">
+                    <a href="{% url 'equipment_catalog' %}"
+                        class="btn btn-brand btn-lg px-5 py-3 rounded-pill shadow-lg hover-scale">
+                        <i class="fas fa-search me-2"></i> ค้นหาอุปกรณ์
+                    </a>
+                    <a href="{% url 'studios' %}"
+                        class="btn btn-outline-light btn-lg px-5 py-3 rounded-pill hover-scale backdrop-blur">
+                        <i class="fas fa-warehouse me-2"></i> ดูสตูดิโอ
+                    </a>
+                </div>
+            </div>
+            <!-- Optional: Hero Image/Graphic on Desktop -->
         </div>
     </div>
+    <div class="hero-overlay-bottom"></div>
 </header>
 
-<!-- 2. Services Section (บริการหลักของเรา) -->
-<section class="py-5 bg-light">
-    <div class="container py-5">
-        <div class="text-center mb-5">
-            <h6 class="text-primary fw-bold text-uppercase ls-wide">Our Services</h6>
-            <h2 class="display-5 fw-bold text-dark">บริการที่คุณวางใจ</h2>
+<!-- 2. TRUST INDICATORS (STATS) -->
+<section class="py-5 bg-white border-bottom">
+    <div class="container">
+        <div class="row g-4 justify-content-center text-center">
+            <div class="col-6 col-md-3">
+                <div class="p-3">
+                    <h2 class="fw-bold text-brand display-5">40+</h2>
+                    <p class="text-muted small text-uppercase fw-bold ls-1">ปีแห่งประสบการณ์</p>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="p-3">
+                    <h2 class="fw-bold text-brand display-5">12</h2>
+                    <p class="text-muted small text-uppercase fw-bold ls-1">สตูดิโอมาตรฐาน</p>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="p-3">
+                    <h2 class="fw-bold text-brand display-5">24/7</h2>
+                    <p class="text-muted small text-uppercase fw-bold ls-1">ทีมงานดูแล</p>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="p-3">
+                    <h2 class="fw-bold text-brand display-5">1k+</h2>
+                    <p class="text-muted small text-uppercase fw-bold ls-1">โปรเจกต์ที่สำเร็จ</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 3. FEATURED EQUIPMENT (DYNAMIC) -->
+<section class="py-5 bg-light position-relative overflow-hidden">
+    <div class="deco-circle" style="top: -100px; right: -100px;"></div>
+    <div class="container py-4 position-relative z-1">
+        <div class="d-flex justify-content-between align-items-end mb-5">
+            <div>
+                <h6 class="text-brand fw-bold text-uppercase ls-1 mb-2">New Arrivals</h6>
+                <h2 class="fw-bold text-dark display-6">อุปกรณ์แนะนำล่าสุด</h2>
+            </div>
+            <a href="{% url 'equipment_catalog' %}"
+                class="btn btn-outline-primary rounded-pill px-4 d-none d-md-inline-block">ดูทั้งหมด <i
+                    class="fas fa-arrow-right ms-1"></i></a>
         </div>
 
         <div class="row g-4">
-            <!-- บริการเช่าอุปกรณ์ -->
+            {% for item in featured_equipment %}
+            <div class="col-12 col-sm-6 col-lg-3">
+                <div class="product-mini-card bg-white h-100 d-flex flex-column">
+                    <a href="{% url 'product_detail' item.id %}" class="text-decoration-none text-dark h-100">
+                        <div class="position-relative">
+                            {% if item.image %}
+                            <img src="{{ item.image.url }}" class="w-100 product-mini-img" alt="{{ item.name }}">
+                            {% else %}
+                            <div
+                                class="bg-light d-flex align-items-center justify-content-center product-mini-img text-muted">
+                                <i class="fas fa-camera fa-2x opacity-25"></i>
+                            </div>
+                            {% endif %}
+
+                            {% if item.is_active %}
+                            <span class="badge bg-success position-absolute top-0 end-0 m-2 shadow-sm">ว่าง</span>
+                            {% endif %}
+                        </div>
+                        <div class="p-3">
+                            <small class="text-muted text-uppercase" style="font-size: 0.7rem;">{{ item.category                 }}</small>
+                            <h6 class="fw-bold mb-1 text-truncate">{{ item.name }}</h6>
+                            <div class="text-brand fw-bold mt-2">฿{{ item.price|floatformat:0 }}<span
+                                    class="text-muted fw-normal small">/วัน</span></div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center text-muted py-5">
+                <p>ยังไม่มีสินค้าแนะนำ</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="text-center mt-4 d-md-none">
+            <a href="{% url 'equipment_catalog' %}"
+                class="btn btn-outline-primary rounded-pill px-4 w-100">ดูรายการทั้งหมด</a>
+        </div>
+    </div>
+</section>
+
+<!-- 4. SERVICES -->
+<section class="py-5 bg-white">
+    <div class="container py-4">
+        <div class="text-center mb-5" style="max-width: 700px; margin: 0 auto;">
+            <h6 class="text-brand fw-bold text-uppercase ls-1 mb-2">Our Services</h6>
+            <h2 class="fw-bold text-dark display-6 mb-3">บริการที่คุณวางใจ</h2>
+            <p class="text-muted">เรามีบริการที่ครอบคลุมทุกความต้องการด้านการผลิตสื่อ ด้วยมาตรฐานระดับประเทศ</p>
+        </div>
+
+        <div class="row g-4">
             <div class="col-md-4">
-                <div class="feature-card p-5 text-center">
-                    <div class="feature-icon-wrapper mx-auto bg-primary">
+                <div class="service-card p-4 p-lg-5 text-center">
+                    <div class="icon-box mx-auto bg-primary bg-opacity-10 text-primary">
                         <i class="fas fa-video"></i>
                     </div>
-                    <h4>เช่าอุปกรณ์ถ่ายทำ</h4>
-                    <p class="text-muted mt-3">กล้อง ARRI, Sony, เลนส์ Cinema และอุปกรณ์ไฟครบครัน
-                        มาตรฐานเดียวกับที่ใช้ในสถานีโทรทัศน์</p>
+                    <h4 class="fw-bold mb-3">เช่าอุปกรณ์ถ่ายทำ</h4>
+                    <p class="text-muted mb-4">กล้อง เลนส์ และอุปกรณ์ไฟรุ่นใหม่ล่าสุด
+                        พร้อมทีมงานดูแลรักษาอุปกรณ์อย่างดีที่สุด</p>
                     <a href="{% url 'equipment_catalog' %}"
-                        class="btn btn-link text-decoration-none fw-bold mt-2">ดูรายละเอียด <i
-                            class="fas fa-arrow-right ms-1"></i></a>
+                        class="text-brand text-decoration-none fw-bold stretched-link">เรียนรู้เพิ่มเติม <i
+                            class="fas fa-chevron-right small ms-1"></i></a>
                 </div>
             </div>
-
-            <!-- บริการเช่าสตูดิโอ -->
             <div class="col-md-4">
-                <div class="feature-card p-5 text-center">
-                    <div class="feature-icon-wrapper mx-auto bg-success">
+                <div class="service-card p-4 p-lg-5 text-center">
+                    <div class="icon-box mx-auto bg-success bg-opacity-10 text-success">
                         <i class="fas fa-warehouse"></i>
                     </div>
-                    <h4>เช่าสตูดิโอ</h4>
-                    <p class="text-muted mt-3">สตูดิโอขนาดใหญ่ 12 ห้อง พร้อมระบบไฟ ห้องควบคุม และห้องแต่งตัว
-                        รองรับการถ่ายทำทุกรูปแบบ</p>
+                    <h4 class="fw-bold mb-3">เช่าสตูดิโอ</h4>
+                    <p class="text-muted mb-4">สตูดิโอ 12 ห้อง หลากหลายขนาด พร้อมห้องควบคุม ห้องแต่งตัว
+                        และที่จอดรถสะดวกสบาย</p>
                     <a href="{% url 'studios' %}"
-                        class="btn btn-link text-decoration-none fw-bold mt-2 text-success">ดูรายละเอียด <i
-                            class="fas fa-arrow-right ms-1"></i></a>
+                        class="text-success text-decoration-none fw-bold stretched-link">เรียนรู้เพิ่มเติม <i
+                            class="fas fa-chevron-right small ms-1"></i></a>
                 </div>
             </div>
-
-            <!-- บริการรถ OB -->
             <div class="col-md-4">
-                <div class="feature-card p-5 text-center">
-                    <div class="feature-icon-wrapper mx-auto bg-warning">
+                <div class="service-card p-4 p-lg-5 text-center">
+                    <div class="icon-box mx-auto bg-warning bg-opacity-10 text-warning">
                         <i class="fas fa-truck"></i>
                     </div>
-                    <h4>รถถ่ายทอดสด (OB)</h4>
-                    <p class="text-muted mt-3">บริการรถถ่ายทอดสดนอกสถานที่ พร้อมทีมงานวิศวกรผู้เชี่ยวชาญ ระบบดาวเทียมและ
-                        Streaming</p>
-                    <a href="#" class="btn btn-link text-decoration-none fw-bold mt-2 text-warning">ดูรายละเอียด <i
-                            class="fas fa-arrow-right ms-1"></i></a>
+                    <h4 class="fw-bold mb-3">รถถ่ายทอดสด (OB)</h4>
+                    <p class="text-muted mb-4">บริการรถ OB พร้อมระบบสื่อสารผ่านดาวเทียม
+                        สำหรับงานถ่ายทอดสดนอกสถานที่ทุกรูปแบบ</p>
+                    <a href="#" class="text-warning text-decoration-none fw-bold stretched-link">เรียนรู้เพิ่มเติม <i
+                            class="fas fa-chevron-right small ms-1"></i></a>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- 3. Why Us (ทำไมต้องเลือกเรา) -->
-<section class="py-5 bg-white">
-    <div class="container py-5">
-        <div class="row align-items-center">
-            <div class="col-lg-6">
-                <img src="https://images.unsplash.com/photo-1542621334-a259160943f6?q=80&w=2069&auto=format&fit=crop"
-                    class="img-fluid rounded-4 shadow-lg mb-4 mb-lg-0" alt="MCOT Team">
-            </div>
-            <div class="col-lg-6 ps-lg-5">
-                <span
-                    class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-2 mb-3">Why
-                    Choose Us</span>
-                <h2 class="display-5 fw-bold mb-4">ทำไมต้องเลือก MCOT Rental?</h2>
-
-                <div class="d-flex mb-4">
-                    <div class="flex-shrink-0">
-                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
-                            style="width: 50px; height: 50px;">
-                            <i class="fas fa-check"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                        <h5 class="fw-bold">มาตรฐานระดับ Broadcast</h5>
-                        <p class="text-muted">อุปกรณ์ทุกชิ้นได้รับการดูแลและ Calibrate โดยทีมวิศวกรของ อสมท
-                            มั่นใจได้ในคุณภาพ</p>
-                    </div>
-                </div>
-
-                <div class="d-flex mb-4">
-                    <div class="flex-shrink-0">
-                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
-                            style="width: 50px; height: 50px;">
-                            <i class="fas fa-user-shield"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                        <h5 class="fw-bold">ทีมงานมืออาชีพดูแล 24 ชม.</h5>
-                        <p class="text-muted">ไม่ว่าจะเป็นการถ่ายทำนอกเวลาหรือวันหยุด เรามีทีม Support
-                            พร้อมแก้ไขปัญหาตลอดเวลา</p>
-                    </div>
-                </div>
-
-                <div class="d-flex mb-4">
-                    <div class="flex-shrink-0">
-                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center"
-                            style="width: 50px; height: 50px;">
-                            <i class="fas fa-hand-holding-dollar"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                        <h5 class="fw-bold">ราคาเป็นกันเอง</h5>
-                        <p class="text-muted">มีแพ็คเกจหลากหลาย รองรับทั้งงานสเกลเล็กและใหญ่
-                            ในราคาที่จับต้องได้สำหรับทุกคน</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- 4. Call to Action (ส่วนเชิญชวน) -->
-<section class="py-5 bg-dark text-white text-center"
-    style="background-image: linear-gradient(45deg, #0047BA, #000); background-size: cover;">
-    <div class="container py-5">
-        <h2 class="display-4 fw-bold mb-3">พร้อมที่จะเริ่มโปรเจกต์ของคุณหรือยัง?</h2>
-        <p class="lead mb-4 text-white-50">ติดต่อเราวันนี้เพื่อรับใบเสนอราคาและคำปรึกษาฟรี</p>
-        <a href="{% url 'contact' %}" class="btn btn-light btn-lg rounded-pill px-5 fw-bold text-primary">
+<!-- 5. CTA SECTION -->
+<section class="py-5 bg-dark text-white position-relative overflow-hidden"
+    style="background: linear-gradient(135deg, #111 0%, #1a1a1a 100%);">
+    <div class="container py-5 position-relative z-1 text-center">
+        <h2 class="display-5 fw-bold mb-4">พร้อมเริ่มต้นโปรเจกต์ของคุณไหม?</h2>
+        <p class="lead text-white-50 mb-5 mx-auto" style="max-width: 600px;">
+            ทีมงานของเราพร้อมให้คำปรึกษาและจัดเสนอราคาที่เหมาะสมที่สุดสำหรับคุณ
+        </p>
+        <a href="{% url 'contact' %}"
+            class="btn btn-light btn-lg rounded-pill px-5 fw-bold text-primary shadow-lg hover-scale">
             ติดต่อเราทันที
         </a>
     </div>
+    <!-- Decorative elements -->
+    <div class="position-absolute top-0 start-0 w-100 h-100 opacity-10"
+        style="background: url('https://www.transparenttextures.com/patterns/cubes.png');"></div>
 </section>
-
 {% endblock %}

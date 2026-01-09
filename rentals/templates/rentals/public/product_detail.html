@@ -35,8 +35,8 @@
                 <div class="d-flex flex-column h-100">
                     <div class="mb-auto">
                         <div class="mb-3">
-                            <span class="badge bg-primary rounded-pill px-3 py-2 text-uppercase">{{ product.category
-                                }}</span>
+                            <span class="badge bg-primary rounded-pill px-3 py-2 text-uppercase">{{
+                                product.get_category_display }}</span>
                             {% if product.quantity <= 0 or not product.is_active %} <span
                                 class="badge bg-secondary rounded-pill px-3 py-2 ms-2">สินค้าหมด</span>
                                 {% else %}

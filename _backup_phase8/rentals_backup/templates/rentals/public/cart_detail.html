@@ -1,0 +1,77 @@
+{% extends 'rentals/public/base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="mb-4"><i class="fas fa-shopping-cart"></i> ตะกร้าสินค้า</h2>
+
+    {% if cart|length > 0 %}
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>สินค้า</th>
+                    <th class="text-center" style="width: 150px;">ราคาต่อชิ้น</th>
+                    <th class="text-center" style="width: 150px;">จำนวน</th>
+                    <th class="text-center" style="width: 150px;">รวม</th>
+                    <th class="text-center" style="width: 100px;">ลบ</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in cart %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            {% if item.product.image %}
+                            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}"
+                                style="width: 60px; height: 60px; object-fit: cover; margin-right: 15px;">
+                            {% else %}
+                            <div class="bg-light d-flex align-items-center justify-content-center"
+                                style="width: 60px; height: 60px; margin-right: 15px;">
+                                <i class="fas fa-camera text-secondary"></i>
+                            </div>
+                            {% endif %}
+                            <div>
+                                <h5 class="mb-0">{{ item.product.name }}</h5>
+                                <small class="text-muted">{{ item.product.category }}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="text-center">฿{{ item.price|floatformat:2 }}</td>
+                    <td class="text-center">{{ item.quantity }}</td>
+                    <td class="text-center fw-bold">฿{{ item.total_price|floatformat:2 }}</td>
+                    <td class="text-center">
+                        <a href="{% url 'cart_remove' item.product.id %}" class="btn btn-outline-danger btn-sm">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot class="table-light">
+                <tr>
+                    <td colspan="3" class="text-end fw-bold">ยอดรวมทั้งหมด (ต่อวัน)</td>
+                    <td class="text-center fw-bold text-success fs-5">฿{{ cart.get_total_price|floatformat:2 }}</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <div class="d-flex justify-content-between mt-4">
+        <a href="{% url 'equipment_catalog' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> เลือกสินค้าต่อ
+        </a>
+        <a href="{% url 'checkout' %}" class="btn btn-primary btn-lg">
+            ดำเนินการจอง / Checkout <i class="fas fa-arrow-right"></i>
+        </a>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <p class="text-muted mb-4 fs-4">ไม่มีสินค้าในตะกร้า</p>
+        <a href="{% url 'equipment_catalog' %}" class="btn btn-primary">
+            เลือกเช่าอุปกรณ์เพื่อใส่ตะกร้า
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -242,3 +242,91 @@ class StaffAdminForm(forms.ModelForm):
             'is_active': '✅ เช็คถ้ายังทำงานอยู่',
         }
 
+
+
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
+
+class RegisterForm(UserCreationForm):
+    """
+    แบบฟอร์มลงทะเบียนลูกค้าใหม่ พร้อมยอมรับเงื่อนไข
+    """
+    first_name = forms.CharField(
+        required=True,
+        label="ชื่อจริง",
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'ระบุชื่อจริง'})
+    )
+    last_name = forms.CharField(
+        required=True,
+        label="นามสกุล",
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'ระบุนามสกุล'})
+    )
+    email = forms.EmailField(
+        required=True,
+        label="อีเมล",
+        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'example@email.com'})
+    )
+    terms_accepted = forms.BooleanField(
+        required=True,
+        label="ฉันยอมรับเงื่อนไขการใช้งาน",
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+    )
+
+    class Meta:
+        model = User
+        fields = ['username', 'first_name', 'last_name', 'email']
+        labels = {
+            'username': 'ชื่อผู้ใช้',
+        }
+        help_texts = {
+            'username': 'ใช้ตัวอักษรภาษาอังกฤษ ตัวเลข และอักขระ @/./+/-/_ เท่านั้น (ไม่เกิน 150 ตัวอักษร)',
+        }
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Style all standard fields
+        for field_name, field in self.fields.items():
+            # Force Thai Error Messages
+            field.error_messages.update({
+                'required': 'กรุณาระบุข้อมูลนี้',
+                'invalid': 'ข้อมูลไม่ถูกต้อง',
+            })
+            
+            if field_name == 'terms_accepted':
+                field.error_messages['required'] = 'กรุณายอมรับเงื่อนไขการใช้งาน'
+                continue
+                
+            # Add Bootstrap classes
+            existing_class = field.widget.attrs.get('class', '')
+            field.widget.attrs['class'] = f"{existing_class} form-control form-control-lg bg-light border-0".strip()
+            field.widget.attrs['style'] = 'font-size: 0.95rem;'
+
+        # Customization for specific fields
+        if 'username' in self.fields:
+            self.fields['username'].widget.attrs['placeholder'] = 'ตั้งชื่อผู้ใช้ (ภาษาอังกฤษ only)'
+            self.fields['username'].label = "ชื่อผู้ใช้"
+            self.fields['username'].help_text = "ใช้ตัวอักษรภาษาอังกฤษ (a-z), ตัวเลข (0-9) หรือ @/./+/-/_ เท่านั้น"
+            
+        if 'first_name' in self.fields:
+             self.fields['first_name'].widget.attrs['placeholder'] = 'ชื่อจริง (ภาษาไทย)'
+             
+        if 'last_name' in self.fields:
+             self.fields['last_name'].widget.attrs['placeholder'] = 'นามสกุล (ภาษาไทย)'
+            
+        if 'email' in self.fields:
+            self.fields['email'].widget.attrs['placeholder'] = 'example@email.com'
+            self.fields['email'].label = "อีเมล"
+
+        # Password 1 (Create)
+        if 'password1' in self.fields:
+             self.fields['password1'].label = "รหัสผ่าน"
+             self.fields['password1'].help_text = "ต้องมีความยาวอย่างน้อย 8 ตัวอักษร, ประกอบด้วยตัวเลขและตัวอักษรผสมกัน, และห้ามใช้ข้อมูลส่วนตัว (เช่น ชื่อ หรือ อีเมล)"
+             self.fields['password1'].widget.attrs['placeholder'] = 'ตั้งรหัสผ่านของคุณ'
+             
+        # Password 2 (Confirm)
+        if 'password2' in self.fields:
+             self.fields['password2'].label = "ยืนยันรหัสผ่าน"
+             self.fields['password2'].help_text = "ระบุรหัสผ่านเดิมอีกครั้งเพื่อความถูกต้อง"
+             self.fields['password2'].widget.attrs['placeholder'] = 'ยืนยันรหัสผ่านอีกครั้ง'
+

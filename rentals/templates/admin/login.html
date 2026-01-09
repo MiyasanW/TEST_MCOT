@@ -1,0 +1,94 @@
+{% extends "rentals/public/base.html" %}
+{% load i18n static %}
+
+{% block title %}เข้าสู่ระบบผู้ดูแล | MCOT Rental{% endblock %}
+
+{% block navbar %}
+<!-- Override Navbar to be simple or empty for admin login -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="/">
+            <i class="fas fa-film me-2 text-primary"></i>MCOT Rental Admin
+        </a>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="bg-light min-vh-100 d-flex align-items-center justify-content-center py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5 col-xl-4">
+                <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                    <div class="card-header bg-gradient-primary text-white text-center py-4"
+                        style="background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);">
+                        <h4 class="fw-bold mb-1">ผู้ดูแลระบบ</h4>
+                        <p class="mb-0 small text-white-50">กรุณาเข้าสู่ระบบเพื่อจัดการข้อมูล</p>
+                    </div>
+
+                    <div class="card-body p-4 p-md-5 bg-white">
+
+                        {% if user.is_authenticated %}
+                        <div class="alert alert-warning border-0 shadow-sm rounded-3 mb-4 text-center small"
+                            role="alert">
+                            <i class="fas fa-exclamation-triangle me-1"></i>
+                            คุณเข้าสู่ระบบในชื่อ <strong>{{ user.get_username }}</strong><br>
+                            แต่ไม่มีสิทธิ์เข้าถึงหน้านี้
+                        </div>
+                        {% endif %}
+
+                        {% if form.errors and not user.is_authenticated %}
+                        <div class="alert alert-danger border-0 shadow-sm rounded-3 mb-4 text-center small"
+                            role="alert">
+                            <i class="fas fa-times-circle me-1"></i> ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง
+                        </div>
+                        {% endif %}
+
+                        {% if form.non_field_errors %}
+                        {% for error in form.non_field_errors %}
+                        <div class="alert alert-danger border-0 shadow-sm rounded-3 mb-4 text-center small">
+                            {{ error }}
+                        </div>
+                        {% endfor %}
+                        {% endif %}
+
+                        <form action="{{ app_path }}" method="post" id="login-form">{% csrf_token %}
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small text-secondary">ชื่อผู้ใช้ (Username)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-0"><i
+                                            class="fas fa-user-shield text-muted"></i></span>
+                                    <input type="text" name="username" class="form-control bg-light border-0" required
+                                        placeholder="admin">
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="form-label fw-bold small text-secondary">รหัสผ่าน (Password)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light border-0"><i
+                                            class="fas fa-key text-muted"></i></span>
+                                    <input type="password" name="password" class="form-control bg-light border-0"
+                                        required placeholder="••••••••">
+                                </div>
+                            </div>
+
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-dark btn-lg rounded-pill fw-bold shadow-sm">
+                                    <i class="fas fa-sign-in-alt me-2"></i> เข้าสู่ระบบ (Login)
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="text-center mt-4">
+                    <a href="/" class="text-decoration-none text-muted small">
+                        <i class="fas fa-arrow-left me-1"></i> กลับหน้าหลัก
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

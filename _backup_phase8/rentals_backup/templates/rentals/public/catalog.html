@@ -1,0 +1,157 @@
+{% extends 'rentals/public/base.html' %}
+
+{% block title %}รายการอุปกรณ์ | MCOT Rental{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header -->
+    <div class="text-center mb-5">
+        <h1 class="fw-bold mb-3">รายการ<span class="text-brand">อุปกรณ์</span></h1>
+        <p class="text-muted">ค้นหาและเลือกดูอุปกรณ์คุณภาพสูงสำหรับงานโปรดักชั่นของคุณ</p>
+    </div>
+
+    <div class="row">
+        <!-- Sidebar Filters -->
+        <div class="col-lg-3 mb-4">
+            <div class="card border-0 shadow-sm sticky-top" style="top: 100px;">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3"><i class="fas fa-filter text-brand me-2"></i> ตัวกรอง</h5>
+
+                    <!-- Search -->
+                    <form method="get" class="mb-4">
+                        <div class="input-group">
+                            <input type="text" name="q" class="form-control" placeholder="ค้นหา..."
+                                value="{{ query|default:'' }}">
+                            <button class="btn btn-brand" type="submit"><i class="fas fa-search"></i></button>
+                        </div>
+                    </form>
+
+                    <!-- Categories -->
+                    <h6 class="fw-bold text-muted mb-2">หมวดหมู่</h6>
+                    <div class="list-group list-group-flush">
+                        <a href="?q={{ query|default:'' }}"
+                            class="list-group-item list-group-item-action {% if not current_category %}active bg-light border-0 text-brand fw-bold{% else %}border-0 text-secondary{% endif %}">
+                            ทั้งหมด
+                        </a>
+                        {% for cat_val, cat_label in categories %}
+                        <a href="?category={{ cat_val }}&q={{ query|default:'' }}"
+                            class="list-group-item list-group-item-action {% if current_category == cat_val %}active bg-light border-0 text-brand fw-bold{% else %}border-0 text-secondary{% endif %}">
+                            {{ cat_label }}
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Grid -->
+        <div class="col-lg-9">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <span class="text-muted">พบ {{ equipment_list.count }} รายการ</span>
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button"
+                        data-bs-toggle="dropdown">
+                        เรียงตาม: ล่าสุด
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="#">ล่าสุด</a></li>
+                        <li><a class="dropdown-item" href="#">ราคา: ต่ำ-สูง</a></li>
+                        <li><a class="dropdown-item" href="#">ราคา: สูง-ต่ำ</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                {% for item in equipment_list %}
+                <div class="col-md-4 col-sm-6">
+                    <div class="card h-100 border-0 shadow-sm hover-up transition-all">
+                        <div class="position-relative">
+                            {% if item.image %}
+                            <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.name }}"
+                                style="height: 200px; object-fit: cover;">
+                            {% else %}
+                            <div class="bg-light text-muted d-flex align-items-center justify-content-center"
+                                style="height: 200px;">
+                                <i class="fas fa-image fa-2x opacity-25"></i>
+                            </div>
+                            {% endif %}
+
+                            {% if item.is_active %}
+                            <span class="badge bg-success position-absolute top-0 end-0 m-2 shadow-sm">ว่าง</span>
+                            {% else %}
+                            <span
+                                class="badge bg-secondary position-absolute top-0 end-0 m-2 shadow-sm">สินค้าหมด</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="card-body">
+                            <div class="mb-2">
+                                <span class="badge bg-light text-dark border">{{ item.category }}</span>
+                            </div>
+                            <h5 class="card-title fw-bold text-truncate" title="{{ item.name }}">{{ item.name }}</h5>
+                            <p class="card-text text-muted small mb-3 text-truncate-2">
+                                {% if item.description and item.description != "None" %}
+                                {{ item.description }}
+                                {% else %}
+                                <span class="opacity-50">-</span>
+                                {% endif %}
+                            </p>
+
+                            <div class="d-flex justify-content-between align-items-end mt-auto">
+                                <div>
+                                    <small class="text-muted d-block">ราคาเช่า</small>
+                                    <span class="text-brand fw-bold fs-5">฿{{ item.price|floatformat:0 }}</span>
+                                    <small class="text-muted">/วัน</small>
+                                </div>
+                                <form action="{% url 'cart_add' item.id %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-brand btn-sm rounded-pill px-3">
+                                        <i class="fas fa-cart-plus"></i> จอง / ใส่ตะกร้า
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center py-5">
+                    <div class="display-1 text-muted opacity-25 mb-3"><i class="fas fa-box-open"></i></div>
+                    <h4>ไม่พบอุปกรณ์ที่ค้นหา</h4>
+                    <p class="text-muted">ลองค้นหาด้วยคำอื่น หรือเลือกหมวดหมู่อื่นดูนะครับ</p>
+                    <a href="/catalog/" class="btn btn-brand rounded-pill px-4 mt-2">ดูทั้งหมด</a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .text-truncate-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .hover-up:hover {
+        transform: translateY(-5px);
+    }
+
+    .transition-all {
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline-brand {
+        color: var(--mcot-brand);
+        border-color: var(--mcot-brand);
+    }
+
+    .btn-outline-brand:hover {
+        background-color: var(--mcot-brand);
+        color: white;
+    }
+</style>
+{% endblock %}

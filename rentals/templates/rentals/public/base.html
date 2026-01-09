@@ -205,9 +205,8 @@
         <div class="container">
             <!-- โลโก้เว็บไซต์ -->
             <a class="navbar-brand" href="{% url 'home' %}">
-                <span class="text-primary fw-bold" style="font-family: 'Prompt'; font-size: 1.5rem;">
-                    <i class="fas fa-video me-2"></i>MCOT <span class="text-dark">RENTAL</span>
-                </span>
+                <img src="{% static 'rentals/images/logo.png' %}" alt="MCOT Rental Logo"
+                    style="height: 50px; width: auto;">
             </a>
 
             <!-- ปุ่มเมนูสำหรับมือถือ -->
@@ -275,10 +274,38 @@
                         </ul>
                     </li>
                 </ul>
-                <div class="d-flex ms-lg-3">
-                    <a href="{% url 'contact' %}" class="btn btn-brand rounded-pill px-4">
-                        <i class="fas fa-paper-plane me-2"></i>ขอใบเสนอราคา
-                    </a>
+                <div class="d-flex ms-lg-3 align-items-center gap-2">
+                    {% if user.is_authenticated %}
+                    <div class="dropdown">
+                        <a href="#"
+                            class="d-flex align-items-center text-decoration-none dropdown-toggle text-dark fw-bold"
+                            id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-circle fa-lg me-2 text-secondary"></i>
+                            {{ user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-3"
+                            aria-labelledby="userMenu">
+                            {% if user.is_staff %}
+                            <li><a class="dropdown-item py-2" href="{% url 'dashboard' %}"><i
+                                        class="fas fa-tachometer-alt me-2 text-primary"></i>Admin Panel</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            {% endif %}
+                            <li>
+                                <form action="{% url 'logout' %}" method="post" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item py-2 text-danger"><i
+                                            class="fas fa-sign-out-alt me-2"></i>ออกจากระบบ</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                    {% else %}
+                    <a href="{% url 'login' %}"
+                        class="btn btn-outline-dark rounded-pill px-3 border-0 fw-bold">เข้าสู่ระบบ</a>
+                    <a href="{% url 'register' %}" class="btn btn-brand rounded-pill px-4 shadow-sm">สมัครสมาชิก</a>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -295,10 +322,18 @@
         <div class="container">
             <div class="row g-4">
                 <div class="col-lg-4">
-                    <h5 class="fw-bold">MCOT ENTERPRISE RENTAL</h5>
-                    <p>บริการเช่าสตูดิโอและอุปกรณ์ถ่ายทำมาตรฐานระดับสากล ภายใต้การดูแลของ บมจ.อสมท
-                        พร้อมทีมงานมืออาชีพและวิศวกรที่เชี่ยวชาญ</p>
-                    <div class="mt-4">
+                    <h5 class="fw-bold text-white mb-4">MCOT ENTERPRISE RENTAL</h5>
+                    <p class="mb-4 text-white-50">บริการเช่าสตูดิโอและอุปกรณ์ถ่ายทำมาตรฐานระดับสากล ภายใต้การดูแลของ
+                        บมจ.อสมท พร้อมทีมงานมืออาชีพ</p>
+
+                    <h6 class="text-white fw-bold mb-3">ติดตามข่าวสาร</h6>
+                    <div class="input-group mb-4">
+                        <input type="text" class="form-control bg-dark border-secondary text-white"
+                            placeholder="อีเมลของคุณ">
+                        <button class="btn btn-brand" type="button"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+
+                    <div>
                         <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
                         <a href="#" class="social-icon"><i class="fab fa-line"></i></a>
                         <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>

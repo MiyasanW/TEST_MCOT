@@ -1,0 +1,100 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div class="main-container" style="padding: 20px;">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 style="color: #343a40;">📅 ตารางการจอง (Calendar)</h1>
+        <a href="/admin/rentals/booking/add/" class="btn btn-success">
+            + เพิ่มการจอง
+        </a>
+    </div>
+
+    <!-- Legend -->
+    <div class="mb-3 d-flex" style="gap: 15px;">
+        <div class="d-flex align-items-center">
+            <span
+                style="display:inline-block; width: 12px; height: 12px; border-radius: 50%; background-color: #28a745; margin-right: 5px;"></span>
+            <span>อนุมัติแล้ว (Approved)</span>
+        </div>
+        <div class="d-flex align-items-center">
+            <span
+                style="display:inline-block; width: 12px; height: 12px; border-radius: 50%; background-color: #ffc107; margin-right: 5px;"></span>
+            <span>แบบร่าง (Draft)</span>
+        </div>
+        <div class="d-flex align-items-center">
+            <span
+                style="display:inline-block; width: 12px; height: 12px; border-radius: 50%; background-color: #6c757d; margin-right: 5px;"></span>
+            <span>เสร็จสิ้น (Completed)</span>
+        </div>
+    </div>
+
+    <!-- Calendar Container -->
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div id='calendar'></div>
+        </div>
+    </div>
+</div>
+
+<!-- FullCalendar CSS -->
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css' rel='stylesheet' />
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+<script src='https://unpkg.com/@popperjs/core@2'></script>
+<script src='https://unpkg.com/tippy.js@6'></script>
+<style>
+    #calendar {
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 20px;
+        background: white;
+        min-height: 800px;
+    }
+
+    .fc-event {
+        cursor: pointer;
+    }
+
+    .fc-daygrid-event {
+        white-space: normal;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var calendarEl = document.getElementById('calendar');
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,listMonth'
+            },
+            locale: 'th',
+            buttonText: {
+                today: 'วันนี้',
+                month: 'เดือน',
+                week: 'สัปดาห์',
+                list: 'รายการ'
+            },
+            events: '/rentals/api/bookings/',
+            eventDidMount: function (info) {
+                tippy(info.el, {
+                    content: 'โดย: ' + (info.event.extendedProps.creator || 'Unknown'),
+                    placement: 'top',
+                    theme: 'light',
+                });
+            },
+            eventClick: function (info) {
+                if (info.event.url) {
+                    window.location.href = info.event.url;
+                    info.jsEvent.preventDefault();
+                }
+            },
+            height: 'auto',
+            contentHeight: 800,
+        });
+        calendar.render();
+    });
+</script>
+{% endblock %}

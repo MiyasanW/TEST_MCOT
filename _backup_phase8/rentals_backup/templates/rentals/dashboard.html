@@ -1,0 +1,293 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block extrahead %}
+{{ block.super }}
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+    .icon-circle {
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        margin-bottom: 10px;
+    }
+
+    .quick-action-link {
+        display: block;
+        text-decoration: none !important;
+        color: inherit !important;
+        transition: transform 0.2s;
+    }
+
+    .quick-action-link:hover {
+        transform: translateY(-3px);
+    }
+
+    .table-responsive {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4 bg-white rounded">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-1 text-primary font-weight-bold"><i
+                                    class="fas fa-tachometer-alt mr-2"></i>MCOT Dashboard</h2>
+                            <p class="text-muted mb-0">ระบบจัดการการเช่าอุปกรณ์และสตูดิโอองค์กร</p>
+                        </div>
+                        <div class="d-none d-md-block text-right">
+                            <h5 class="text-dark mb-0 font-weight-bold">{{ today|date:"l d F Y" }}</h5>
+                            <small class="text-muted">Overview</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="row mb-4">
+        <!-- Bookings Today -->
+        <div class="col-12 col-md-6 col-lg-3 mb-3">
+            <div class="card shadow-sm border-0 h-100" style="border-left: 5px solid #28a745;">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">การจองวันนี้</div>
+                            <div class="h3 mb-0 font-weight-bold text-gray-800">{{ stats.bookings_today }}</div>
+                        </div>
+                        <div class="col-auto"><i class="fas fa-calendar-check fa-2x text-gray-300 text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Approval -->
+        <div class="col-12 col-md-6 col-lg-3 mb-3">
+            <div class="card shadow-sm border-0 h-100" style="border-left: 5px solid #ffc107;">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">รอการอนุมัติ</div>
+                            <div class="h3 mb-0 font-weight-bold text-gray-800">{{ stats.bookings_pending }}</div>
+                        </div>
+                        <div class="col-auto"><i class="fas fa-clock fa-2x text-gray-300 text-warning"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Available Equipment -->
+        <div class="col-12 col-md-6 col-lg-3 mb-3">
+            <div class="card shadow-sm border-0 h-100" style="border-left: 5px solid #17a2b8;">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">อุปกรณ์พร้อมใช้</div>
+                            <div class="h3 mb-0 font-weight-bold text-gray-800">
+                                {{ equipment_available }} / {{ equipment_total }}
+                            </div>
+                        </div>
+                        <div class="col-auto"><i class="fas fa-camera fa-2x text-gray-300 text-info"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Studios -->
+        <div class="col-12 col-md-6 col-lg-3 mb-3">
+            <div class="card shadow-sm border-0 h-100" style="border-left: 5px solid #007bff;">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">สตูดิโอทั้งหมด</div>
+                            <div class="h3 mb-0 font-weight-bold text-gray-800">{{ stats.studio_total }}</div>
+                        </div>
+                        <div class="col-auto"><i class="fas fa-door-open fa-2x text-gray-300 text-primary"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alerts Section -->
+    {% if ending_today or pending_bookings %}
+    <div class="row mb-4">
+        {% if ending_today %}
+        <div class="col-12 col-lg-6 mb-3">
+            <div class="card shadow-sm border-danger border-0 h-100">
+                <div class="card-header bg-danger text-white font-weight-bold">
+                    <i class="fas fa-exclamation-triangle mr-2"></i> ครบกำหนดคืนวันนี้
+                </div>
+                <div class="list-group list-group-flush">
+                    {% for booking in ending_today %}
+                    <a href="{% url 'admin:rentals_booking_change' booking.id %}"
+                        class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong class="text-danger">{{ booking.customer_name }}</strong>
+                            <div class="small text-muted"><i class="far fa-clock"></i> {{ booking.end_time|date:"H:i" }}
+                                น.</div>
+                        </div>
+                        <i class="fas fa-chevron-right text-muted"></i>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if pending_bookings %}
+        <div class="col-12 col-lg-6 mb-3">
+            <div class="card shadow-sm border-warning border-0 h-100">
+                <div class="card-header bg-warning text-dark font-weight-bold">
+                    <i class="fas fa-hourglass-half mr-2"></i> รอการอนุมัติล่าสุด
+                </div>
+                <div class="list-group list-group-flush">
+                    {% for booking in pending_bookings %}
+                    <a href="{% url 'admin:rentals_booking_change' booking.id %}"
+                        class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ booking.customer_name }}</strong>
+                            <div class="small text-muted">{{ booking.created_at|date:"d/m H:i" }}</div>
+                        </div>
+                        <span class="badge badge-warning">Draft</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Quick Actions -->
+    <h5 class="text-muted font-weight-bold mb-3"><i class="fas fa-bolt mr-2"></i> Quick Actions</h5>
+    <div class="row mb-4">
+        <div class="col-6 col-md-4 col-lg-2 mb-3">
+            <a href="{% url 'calendar' %}"
+                class="card shadow-sm quick-action-link h-100 pt-3 pb-3 text-center border-0">
+                <div class="card-body py-2">
+                    <div class="icon-circle bg-light text-primary mx-auto"><i class="fas fa-calendar-alt fa-lg"></i>
+                    </div>
+                    <div class="font-weight-bold mt-2">ปฏิทินงาน</div>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2 mb-3">
+            <a href="{% url 'admin:rentals_booking_add' %}"
+                class="card shadow-sm quick-action-link h-100 pt-3 pb-3 text-center border-0">
+                <div class="card-body py-2">
+                    <div class="icon-circle bg-light text-success mx-auto"><i class="fas fa-plus-circle fa-lg"></i>
+                    </div>
+                    <div class="font-weight-bold mt-2">เพิ่มการจอง</div>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2 mb-3">
+            <a href="{% url 'admin:rentals_booking_changelist' %}"
+                class="card shadow-sm quick-action-link h-100 pt-3 pb-3 text-center border-0">
+                <div class="card-body py-2">
+                    <div class="icon-circle bg-light text-primary mx-auto"><i class="fas fa-list fa-lg"></i></div>
+                    <div class="font-weight-bold mt-2">รายการจอง</div>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2 mb-3">
+            <a href="{% url 'admin:rentals_issuereport_add' %}"
+                class="card shadow-sm quick-action-link h-100 pt-3 pb-3 text-center border-0">
+                <div class="card-body py-2">
+                    <div class="icon-circle bg-light text-danger mx-auto"><i
+                            class="fas fa-exclamation-circle fa-lg"></i></div>
+                    <div class="font-weight-bold mt-2">แจ้งปัญหา</div>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2 mb-3">
+            <a href="{% url 'admin:rentals_equipment_changelist' %}"
+                class="card shadow-sm quick-action-link h-100 pt-3 pb-3 text-center border-0">
+                <div class="card-body py-2">
+                    <div class="icon-circle bg-light text-info mx-auto"><i class="fas fa-camera fa-lg"></i></div>
+                    <div class="font-weight-bold mt-2">อุปกรณ์</div>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2 mb-3">
+            <a href="{% url 'reports_dashboard' %}"
+                class="card shadow-sm quick-action-link h-100 pt-3 pb-3 text-center border-0">
+                <div class="card-body py-2">
+                    <div class="icon-circle bg-light text-dark mx-auto"><i class="fas fa-chart-line fa-lg"></i></div>
+                    <div class="font-weight-bold mt-2">รายงาน</div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Recent Bookings Table -->
+    <div class="card shadow-sm border-0 mb-5">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom-0">
+            <h6 class="m-0 font-weight-bold text-primary"><i class="fas fa-history mr-2"></i> การจองล่าสุด</h6>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-bordered mb-0" width="100%" cellspacing="0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="border-0">ลูกค้า</th>
+                        <th class="border-0">วันที่เริ่ม</th>
+                        <th class="border-0">วันที่สิ้นสุด</th>
+                        <th class="border-0">สถานะ</th>
+                        <th class="border-0 text-right">ราคา</th>
+                        <th class="border-0 text-center">แก้ไข</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for booking in recent_bookings %}
+                    <tr>
+                        <td class="font-weight-bold">{{ booking.customer_name }}</td>
+                        <td>{{ booking.start_time|date:"d/m/Y H:i" }}</td>
+                        <td>{{ booking.end_time|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            {% if booking.status == 'approved' %}
+                            <span class="badge badge-success px-2 py-1">อนุมัติแล้ว</span>
+                            {% elif booking.status == 'draft' %}
+                            <span class="badge badge-warning px-2 py-1">รออนุมัติ</span>
+                            {% elif booking.status == 'completed' %}
+                            <span class="badge badge-secondary px-2 py-1">เสร็จสิ้น</span>
+                            {% else %}
+                            <span class="badge badge-light px-2 py-1">{{ booking.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-right text-primary font-weight-bold">
+                            {{ booking.calculate_total_price|floatformat:2 }}
+                        </td>
+                        <td class="text-center">
+                            <a href="{% url 'admin:rentals_booking_change' booking.id %}"
+                                class="btn btn-sm btn-info rounded-circle">
+                                <i class="fas fa-pen"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">ไม่พบข้อมูลการจองล่าสุด</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

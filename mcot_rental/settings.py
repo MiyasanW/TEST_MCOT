@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize', # For template formatting
     'simple_history',  # Django Simple History for Audit Trail
     'rentals',  # MCOT Enterprise Rental System App
 ]
@@ -45,6 +46,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware', # Enable Translations
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -187,7 +189,7 @@ JAZZMIN_SETTINGS = {
     "default_icon_children": "fas fa-circle",
     
     # ปรับแต่งเมนู
-    "custom_css": "rentals/css/mobile.css",  # Mobile-first CSS
+    "custom_css": "rentals/css/admin_custom.css",  # Premium Modern Admin Theme
     "custom_js": None,
     "show_sidebar": True,
     "navigation_expanded": True,
@@ -233,3 +235,7 @@ JAZZMIN_UI_TWEAKS = {
 }
 
 CART_SESSION_ID = 'cart'
+
+# Media files (User uploaded)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'

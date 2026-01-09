@@ -34,18 +34,128 @@ class StaffAdmin(SimpleHistoryAdmin):
     is_active_display.short_description = 'สถานะ'
 
 
+
+class EquipmentInline(admin.TabularInline):
+    """
+    ให้ผู้ดูแลเพิ่ม 'รายการเครื่อง (Units)' ได้จากหน้า 'สินค้า (Product)' โดยตรง
+    ลดความสับสนและขั้นตอนการทำงาน
+    """
+    model = Equipment
+    extra = 1
+    show_change_link = True
+    fields = ['serial_number', 'status']
+    verbose_name = "เครื่อง (Unit)"
+    verbose_name_plural = "จัดการรายเครื่อง (Individual Units)"
+
+    description = "จัดการ Serial Number ของอุปกรณ์แต่ละชิ้น"
+
+
 @admin.register(Product)
 class ProductAdmin(SimpleHistoryAdmin):
     """
     การจัดการหน้า Admin สำหรับสินค้า (Product)
     """
-    list_display = ['id', 'name', 'category', 'price_display', 'quantity', 'is_active']
+    list_display = ['image_preview', 'name', 'category', 'price_display', 'quantity', 'is_active']
     list_filter = ['category', 'is_active']
-    search_fields = ['name']
+    search_fields = ['name', 'items__serial_number']
+    inlines = [EquipmentInline]
     
+    # Custom Grid View Template
+    change_list_template = 'rentals/admin/product_grid.html'
+    save_on_top = True
+    list_per_page = 20
+
+    fieldsets = (
+        ("📦 ข้อมูลสินค้า", {
+            'fields': (('name', 'category'), 'image', 'description'),
+            'description': "ข้อมูลทั่วไปของสินค้าที่แสดงบนหน้าเว็บ"
+        }),
+        ("💰 ราคาและจำนวน", {
+            'fields': (('price', 'quantity'), 'is_active'),
+            'description': mark_safe("""
+                <div class="help-box">
+                    <div class="help-icon">💡</div>
+                    <div class="help-content">
+                        <strong>เคล็ดลับการจัดการสต๊อก:</strong><br>
+                        เพียงแค่ใส่จำนวนในช่อง <strong>'จำนวนทั้งหมด'</strong> (เช่น 10) <br>
+                        ระบบจะ <strong>สร้างรายการเครื่อง (Serial Numbers)</strong> ให้อัตโนมัติทันทีที่กด Save ครับ
+                    </div>
+                </div>
+            """)
+        }),
+    )
+
+    def response_add(self, request, obj, post_url_continue=None):
+        """
+        เมื่อสร้างสินค้าเสร็จ ให้เด้งไปหน้าแก้ไขทันที (เพื่อให้เห็นรายการเครื่องที่สร้างให้)
+        """
+        from django.urls import reverse
+        from django.http import HttpResponseRedirect
+        
+        # Call safe logic to generate stock if needed (managed by save_model)
+        
+        # Redirect to change view
+        url = reverse('admin:%s_%s_change' % (obj._meta.app_label, obj._meta.model_name), args=[obj.id])
+        return HttpResponseRedirect(url)
+
     def price_display(self, obj):
         return f"฿{obj.price:,.2f}"
     price_display.short_description = 'ราคาเช่าต่อวัน'
+
+    def image_preview(self, obj):
+        if obj.image:
+            return format_html('<img src="{}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;" />', obj.image.url)
+        return "-"
+    image_preview.short_description = "รูปภาพ"
+    
+    def save_model(self, request, obj, form, change):
+        """
+        Custom Save:
+        ถ้ามีการกำหนด 'จำนวนทั้งหมด (quantity)' แต่ยังไม่มี 'รายการเครื่อง (Equipment)' ครบจำนวน
+        ระบบจะสร้างรายการเครื่องให้อัตโนมัติ (Auto-generate Serial Numbers)
+        เพื่อให้ผู้ใช้ไม่ต้องไปกดเพิ่มทีละอัน เหมาะสำหรับสินค้าที่มีจำนวนมาก
+        """
+        super().save_model(request, obj, form, change)
+        
+        current_equipment_count = obj.items.count() # existing units
+        target_quantity = obj.quantity
+        
+        if target_quantity > current_equipment_count:
+            # ต้องสร้างเพิ่ม
+            diff = target_quantity - current_equipment_count
+            created_count = 0
+            
+            # หา prefix จาก category หรือ id
+            prefix = "ITEM"
+            if obj.category == 'camera': prefix = "CAM"
+            elif obj.category == 'lens': prefix = "LENS"
+            elif obj.category == 'lighting': prefix = "LIGHT"
+            elif obj.category == 'sound': prefix = "AUDIO"
+            elif obj.id: prefix = f"P{obj.id}"
+            
+            # Auto-create loop
+            for i in range(diff):
+                # Run number based on existing count + 1 + i
+                run_number = current_equipment_count + 1 + i
+                serial = f"{prefix}-{obj.id}-{run_number:03d}" # e.g. CAM-4-001
+                
+                # Check uniqueness (naive)
+                if not Equipment.objects.filter(serial_number=serial).exists():
+                    Equipment.objects.create(
+                        product=obj,
+                        serial_number=serial,
+                        status='available'
+                    )
+                    created_count += 1
+            
+            if created_count > 0:
+                self.message_user(request, f"✨ ระบบสร้างรายการอุปกรณ์ (Equipment Items) ให้อัตโนมัติและสุ่มเลข Serial จำนวณ {created_count} ชิ้น เรียบร้อยแล้วครับ", level='SUCCESS')
+
+    class Media:
+        css = {
+            'all': ('rentals/css/admin_custom.css',)
+        }
+
 
 class PackageItemInline(admin.TabularInline):
     model = PackageItem
@@ -64,16 +174,20 @@ class PackageAdmin(SimpleHistoryAdmin):
 @admin.register(Equipment)
 class EquipmentAdmin(SimpleHistoryAdmin):
     """
-    การจัดการหน้า Admin สำหรับอุปกรณ์ (Physical Items)
+    [HIDDEN] ยังต้อง Register เพื่อให้ Autocomplete ใน Booking ทำงานได้
+    แต่ซ่อนจากเมนูด้วย has_module_permission = False
     """
-    # ใช้ Form ปรับแต่ง
     form = EquipmentAdminForm
+
+    # ซ่อนจากเมนู Sidebar
+    def has_module_permission(self, request):
+        return False
 
     list_display = ['product', 'serial_number', 'status_display']
     list_filter = ['status', 'product__category']
     search_fields = ['product__name', 'serial_number']
-    autocomplete_fields = ['product'] # ต้องมี search_fields ใน ProductAdmin
-    
+    autocomplete_fields = ['product']
+#     
     def status_display(self, obj):
         """แสดงสถานะด้วยสีเพื่อให้เห็นชัดเจนขึ้น"""
         colors = {
@@ -146,36 +260,37 @@ class BookingAdmin(SimpleHistoryAdmin):
         )
     validation_status.short_description = "ตรวจสอบ"
 
+    change_list_template = 'rentals/admin/booking_grid.html'  # Modern Grid View
+    change_form_template = 'rentals/admin/booking_detail.html' # Custom Dashboard Detail View
+
     # กำหนดคอลัมน์ที่จะแสดงในหน้ารายการ
     list_display = [
+        'id',
         'customer_name',
-        'customer_phone',
         'start_time_display',
+        'end_time_display',
         'status_display',
-        'validation_status',  # เพิ่มคอลัมน์นี้
         'calculate_total_price_display',
-        'print_quotation_btn',  # เพิ่มปุ่มพิมพ์ใบเสนอราคา
-        'print_work_order_btn', # เพิ่มปุ่มพิมพ์ใบงาน
-        'created_by'
+        'created_at'  # แสดงเวลาที่จอง
     ]
     
-    # กำหนดฟิลเตอร์ด้านข้าง (สำคัญ: ช่วยตรวจสอบความว่างของพนักงาน)
-    list_filter = ['status', 'start_time', 'staff', 'created_by']
+    # กำหนดฟิลเตอร์ด้านข้าง
+    list_filter = ['status', 'start_time', 'created_at', 'staff', 'created_by']
     
-    # กำหนด date hierarchy สำหรับการนำทางตามปี/เดือน
-    date_hierarchy = 'start_time'
+    # กำหนด date hierarchy
+    date_hierarchy = 'created_at'  # นำทางตามวันเวลาที่จอง
     
     # กำหนดฟิลด์ที่สามารถค้นหาได้
-    search_fields = ['customer_name', 'customer_phone', 'customer_email', 'equipment__serial_number', 'studios__name']
+    search_fields = ['customer_name', 'customer_phone', 'customer_email', 'id']
     
     # กำหนดการเรียงลำดับเริ่มต้น
-    ordering = ['-start_time']
+    ordering = ['-created_at']
     
     # ใช้ Autocomplete สำหรับ ManyToMany (ค้นหาได้เร็วขึ้น)
     autocomplete_fields = ['equipment', 'studios', 'staff']
     
     # ฟิลด์ที่แก้ไขไม่ได้ (แสดงข้อมูลเพิ่มเติม)
-    readonly_fields = ['booking_summary', 'created_info', 'created_by', 'issue_alert', 'payment_slip_preview']
+    readonly_fields = ['booking_summary', 'created_info', 'created_by', 'issue_alert', 'payment_slip_preview', 'created_at', 'updated_at']
     
     def issue_alert(self, obj):
         """แสดงแถบแจ้งเตือนปัญหาในหน้าแก้ไข"""
@@ -193,64 +308,40 @@ class BookingAdmin(SimpleHistoryAdmin):
 
     # กำหนดฟิลด์ที่แสดงในฟอร์ม (ปรับให้อ่านง่าย)
     fieldsets = (
-        (None, {
-            'fields': ('issue_alert',)
-        }),
-        ('👤 ข้อมูลลูกค้า', {
-            'fields': ('customer_name', 'customer_address', 'customer_phone', 'customer_email', 'created_by'),
-            'description': mark_safe(
-                '<div style="background: #e3f2fd; padding: 12px; border-radius: 5px; margin-bottom: 15px;">'
-                '<strong>💡 คำแนะนำ:</strong> กรอกชื่อลูกค้าหรือองค์กรที่ทำการจอง<br>'
-                'เช่น "บริษัท เอบีซี จำกัด" หรือ "มหาวิทยาลัย XYZ"'
-                '</div>'
+        ('📝 รายละเอียดการจอง (Booking Info)', {
+            'fields': (
+                'issue_alert',
+                ('customer_name', 'created_by'),
+                ('customer_phone', 'customer_email'),
+                'customer_address',
+                'status',
+                ('start_time', 'end_time'),
             ),
-        }),
-        ('🗓️ ช่วงเวลาการจอง', {
-            'fields': ('start_time', 'end_time'),
             'description': mark_safe(
-                '<div style="background: #fff3cd; padding: 12px; border-radius: 5px; margin-bottom: 15px;">'
-                '<strong>⏰ สำคัญ:</strong> เลือกวันและเวลาที่ต้องการใช้งาน<br>'
-                '• <strong>เวลาเริ่มต้น</strong> - วันที่รับอุปกรณ์/เข้าใช้สตูดิโอ<br>'
-                '• <strong>เวลาสิ้นสุด</strong> - วันที่ส่งคืนอุปกรณ์/ออกจากสตูดิโอ<br>'
-                '💵 <em>ราคาจะคำนวณอัตโนมัติเมื่อเลือกวันที่</em>'
+                '<div style="background: #e8f4f8; padding: 15px; border-radius: 8px; margin-bottom: 20px;">'
+                '<h4 style="margin-top:0; color: #2980b9;">📌 ข้อมูลหลัก</h4>'
+                'ตรวจสอบข้อมูลลูกค้า วันเวลา และสถานะการจองที่นี่'
                 '</div>'
-            ),
+            )
         }),
-        ('🚦 สถานะการจอง', {
-            'fields': ('status',),
-            'description': mark_safe(
-                '<div style="background: #f8d7da; padding: 12px; border-radius: 5px; margin-bottom: 15px;">'
-                '<strong>📌 สถานะ:</strong><br>'
-                '• <strong style="color: #6c757d;">📝 Draft (แบบร่าง)</strong> - ยังไม่ได้ยืนยัน สามารถแก้ไขได้<br>'
-                '• <strong style="color: #28a745;">✅ Approved (อนุมัติแล้ว)</strong> - ยืนยันแล้ว จะตรวจสอบการจองซ้ำ<br>'
-                '• <strong style="color: #007bff;">✔️✔️ Completed (เสร็จสิ้น)</strong> - ดำเนินการเสร็จสิ้น'
-                '</div>'
-            ),
-        }),
-        ('🎬 เลือกรายการที่ต้องการจอง (ระบุ Serial Number)', {
+        ('📦 จัดการอุปกรณ์ (Fulfillment)', {
             'fields': ('equipment', 'studios', 'staff'),
             'description': mark_safe(
-                '<div style="background: #d4edda; padding: 12px; border-radius: 5px; margin-bottom: 15px;">'
-                '<strong>✨ วิธีใช้:</strong><br>'
-                '• เลือก <strong>Product</strong> ที่ต้องการในตารางด้านบน (รายการสินค้า)<br>'
-                '• เมื่อถึงวันรับของ ให้ระบุ <strong>Serial Number</strong> ในช่อง Equipment ด้านล่างนี้<br>'
+                '<div style="background: #d4edda; padding: 15px; border-radius: 8px; margin-bottom: 20px;">'
+                '<h4 style="margin-top:0; color: #155724;">✨ ระบุ Serial Number</h4>'
+                '1. ดูรายการสินค้าที่ลูกค้าจองในตาราง <strong>"Booking items"</strong> ด้านล่าง<br>'
+                '2. หยิบของจริงมา และกรอก <strong>Serial Number</strong> ลงในช่อง Equipment นี้เพื่อตัดสต๊อก'
                 '</div>'
             ),
             'classes': ('wide',),
         }),
-        ('💰 หลักฐานการชำระเงิน (Payment)', {
-            'fields': ('payment_slip', 'payment_slip_preview'),
-            'description': mark_safe(
-                '<div style="background: #fff3cd; padding: 12px; border-radius: 5px; margin-bottom: 15px;">'
-                '<strong>💸 การยืนยันการชำระเงิน:</strong><br>'
-                'แนบสลิปการโอนเงินที่นี่ เพื่อเป็นหลักฐานการจอง'
-                '</div>'
-            ),
+        ('💰 การเงิน (Payment)', {
+            'fields': ('payment_slip', 'payment_slip_preview', 'booking_summary'),
+            'description': "ตรวจสอบหลักฐานการโอนเงินและสรุปยอด"
         }),
-        ('📊 สรุปการจอง', {
-            'fields': ('booking_summary',),
-            'classes': ('collapse',),  # ซ่อนไว้ กดดูได้
-            'description': 'คลิกเพื่อดูสรุปรายละเอียดการจองทั้งหมด',
+        ('⚙️ ข้อมูลระบบ (System)', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',),
         }),
     )
     

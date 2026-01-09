@@ -1,4 +1,5 @@
 from django.urls import path
+from django.contrib.auth import views as auth_views
 from . import views
 from . import reports_views
 from . import public_views  # Import public views
@@ -20,6 +21,12 @@ urlpatterns = [
     path('cart/remove/<int:product_id>/', public_views.cart_remove, name='cart_remove'),
     path('cart/', public_views.cart_detail, name='cart_detail'),
     path('checkout/', public_views.checkout, name='checkout'),
+
+    # --- Authentication (Login/Register) ---
+    path('login/', auth_views.LoginView.as_view(template_name='rentals/public/login.html'), name='login'),
+    path('logout/', auth_views.LogoutView.as_view(next_page='home'), name='logout'),
+    path('register/', public_views.register_view, name='register'),
+    path('terms/', public_views.terms_of_use, name='terms_of_use'),
 
     # --- Staff & Admin Pages ---
     path('staff/dashboard/', views.dashboard, name='staff_dashboard'),  # Explicitly named staff_dashboard
