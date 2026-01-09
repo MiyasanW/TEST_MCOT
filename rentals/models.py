@@ -13,10 +13,10 @@ class Staff(models.Model):
     
     # ตัวเลือกตำแหน่งงาน
     POSITION_CHOICES = [
-        ('cameraman', 'Cameraman'),
-        ('sound', 'Sound'),
-        ('lighting', 'Lighting'),
-        ('producer', 'Producer'),
+        ('cameraman', 'ช่างภาพ (Cameraman)'),
+        ('sound', 'ช่างเสียง (Sound)'),
+        ('lighting', 'ช่างไฟ (Lighting)'),
+        ('producer', 'โปรดิวเซอร์ (Producer)'),
     ]
     
     name = models.CharField(max_length=200, verbose_name="ชื่อพนักงาน")
@@ -79,8 +79,8 @@ class Product(models.Model):
     is_active = models.BooleanField(default=True, verbose_name="เปิดให้เช่า")
 
     class Meta:
-        verbose_name = "คลังอุปกรณ์ (Inventory)"
-        verbose_name_plural = "คลังอุปกรณ์ (Inventory)"
+        verbose_name = "สินค้า (Product)"
+        verbose_name_plural = "สินค้า (Product)"
         ordering = ['name']
 
     def __str__(self):
@@ -93,9 +93,9 @@ class Equipment(models.Model):
     ใช้สำหรับจัดการ Inventory และ Serial Number
     """
     STATUS_CHOICES = [
-        ('available', 'Available'),
-        ('maintenance', 'Maintenance'),
-        ('lost', 'Lost'),
+        ('available', 'พร้อมใช้งาน (Available)'),
+        ('maintenance', 'ส่งซ่อม (Maintenance)'),
+        ('lost', 'สูญหาย (Lost)'),
     ]
 
     product = models.ForeignKey(
@@ -128,8 +128,8 @@ class Equipment(models.Model):
     history = HistoricalRecords()
     
     class Meta:
-        verbose_name = "รายการอุปกรณ์ (Equipment)"
-        verbose_name_plural = "รายการอุปกรณ์ (Equipment Items)"
+        verbose_name = "อุปกรณ์รายชิ้น"
+        verbose_name_plural = "อุปกรณ์รายชิ้น"
         ordering = ['product__name', 'serial_number']
     
     def __str__(self):

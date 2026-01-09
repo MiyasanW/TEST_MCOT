@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-(_=ze02$yfq79kkuw^&ttp9etccb%t=1p7vb=^u6tz%@t70v%0
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -151,7 +151,7 @@ JAZZMIN_SETTINGS = {
     
     # ธีมสี
     "show_ui_builder": False,
-    "changeform_format": "horizontal_tabs",  # แสดงแบบ tabs
+    "changeform_format": "single", # ปิด Tabs ของ Jazzmin เพื่อใช้ Custom Dashboard
     
     # เมนูด้านซ้าย
     "topmenu_links": [
@@ -189,7 +189,7 @@ JAZZMIN_SETTINGS = {
     "default_icon_children": "fas fa-circle",
     
     # ปรับแต่งเมนู
-    "custom_css": "rentals/css/admin_custom.css",  # Premium Modern Admin Theme
+    "custom_css": "rentals/css/admin_custom_v2.css",  # Premium Modern Admin Theme (Cache Busted)
     "custom_js": None,
     "show_sidebar": True,
     "navigation_expanded": True,

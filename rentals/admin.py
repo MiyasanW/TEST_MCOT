@@ -45,7 +45,7 @@ class EquipmentInline(admin.TabularInline):
     show_change_link = True
     fields = ['serial_number', 'status']
     verbose_name = "เครื่อง (Unit)"
-    verbose_name_plural = "จัดการรายเครื่อง (Individual Units)"
+    verbose_name_plural = "จัดการรายการเครื่อง (Units)"
 
     description = "จัดการ Serial Number ของอุปกรณ์แต่ละชิ้น"
 
@@ -236,6 +236,8 @@ class BookingItemInline(admin.TabularInline):
     model = BookingItem
     extra = 1
     autocomplete_fields = ['product']
+    verbose_name = "รายการสินค้า (Booking Item)"
+    verbose_name_plural = "รายการสินค้า (Booking Items)"
 
 @admin.register(Booking)
 class BookingAdmin(SimpleHistoryAdmin):
@@ -261,7 +263,7 @@ class BookingAdmin(SimpleHistoryAdmin):
     validation_status.short_description = "ตรวจสอบ"
 
     change_list_template = 'rentals/admin/booking_grid.html'  # Modern Grid View
-    change_form_template = 'rentals/admin/booking_detail.html' # Custom Dashboard Detail View
+    # change_form_template will be auto-discovered at admin/rentals/booking/change_form.html
 
     # กำหนดคอลัมน์ที่จะแสดงในหน้ารายการ
     list_display = [
