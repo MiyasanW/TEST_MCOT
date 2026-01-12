@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.db.models import Q
-from .models import Equipment, Studio, Product, Package, Booking, BookingItem
+from .models import Equipment, Studio, Product, Package, Booking, BookingItem, Notification
+from .cart import Cart
 from .cart import Cart
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
@@ -8,6 +9,8 @@ from .forms import BookingAdminForm
 from django.utils import timezone
 from datetime import datetime
 from .services.notify import send_line_notify
+from django.contrib.auth.models import User
+
 
 def home(request):
     """
@@ -186,6 +189,17 @@ def checkout(request):
                       f"Date: {start_dt.strftime('%d/%m')} - {end_dt.strftime('%d/%m')}"
             send_line_notify(message)
             
+            # Notify In-App (To Staff)
+            staff_users = User.objects.filter(is_staff=True)
+            for staff in staff_users:
+                Notification.objects.create(
+                    recipient=staff,
+                    message=f"📦 New Booking #{booking.id} by {booking.customer_name}",
+                    link=f"/admin/rentals/booking/{booking.id}/change/",
+                    notification_type='info'
+                )
+
+            
             return render(request, 'rentals/public/booking_success.html', {'booking': booking})
             
         except ValueError:
@@ -225,3 +239,18 @@ def terms_of_use(request):
     หน้าเงื่อนไขการใช้งาน
     """
     return render(request, 'rentals/public/terms.html')
+
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def profile_view(request):
+    """
+    หน้าโปรไฟล์ผู้ใช้ แสดงประวัติการจองและสถานะ
+    """
+    # ดึงประวัติการจองของผู้ใช้ เรียงจากล่าสุดไปเก่าสุด
+    bookings = Booking.objects.filter(created_by=request.user).order_by('-created_at')
+    
+    context = {
+        'bookings': bookings,
+    }
+    return render(request, 'rentals/public/profile.html', context)

@@ -4,8 +4,11 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe  # สำหรับ render HTML ใน description
 from django.db.models import Q
 from simple_history.admin import SimpleHistoryAdmin  # สำหรับแสดง History ใน Admin
-from .models import Staff, Equipment, Studio, Booking, IssueReport, Product, BookingItem, Package, PackageItem
+from .models import Staff, Equipment, Studio, Booking, IssueReport, Product, BookingItem, Package, PackageItem, Notification
+
 from .forms import BookingAdminForm, EquipmentAdminForm, StudioAdminForm, StaffAdminForm  # Forms ปรับแต่ง
+from .services.notify import send_line_notify # Integrity Service
+
 
 
 @admin.register(Staff)
@@ -247,6 +250,39 @@ class BookingAdmin(SimpleHistoryAdmin):
     form = BookingAdminForm
     inlines = [BookingItemInline]
     
+    def save_model(self, request, obj, form, change):
+        """
+        บันทึกข้อมูลการจอง และส่งแจ้งเตือน Line Notify เมื่อสถานะเปลี่ยนแปลง
+        """
+        # ก่อนบันทึก เช็คว่าสถานะเปลี่ยนหรือไม่
+        if change and 'status' in form.changed_data:
+            # สถานะเปลี่ยน -> ส่งแจ้งเตือน
+            message = f"\n📝 Booking Update #{obj.id}\n" \
+                      f"Status: {obj.get_status_display()}\n" \
+                      f"Customer: {obj.customer_name}"
+            try:
+                # ส่งแบบ Async ไม่ได้ใน Django ปกติ เลยส่งแบบ Sync ไปเลย (รับได้เพราะ Line API เร็ว)
+                send_line_notify(message)
+            except Exception as e:
+                print(f"Failed to send notify: {e}")
+                
+            # In-App Notify (To Customer)
+            if obj.created_by:
+                # Map status to type
+                notif_type = 'info'
+                if obj.status == 'approved': notif_type = 'success'
+                elif obj.status == 'cancelled': notif_type = 'error'
+                elif obj.status == 'rejected': notif_type = 'error'
+                
+                Notification.objects.create(
+                    recipient=obj.created_by,
+                    message=f"สถานะการจอง #{obj.id} เปลี่ยนเป็น: {obj.get_status_display()}",
+                    link="#", 
+                    notification_type=notif_type
+                )
+                
+        super().save_model(request, obj, form, change)
+
     def validation_status(self, obj):
         """แสดงสถานะความถูกต้องของการจอง"""
         issues = obj.get_issues()

@@ -528,3 +528,39 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
     # though strictly only needed if manually created without signals before.
     if hasattr(instance, 'profile'):
         instance.profile.save()
+
+class Notification(models.Model):
+    """
+    โมเดลสำหรับเก็บข้อมูลการแจ้งเตือนภายในระบบ
+    """
+    TYPE_CHOICES = [
+        ('info', 'ข้อมูล (Info)'),
+        ('success', 'สำเร็จ (Success)'),
+        ('warning', 'เตือน (Warning)'),
+        ('error', 'ข้อผิดพลาด (Error)'),
+    ]
+    
+    recipient = models.ForeignKey(
+        'auth.User',
+        on_delete=models.CASCADE,
+        related_name='notifications',
+        verbose_name="ผู้รับ"
+    )
+    message = models.CharField(max_length=255, verbose_name="ข้อความ")
+    link = models.CharField(max_length=255, blank=True, null=True, verbose_name="ลิงก์")
+    is_read = models.BooleanField(default=False, verbose_name="อ่านแล้ว")
+    notification_type = models.CharField(
+        max_length=20,
+        choices=TYPE_CHOICES,
+        default='info',
+        verbose_name="ประเภท"
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="เวลาที่สร้าง")
+    
+    class Meta:
+        verbose_name = "การแจ้งเตือน"
+        verbose_name_plural = "การแจ้งเตือน"
+        ordering = ['-created_at']
+        
+    def __str__(self):
+        return f"{self.recipient} - {self.message}"

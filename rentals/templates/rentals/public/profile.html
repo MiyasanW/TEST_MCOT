@@ -1,0 +1,153 @@
+{% extends "rentals/public/base.html" %}
+{% load humanize %}
+{% load thai_date_tags %}
+
+{% block title %}โปรไฟล์ของฉัน | MCOT Rental System{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Header Section -->
+    <div class="row mb-5 align-items-center">
+        <div class="col-lg-8">
+            <h1 class="display-5 fw-bold text-brand">สวัสดี, {{ user.first_name|default:user.username }} 👋</h1>
+            <p class="text-muted lead">จัดการข้อมูลส่วนตัวและดูประวัติการจองของคุณ</p>
+        </div>
+        <div class="col-lg-4 text-lg-end">
+            <div class="card border-0 shadow-sm bg-light">
+                <div class="card-body d-flex align-items-center">
+                    <div class="bg-white rounded-circle p-3 shadow-sm me-3">
+                        <i class="fas fa-user-circle fa-2x text-primary"></i>
+                    </div>
+                    <div class="text-start">
+                        <p class="mb-0 text-muted small">บัญชีผู้ใช้</p>
+                        <h6 class="mb-0 fw-bold">{{ user.username }}</h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking History Section -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="card-header bg-white p-4 border-bottom">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold"><i class="fas fa-history me-2 text-warning"></i>ประวัติการจองของฉัน</h5>
+                <span class="badge bg-light text-dark border">{{ bookings.count }} รายการ</span>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            {% if bookings %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light text-secondary">
+                        <tr>
+                            <th class="ps-4 py-3">รหัสการจอง</th>
+                            <th class="py-3">รายการที่จอง</th>
+                            <th class="py-3">วันที่ใช้งาน</th>
+                            <th class="py-3">สถานะ</th>
+                            <th class="py-3 text-end pe-4">ดำเนินการ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for booking in bookings %}
+                        <tr>
+                            <td class="ps-4 fw-bold text-brand">#{{ booking.id }}</td>
+                            <td>
+                                <span class="d-block fw-bold text-dark">{{ booking.items.count }} รายการ</span>
+                                <small class="text-muted">สร้างเมื่อ {{ booking.created_at|thai_date }}</small>
+                            </td>
+                            <td>
+                                <div class="d-flex flex-column">
+                                    <span class="text-dark"><i class="far fa-calendar-alt me-1 text-muted"></i> {{ booking.start_time|thai_date }}</span>
+                                    <small class="text-muted ms-3">{{ booking.start_time|time:"H:i" }} - {{ booking.end_time|time:"H:i" }}</small>
+                                </div>
+                            </td>
+                            <td>
+                                {% if booking.status == "approved" %}
+                                <span class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill"><i class="fas fa-check-circle me-1"></i>อนุมัติแล้ว</span>
+                                {% elif booking.status == "pending" or booking.status == "draft" %}
+                                <span class="badge bg-warning bg-opacity-10 text-warning px-3 py-2 rounded-pill"><i class="fas fa-clock me-1"></i>รอตรวจสอบ</span>
+                                {% elif booking.status == "completed" %}
+                                <span class="badge bg-secondary bg-opacity-10 text-secondary px-3 py-2 rounded-pill"><i class="fas fa-flag-checkered me-1"></i>เสร็จสิ้น</span>
+                                {% else %}
+                                <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill"><i class="fas fa-times-circle me-1"></i>ยกเลิก/ปฏิเสธ</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end pe-4">
+                                <button class="btn btn-sm btn-outline-primary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#bookingModal{{ booking.id }}">
+                                    รายละเอียด
+                                </button>
+                            </td>
+                        </tr>
+
+                        <!-- Modal Detail -->
+                        <div class="modal fade" id="bookingModal{{ booking.id }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content border-0 shadow-lg rounded-4">
+                                    <div class="modal-header border-bottom-0 pb-0">
+                                        <h5 class="modal-title fw-bold">รายละเอียดการจอง #{{ booking.id }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body pt-2">
+                                        <hr class="my-3 opacity-25">
+                                        
+                                        <h6 class="fw-bold mb-3 text-secondary">รายการอุปกรณ์</h6>
+                                        <ul class="list-group list-group-flush mb-4 rounded-3 border">
+                                            {% for item in booking.items.all %}
+                                            <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="bg-light rounded p-2 me-3 text-center" style="width: 40px; height: 40px;">
+                                                        <i class="fas fa-box text-secondary"></i>
+                                                    </div>
+                                                    <div>
+                                                        <h6 class="mb-0 small fw-bold">{{ item.product.name }}</h6>
+                                                        <small class="text-muted">x{{ item.quantity }} ชิ้น</small>
+                                                    </div>
+                                                </div>
+                                                {% if item.price_at_booking %}
+                                                <span class="text-dark fw-bold">{{ item.total_price|intcomma }} บาท</span>
+                                                {% else %}
+                                                <span class="text-muted small">รอประเมินราคา</span>
+                                                {% endif %}
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                        
+                                        <!-- Footer Info -->
+                                        {% if booking.status == "approved" %}
+                                        <div class="alert alert-success d-flex align-items-center" role="alert">
+                                            <i class="fas fa-info-circle fa-lg me-3"></i>
+                                            <div>
+                                                <small class="fw-bold d-block">คำแนะนำ</small>
+                                                <small>กรุณานำบัตรประชาชนมาติดต่อรับของตามวันที่กำหนด</small>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="modal-footer border-top-0 pt-0">
+                                        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">ปิด</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <!-- Empty State -->
+            <div class="text-center py-5">
+                <div class="mb-3">
+                    <i class="fas fa-clipboard-list fa-4x text-light"></i>
+                </div>
+                <h5 class="text-muted">ยังไม่มีประวัติการจอง</h5>
+                <p class="text-secondary small mb-4">เลือกดูอุปกรณ์ที่คุณสนใจแล้วเริ่มจองได้เลย</p>
+                <a href="{% url "equipment_catalog" %}" class="btn btn-brand rounded-pill px-4 shadow-sm">
+                    <i class="fas fa-search me-2"></i>ดูรายการอุปกรณ์
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

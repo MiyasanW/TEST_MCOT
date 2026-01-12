@@ -27,6 +27,13 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+# Allow Serveo.net for tunneling (prevent CSRF Failed: Origin checking failed)
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.serveo.net',
+    'https://*.serveousercontent.com'
+]
+
+
 
 # Application definition
 
@@ -128,6 +135,11 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Redirect to profile page after login
+LOGIN_REDIRECT_URL = '/profile/'
+LOGOUT_REDIRECT_URL = '/'  # Redirect to home after logout
+
 
 # ==============================================================================
 # JAZZMIN UI CONFIGURATION - การตั้งค่า Admin Interface สวยงาม
@@ -240,3 +252,11 @@ CART_SESSION_ID = 'cart'
 # Media files (User uploaded)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# ==============================================================================
+# EXTERNAL INTEGRATIONS
+# ==============================================================================
+
+# Line Notify Token (Get from https://notify-bot.line.me/my/)
+LINE_NOTIFY_TOKEN = ''  # ใส่ Token ที่นี่ (หรืออ่านจาก Env Var)
+

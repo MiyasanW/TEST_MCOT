@@ -3,7 +3,10 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models import Count, Q, Sum
 from django.utils import timezone
 from datetime import timedelta
-from .models import Booking, Equipment, Studio, Staff
+from .models import Booking, Equipment, Studio, Staff, Notification
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.utils.timesince import timesince
 
 
 @staff_member_required
@@ -271,3 +274,47 @@ def staff_work_order(request, booking_id):
     }
     
     return render(request, 'rentals/staff/work_order.html', context)
+
+# --- Notification API ---
+
+def get_notifications(request):
+    """
+    API สำหรับดึงข้อมูลการแจ้งเตือน (Polling)
+    """
+    if not request.user.is_authenticated:
+        return JsonResponse({'count': 0, 'items': []})
+        
+    unread_count = Notification.objects.filter(recipient=request.user, is_read=False).count()
+    items = Notification.objects.filter(recipient=request.user).order_by('-created_at')[:5]
+    
+    data = []
+    for item in items:
+        data.append({
+            'id': item.id,
+            'message': item.message,
+            'link': item.link,
+            'is_read': item.is_read,
+            'type': item.notification_type,
+            'created_at': item.created_at.strftime('%d/%m %H:%M'),
+            'time_ago': timesince(item.created_at)
+        })
+        
+    return JsonResponse({'count': unread_count, 'items': data})
+
+@require_POST
+def mark_notification_read(request, notification_id):
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Unauthorized'}, status=401)
+        
+    notif = get_object_or_404(Notification, id=notification_id, recipient=request.user)
+    notif.is_read = True
+    notif.save()
+    return JsonResponse({'success': True})
+    
+@require_POST
+def mark_all_notifications_read(request):
+    if not request.user.is_authenticated:
+         return JsonResponse({'error': 'Unauthorized'}, status=401)
+    
+    Notification.objects.filter(recipient=request.user, is_read=False).update(is_read=True)
+    return JsonResponse({'success': True})

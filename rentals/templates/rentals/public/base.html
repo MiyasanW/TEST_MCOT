@@ -275,16 +275,48 @@
                     </li>
                 </ul>
                 <div class="d-flex ms-lg-3 align-items-center gap-2">
+
+                    <!-- Notification Bell -->
+                    {% if user.is_authenticated %}
+                    <div class="dropdown me-2">
+                        <a href="#" class="text-secondary position-relative px-2" id="notificationDropdown"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-bell fa-lg"></i>
+                            <span
+                                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-white"
+                                id="notif-badge" style="display: none; font-size: 0.6rem;">
+                                0
+                            </span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0"
+                            aria-labelledby="notificationDropdown"
+                            style="width: 320px; max-height: 400px; overflow-y: auto;" id="notif-list">
+                            <li class="dropdown-header d-flex justify-content-between align-items-center bg-light py-2">
+                                <span class="fw-bold">การแจ้งเตือน</span>
+                                <small><a href="#" class="text-decoration-none" onclick="markAllRead(event)"
+                                        style="font-size: 0.8rem;">อ่านทั้งหมด</a></small>
+                            </li>
+                            <!-- JS will populate items here -->
+                            <li class="text-center py-4 text-muted small" id="notif-empty">
+                                <i class="far fa-bell-slash fa-2x mb-2 text-secondary opacity-50"></i><br>
+                                ไม่มีการแจ้งเตือนใหม่
+                            </li>
+                        </ul>
+                    </div>
+                    {% endif %}
+
                     {% if user.is_authenticated %}
                     <div class="dropdown">
                         <a href="#"
                             class="d-flex align-items-center text-decoration-none dropdown-toggle text-dark fw-bold"
                             id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-user-circle fa-lg me-2 text-secondary"></i>
-                            {{ user.username }}
+                            {{ user.first_name|default:user.username }}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-3"
                             aria-labelledby="userMenu">
+                            <li><a class="dropdown-item py-2" href="{% url 'profile' %}"><i
+                                        class="fas fa-user me-2 text-primary"></i>บัญชีของฉัน</a></li>
                             {% if user.is_staff %}
                             <li><a class="dropdown-item py-2" href="{% url 'dashboard' %}"><i
                                         class="fas fa-tachometer-alt me-2 text-primary"></i>Admin Panel</a></li>
@@ -380,6 +412,109 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <!-- พื้นที่สำหรับ JavaScript เพิ่มเติม -->
+    <script>
+        // Notification Logic
+        document.addEventListener('DOMContentLoaded', function () {
+            {% if user.is_authenticated %}
+            const badge = document.getElementById('notif-badge');
+            const list = document.getElementById('notif-list');
+            const emptyState = document.getElementById('notif-empty');
+
+            function fetchNotifications() {
+                fetch('{% url "get_notifications" %}')
+                    .then(response => response.json())
+                    .then(data => {
+                        // Update Badge
+                        if (data.count > 0) {
+                            badge.textContent = data.count;
+                            badge.style.display = 'block';
+                        } else {
+                            badge.style.display = 'none';
+                        }
+
+                        // Update List
+                        // Keep header (first 2 children: header + divider)
+                        // Simple clearing strategy: remove all except elements with specific classes or recreate header
+                        // For simplicity, let's clear all LI after the first one (header)
+
+                        // Remove old items (keeping header)
+                        const items = list.querySelectorAll('li:not(.dropdown-header)');
+                        items.forEach(item => item.remove());
+
+                        if (data.items.length === 0) {
+                            list.appendChild(emptyState);
+                            emptyState.style.display = 'block';
+                        } else {
+                            // emptyState.style.display = 'none'; // Only works if we kept it appended
+
+                            data.items.forEach(item => {
+                                const li = document.createElement('li');
+                                const bgClass = item.is_read ? '' : 'bg-light';
+                                const iconClass = getIconByType(item.type);
+
+                                li.innerHTML = `
+                                    <a class="dropdown-item py-2 px-3 border-bottom ${bgClass} d-flex align-items-start" href="${item.link || '#'}" onclick="markRead(${item.id}, event)">
+                                        <div class="me-3 mt-1 text-center" style="width: 20px;">
+                                            <i class="${iconClass}"></i>
+                                        </div>
+                                        <div>
+                                            <p class="mb-0 small text-wrap">${item.message}</p>
+                                            <small class="text-muted" style="font-size: 0.7rem;">${item.time_ago}</small>
+                                        </div>
+                                    </a>
+                                `;
+                                list.appendChild(li);
+                            });
+                        }
+                    })
+                    .catch(err => console.error('Error fetching notifications:', err));
+            }
+
+            function getIconByType(type) {
+                switch (type) {
+                    case 'success': return 'fas fa-check-circle text-success';
+                    case 'warning': return 'fas fa-exclamation-triangle text-warning';
+                    case 'error': return 'fas fa-times-circle text-danger';
+                    default: return 'fas fa-info-circle text-primary';
+                }
+            }
+
+            // Global functions for onClick
+            window.markRead = function (id, event) {
+                // event.preventDefault(); // Don't prevent default if link exists
+                fetch(`/api/notifications/read/${id}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                }).then(() => {
+                    fetchNotifications(); // Refresh
+                    if (event.target.closest('a').getAttribute('href') === '#') {
+                        event.preventDefault();
+                    }
+                });
+            };
+
+            window.markAllRead = function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                fetch('{% url "mark_all_notifications_read" %}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                }).then(() => fetchNotifications());
+            };
+
+            // Initial Fetch
+            fetchNotifications();
+
+            // Poll every 30 seconds
+            setInterval(fetchNotifications, 30000);
+
+            {% endif %}
+        });
+    </script>
     {% block extra_js %}{% endblock %}
 </body>
 

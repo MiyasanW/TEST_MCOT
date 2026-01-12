@@ -31,6 +31,8 @@ urlpatterns = [
     path('portfolio/', public_views.portfolio, name='public_portfolio'),
     path('faq/', public_views.faq, name='public_faq'),
     path('contact/', public_views.contact, name='public_contact'),
+    path('profile/', public_views.profile_view, name='public_profile'), # Add Profile at root
+
     
     # Staff/Admin Dashboard
     path('staff/dashboard/', rentals_views.dashboard, name='dashboard'),
