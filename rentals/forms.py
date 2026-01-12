@@ -7,13 +7,26 @@ from django import forms
 from django.contrib import admin
 from django.contrib.admin import widgets as admin_widgets
 from .models import Booking, Equipment, Studio, Staff
-from .widgets import DateTimePickerWidget  # Custom widget พร้อมปุ่ม Today/Now
+from django.contrib.admin import widgets as admin_widgets
+from .models import Booking, Equipment, Studio, Staff
+from unfold.widgets import UnfoldAdminDateWidget, UnfoldAdminTimeWidget, UnfoldAdminSplitDateTimeVerticalWidget
 
 
 class BookingAdminForm(forms.ModelForm):
     """
-    ฟอร์มปรับแต่งสำหรับ Booking
+    ฟอร์มสำหรับหน้า Admin ของการจอง (Booking)
     """
+    # Split Date and Time for better UX
+    # Split Date and Time for better UX
+    start_time = forms.SplitDateTimeField(
+        widget=UnfoldAdminSplitDateTimeVerticalWidget(),
+        label="วันเวลาเริ่มต้น"
+    )
+    end_time = forms.SplitDateTimeField(
+         widget=UnfoldAdminSplitDateTimeVerticalWidget(),
+        label="วันเวลาสิ้นสุด"
+    )
+
     class Meta:
         model = Booking
         fields = '__all__'
@@ -59,11 +72,12 @@ class BookingAdminForm(forms.ModelForm):
             })
             
         # Date Time Pickers
-        if 'start_time' in self.fields:
-            self.fields['start_time'].widget = DateTimePickerWidget()
+        # Date Time Pickers - Handled by SplitDateTimeWidget definition above or __init__
+        # if 'start_time' in self.fields:
+        #     self.fields['start_time'].widget = DateTimePickerWidget()
             
-        if 'end_time' in self.fields:
-            self.fields['end_time'].widget = DateTimePickerWidget()
+        # if 'end_time' in self.fields:
+        #     self.fields['end_time'].widget = DateTimePickerWidget()
             
         # Status
         if 'status' in self.fields:

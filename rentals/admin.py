@@ -1,9 +1,13 @@
 from django.contrib import admin
+from unfold.admin import ModelAdmin, TabularInline, StackedInline
+from unfold.widgets import UnfoldAdminSplitDateTimeWidget
+from simple_history.admin import SimpleHistoryAdmin
 from django.http import HttpResponse
 from django.utils.html import format_html
-from django.utils.safestring import mark_safe  # สำหรับ render HTML ใน description
+from django.utils.safestring import mark_safe
 from django.db.models import Q
-from simple_history.admin import SimpleHistoryAdmin  # สำหรับแสดง History ใน Admin
+from django.db import models # Fix missing import
+
 from .models import Staff, Equipment, Studio, Booking, IssueReport, Product, BookingItem, Package, PackageItem, Notification
 
 from .forms import BookingAdminForm, EquipmentAdminForm, StudioAdminForm, StaffAdminForm  # Forms ปรับแต่ง
@@ -12,36 +16,55 @@ from .services.notify import send_line_notify # Integrity Service
 
 
 @admin.register(Staff)
-class StaffAdmin(SimpleHistoryAdmin):
+class StaffAdmin(ModelAdmin, SimpleHistoryAdmin):
     """
-    การจัดการหน้า Admin สำหรับพนักงาน
-    แสดงข้อมูลพนักงานในรูปแบบที่อ่านง่าย พร้อมฟิลเตอร์และการค้นหา
+    การจัดการหน้า Admin สำหรับพนักงาน (Unfold Theme)
     """
-    # ใช้ Form ปรับแต่ง
     form = StaffAdminForm
     
     list_display = ['name', 'position', 'phone', 'is_active_display']
     list_filter = ['position', 'is_active']
-    search_fields = ['name', 'phone', 'position']  # สำหรับ autocomplete
+    search_fields = ['name', 'phone', 'position']
     ordering = ['name']
     
+    # จัดกลุ่มฟิลด์ด้วย Tabs ของ Unfold
+    fieldsets = (
+        ('👤 ข้อมูลพนักงาน', {
+            'fields': (('name', 'position'), 'phone', 'is_active'),
+            'description': 'ข้อมูลเบื้องต้นของพนักงาน',
+            'classes': ('tab',), 
+        }),
+    )
+
+
     def is_active_display(self, obj):
-        """แสดงสถานะการใช้งานด้วยสีเพื่อให้เห็นชัดเจนขึ้น"""
+        # แสดงสถานะด้วยสี (Unfold รองรับ HTML/Tailwind)
         if obj.is_active:
             return format_html(
-                '<span style="color: green; font-weight: bold;">✓ ใช้งาน</span>'
+                '<span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-bold">✓ ใช้งาน</span>'
             )
         return format_html(
-            '<span style="color: red; font-weight: bold;">✗ ไม่ใช้งาน</span>'
+            '<span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs font-bold">✗ ไม่ใช้งาน</span>'
         )
     is_active_display.short_description = 'สถานะ'
 
+    class Media:
+        css = {
+            "all": ("rentals/css/admin_theme_v100.css",)
+        }
 
 
-class EquipmentInline(admin.TabularInline):
+    class Media:
+        css = {
+            "all": ("rentals/css/admin_theme_v100.css",)
+        }
+
+
+
+
+class EquipmentInline(TabularInline):
     """
-    ให้ผู้ดูแลเพิ่ม 'รายการเครื่อง (Units)' ได้จากหน้า 'สินค้า (Product)' โดยตรง
-    ลดความสับสนและขั้นตอนการทำงาน
+    ตารางเพิ่ม 'รายการเครื่อง (Units)' ในหน้าสินค้า
     """
     model = Equipment
     extra = 1
@@ -49,42 +72,36 @@ class EquipmentInline(admin.TabularInline):
     fields = ['serial_number', 'status']
     verbose_name = "เครื่อง (Unit)"
     verbose_name_plural = "จัดการรายการเครื่อง (Units)"
-
     description = "จัดการ Serial Number ของอุปกรณ์แต่ละชิ้น"
+    tab = True # เปิดใช้ Tab สำหรับ Inline นี้ใน Unfold
 
 
 @admin.register(Product)
-class ProductAdmin(SimpleHistoryAdmin):
+class ProductAdmin(ModelAdmin, SimpleHistoryAdmin):
     """
-    การจัดการหน้า Admin สำหรับสินค้า (Product)
+    การจัดการหน้า Admin สำหรับสินค้า (Unfold Theme)
     """
     list_display = ['image_preview', 'name', 'category', 'price_display', 'quantity', 'is_active']
     list_filter = ['category', 'is_active']
+    list_filter_submit = True
     search_fields = ['name', 'items__serial_number']
     inlines = [EquipmentInline]
     
-    # Custom Grid View Template
-    change_list_template = 'rentals/admin/product_grid.html'
+    # ยกเลิก template grid เก่าเพื่อใช้ Unfold Table ที่สวยงามกว่า
+    # change_list_template = 'rentals/admin/product_grid.html' 
     save_on_top = True
     list_per_page = 20
 
     fieldsets = (
         ("📦 ข้อมูลสินค้า", {
             'fields': (('name', 'category'), 'image', 'description'),
-            'description': "ข้อมูลทั่วไปของสินค้าที่แสดงบนหน้าเว็บ"
+            'description': "ข้อมูลทั่วไปของสินค้าที่แสดงบนหน้าเว็บ",
+            'classes': ('tab',),
         }),
         ("💰 ราคาและจำนวน", {
             'fields': (('price', 'quantity'), 'is_active'),
-            'description': mark_safe("""
-                <div class="help-box">
-                    <div class="help-icon">💡</div>
-                    <div class="help-content">
-                        <strong>เคล็ดลับการจัดการสต๊อก:</strong><br>
-                        เพียงแค่ใส่จำนวนในช่อง <strong>'จำนวนทั้งหมด'</strong> (เช่น 10) <br>
-                        ระบบจะ <strong>สร้างรายการเครื่อง (Serial Numbers)</strong> ให้อัตโนมัติทันทีที่กด Save ครับ
-                    </div>
-                </div>
-            """)
+            'description': 'เคล็ดลับ: เพียงแค่ใส่จำนวนในช่อง "จำนวนทั้งหมด" ระบบจะสร้างรายการเครื่อง (Serial Numbers) ให้อัตโนมัติทันทีที่กด Save ครับ',
+            'classes': ('tab',),
         }),
     )
 
@@ -94,8 +111,6 @@ class ProductAdmin(SimpleHistoryAdmin):
         """
         from django.urls import reverse
         from django.http import HttpResponseRedirect
-        
-        # Call safe logic to generate stock if needed (managed by save_model)
         
         # Redirect to change view
         url = reverse('admin:%s_%s_change' % (obj._meta.app_label, obj._meta.model_name), args=[obj.id])
@@ -107,20 +122,23 @@ class ProductAdmin(SimpleHistoryAdmin):
 
     def image_preview(self, obj):
         if obj.image:
-            return format_html('<img src="{}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;" />', obj.image.url)
+            return format_html('<img src="{}" class="h-10 w-10 rounded object-cover" />', obj.image.url)
         return "-"
     image_preview.short_description = "รูปภาพ"
     
+    class Media:
+        css = {
+            "all": ("rentals/css/admin_theme_v100.css",)
+        }
+
+    
     def save_model(self, request, obj, form, change):
         """
-        Custom Save:
-        ถ้ามีการกำหนด 'จำนวนทั้งหมด (quantity)' แต่ยังไม่มี 'รายการเครื่อง (Equipment)' ครบจำนวน
-        ระบบจะสร้างรายการเครื่องให้อัตโนมัติ (Auto-generate Serial Numbers)
-        เพื่อให้ผู้ใช้ไม่ต้องไปกดเพิ่มทีละอัน เหมาะสำหรับสินค้าที่มีจำนวนมาก
+        Custom Save: สร้าง Equipment อัตโนมัติตามจำนวนสินค้า
         """
         super().save_model(request, obj, form, change)
         
-        current_equipment_count = obj.items.count() # existing units
+        current_equipment_count = obj.items.count() # จำนวนที่มีอยู่
         target_quantity = obj.quantity
         
         if target_quantity > current_equipment_count:
@@ -136,13 +154,13 @@ class ProductAdmin(SimpleHistoryAdmin):
             elif obj.category == 'sound': prefix = "AUDIO"
             elif obj.id: prefix = f"P{obj.id}"
             
-            # Auto-create loop
+            # วนลูปสร้าง
             for i in range(diff):
-                # Run number based on existing count + 1 + i
+                # รันเลขต่อจากเดิม
                 run_number = current_equipment_count + 1 + i
                 serial = f"{prefix}-{obj.id}-{run_number:03d}" # e.g. CAM-4-001
                 
-                # Check uniqueness (naive)
+                # ตรวจสอบซ้ำ (พื้นฐาน)
                 if not Equipment.objects.filter(serial_number=serial).exists():
                     Equipment.objects.create(
                         product=obj,
@@ -154,28 +172,30 @@ class ProductAdmin(SimpleHistoryAdmin):
             if created_count > 0:
                 self.message_user(request, f"✨ ระบบสร้างรายการอุปกรณ์ (Equipment Items) ให้อัตโนมัติและสุ่มเลข Serial จำนวณ {created_count} ชิ้น เรียบร้อยแล้วครับ", level='SUCCESS')
 
-    class Media:
-        css = {
-            'all': ('rentals/css/admin_custom.css',)
-        }
 
-
-class PackageItemInline(admin.TabularInline):
+class PackageItemInline(TabularInline):
     model = PackageItem
     extra = 1
     autocomplete_fields = ['product']
+    tab = True
 
 @admin.register(Package)
-class PackageAdmin(SimpleHistoryAdmin):
+class PackageAdmin(ModelAdmin, SimpleHistoryAdmin):
     """
-    การจัดการแพ็คเกจ
+    การจัดการแพ็คเกจ (Unfold Theme)
     """
     list_display = ['name', 'price', 'is_active', 'created_at']
     search_fields = ['name']
     inlines = [PackageItemInline]
 
+    class Media:
+        css = {
+            "all": ("rentals/css/admin_theme_v100.css",)
+        }
+
+
 @admin.register(Equipment)
-class EquipmentAdmin(SimpleHistoryAdmin):
+class EquipmentAdmin(ModelAdmin, SimpleHistoryAdmin):
     """
     [HIDDEN] ยังต้อง Register เพื่อให้ Autocomplete ใน Booking ทำงานได้
     แต่ซ่อนจากเมนูด้วย has_module_permission = False
@@ -190,35 +210,38 @@ class EquipmentAdmin(SimpleHistoryAdmin):
     list_filter = ['status', 'product__category']
     search_fields = ['product__name', 'serial_number']
     autocomplete_fields = ['product']
-#     
+    
     def status_display(self, obj):
-        """แสดงสถานะด้วยสีเพื่อให้เห็นชัดเจนขึ้น"""
         colors = {
-            'available': 'green',
-            'maintenance': 'orange',
-            'lost': 'red',
+            'available': 'bg-green-100 text-green-800',
+            'maintenance': 'bg-orange-100 text-orange-800',
+            'lost': 'bg-red-100 text-red-800',
         }
         labels = {
             'available': 'พร้อมใช้งาน',
             'maintenance': 'ซ่อมบำรุง',
             'lost': 'สูญหาย',
         }
-        color = colors.get(obj.status, 'black')
+        color_class = colors.get(obj.status, 'bg-gray-100 text-gray-800')
         label = labels.get(obj.status, obj.status)
         return format_html(
-            '<span style="color: {}; font-weight: bold;">● {}</span>',
-            color, label
+            '<span class="{} px-2 py-1 rounded text-xs font-bold">● {}</span>',
+            color_class, label
         )
     status_display.short_description = 'สถานะ'
 
+    class Media:
+        css = {
+            "all": ("rentals/css/admin_theme_v100.css",)
+        }
+
+
 
 @admin.register(Studio)
-class StudioAdmin(SimpleHistoryAdmin):
+class StudioAdmin(ModelAdmin, SimpleHistoryAdmin):
     """
-    การจัดการหน้า Admin สำหรับสตูดิโอ
-    แสดงข้อมูลสตูดิโอพร้อมราคา
+    การจัดการหน้า Admin สำหรับสตูดิโอ (Unfold Theme)
     """
-    # ใช้ Form ปรับแต่ง
     form = StudioAdminForm
     
     list_display = ['name', 'daily_rate', 'created_by']
@@ -226,81 +249,59 @@ class StudioAdmin(SimpleHistoryAdmin):
     ordering = ['name']
     readonly_fields = ['created_by']
     
+    fieldsets = (
+        ('🎬 ข้อมูลสตูดิโอ', {
+            'fields': ('name', 'daily_rate', 'description', 'image'),
+            'classes': ('tab',),
+        }),
+        ('⚙️ ข้อมูลระบบ', {
+            'fields': ('created_by',),
+            'classes': ('tab',),
+        }),
+    )
+
+    class Media:
+        css = {
+            "all": ("rentals/css/admin_theme_v100.css",)
+        }
+
+
     def save_model(self, request, obj, form, change):
         if not obj.created_by:
             obj.created_by = request.user
         super().save_model(request, obj, form, change)
 
 
-class BookingItemInline(admin.TabularInline):
+class BookingItemInline(TabularInline):
     """
-    ตารางรายการสินค้าในหน้า Booking
+    ตารางรายการสินค้าในหน้า Booking (Unfold Theme)
     """
     model = BookingItem
     extra = 1
     autocomplete_fields = ['product']
     verbose_name = "รายการสินค้า (Booking Item)"
-    verbose_name_plural = "รายการสินค้า (Booking Items)"
+    verbose_name_plural = "รายการสินค้า (Booking Items - ดูรายการที่ลูกค้าจองตรงนี้)"
+    tab = False # รวมอยู่ในหน้าหลัก ไม่แยก Tab
 
 @admin.register(Booking)
-class BookingAdmin(SimpleHistoryAdmin):
+class BookingAdmin(ModelAdmin, SimpleHistoryAdmin):
     """
-    การจัดการหน้า Admin สำหรับการจอง
+    การจัดการหน้า Admin สำหรับการจอง (Unfold Theme)
     """
     form = BookingAdminForm
     inlines = [BookingItemInline]
+
+    # Use Unfold's better Date/Time Picker -> Handled in BookingAdminForm now
+    # formfield_overrides = {
+    #     models.DateTimeField: {'widget': UnfoldAdminSplitDateTimeWidget},
+    # }
     
-    def save_model(self, request, obj, form, change):
-        """
-        บันทึกข้อมูลการจอง และส่งแจ้งเตือน Line Notify เมื่อสถานะเปลี่ยนแปลง
-        """
-        # ก่อนบันทึก เช็คว่าสถานะเปลี่ยนหรือไม่
-        if change and 'status' in form.changed_data:
-            # สถานะเปลี่ยน -> ส่งแจ้งเตือน
-            message = f"\n📝 Booking Update #{obj.id}\n" \
-                      f"Status: {obj.get_status_display()}\n" \
-                      f"Customer: {obj.customer_name}"
-            try:
-                # ส่งแบบ Async ไม่ได้ใน Django ปกติ เลยส่งแบบ Sync ไปเลย (รับได้เพราะ Line API เร็ว)
-                send_line_notify(message)
-            except Exception as e:
-                print(f"Failed to send notify: {e}")
-                
-            # In-App Notify (To Customer)
-            if obj.created_by:
-                # Map status to type
-                notif_type = 'info'
-                if obj.status == 'approved': notif_type = 'success'
-                elif obj.status == 'cancelled': notif_type = 'error'
-                elif obj.status == 'rejected': notif_type = 'error'
-                
-                Notification.objects.create(
-                    recipient=obj.created_by,
-                    message=f"สถานะการจอง #{obj.id} เปลี่ยนเป็น: {obj.get_status_display()}",
-                    link="#", 
-                    notification_type=notif_type
-                )
-                
-        super().save_model(request, obj, form, change)
+    # Custom Grid View Template (Unfold has its own, so we might disable this if it conflicts, 
+    # but for now let's keep standard list_display config and let Unfold render the table)
+    # change_list_template = 'rentals/admin/booking_grid.html' # Disable custom template to use Unfold's clean table
+    # change_form_template = 'rentals/admin/booking/custom_booking_change_form.html'  <-- REMOVED
 
-    def validation_status(self, obj):
-        """แสดงสถานะความถูกต้องของการจอง"""
-        issues = obj.get_issues()
-        if not issues:
-            return format_html('<span style="color: green;">✅ ปกติ</span>')
-        
-        # ถ้ามีปัญหา แสดง icon ตกใจ
-        tooltip = "<br>".join(issues)
-        return format_html(
-            '<span style="color: red; cursor: help;" title="{}">⚠️ มีปัญหา ({} อย่าง)</span>',
-            tooltip,
-            len(issues)
-        )
-    validation_status.short_description = "ตรวจสอบ"
-
-    change_list_template = 'rentals/admin/booking_grid.html'  # Modern Grid View
-    # change_form_template will be auto-discovered at admin/rentals/booking/change_form.html
-
+    
     # กำหนดคอลัมน์ที่จะแสดงในหน้ารายการ
     list_display = [
         'id',
@@ -309,42 +310,27 @@ class BookingAdmin(SimpleHistoryAdmin):
         'end_time_display',
         'status_display',
         'calculate_total_price_display',
-        'created_at'  # แสดงเวลาที่จอง
+        'created_at'  
     ]
     
-    # กำหนดฟิลเตอร์ด้านข้าง
     list_filter = ['status', 'start_time', 'created_at', 'staff', 'created_by']
+    list_filter_submit = True # Unfold feature
     
-    # กำหนด date hierarchy
-    date_hierarchy = 'created_at'  # นำทางตามวันเวลาที่จอง
-    
-    # กำหนดฟิลด์ที่สามารถค้นหาได้
+    date_hierarchy = 'created_at'
     search_fields = ['customer_name', 'customer_phone', 'customer_email', 'id']
-    
-    # กำหนดการเรียงลำดับเริ่มต้น
     ordering = ['-created_at']
-    
-    # ใช้ Autocomplete สำหรับ ManyToMany (ค้นหาได้เร็วขึ้น)
     autocomplete_fields = ['equipment', 'studios', 'staff']
-    
-    # ฟิลด์ที่แก้ไขไม่ได้ (แสดงข้อมูลเพิ่มเติม)
     readonly_fields = ['booking_summary', 'created_info', 'created_by', 'issue_alert', 'payment_slip_preview', 'created_at', 'updated_at']
     
     def issue_alert(self, obj):
-        """แสดงแถบแจ้งเตือนปัญหาในหน้าแก้ไข"""
         issues = obj.get_issues()
         if not issues:
             return ""
-        
-        html = '<div style="background-color: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px; margin-bottom: 20px;">'
-        html += '<h3 style="margin-top:0;"><i class="fas fa-exclamation-triangle"></i> พบปัญหา (Issues Found)</h3><ul style="margin-bottom:0;">'
-        for issue in issues:
-            html += f'<li>{issue}</li>'
-        html += '</ul></div>'
-        return mark_safe(html)
+        # Use Tailwind classes (if supported) or just simple text
+        return mark_safe(f'<div class="bg-red-100 text-red-800 p-4 rounded-lg mb-4"><h3 class="font-bold">⚠️ พบปัญหา (Issues Found)</h3><ul>{"".join([f"<li>{i}</li>" for i in issues])}</ul></div>')
     issue_alert.short_description = "⚠️ การแจ้งเตือน"
 
-    # กำหนดฟิลด์ที่แสดงในฟอร์ม (ปรับให้อ่านง่าย)
+    # Fieldsets with Unfold-friendly styling (No hardcoded styles)
     fieldsets = (
         ('📝 รายละเอียดการจอง (Booking Info)', {
             'fields': (
@@ -355,27 +341,19 @@ class BookingAdmin(SimpleHistoryAdmin):
                 'status',
                 ('start_time', 'end_time'),
             ),
-            'description': mark_safe(
-                '<div style="background: #e8f4f8; padding: 15px; border-radius: 8px; margin-bottom: 20px;">'
-                '<h4 style="margin-top:0; color: #2980b9;">📌 ข้อมูลหลัก</h4>'
-                'ตรวจสอบข้อมูลลูกค้า วันเวลา และสถานะการจองที่นี่'
-                '</div>'
-            )
+            # Plain text description - Unfold renders this nicely
+            'description': 'ตรวจสอบข้อมูลลูกค้า วันเวลา และสถานะการจองที่นี่',
+            'classes': ('info-box',),
         }),
-        ('📦 จัดการอุปกรณ์ (Fulfillment)', {
+        ('📦 ระบุ Serial Number ที่หยิบจริง (Fulfillment)', {
             'fields': ('equipment', 'studios', 'staff'),
-            'description': mark_safe(
-                '<div style="background: #d4edda; padding: 15px; border-radius: 8px; margin-bottom: 20px;">'
-                '<h4 style="margin-top:0; color: #155724;">✨ ระบุ Serial Number</h4>'
-                '1. ดูรายการสินค้าที่ลูกค้าจองในตาราง <strong>"Booking items"</strong> ด้านล่าง<br>'
-                '2. หยิบของจริงมา และกรอก <strong>Serial Number</strong> ลงในช่อง Equipment นี้เพื่อตัดสต๊อก'
-                '</div>'
-            ),
-            'classes': ('wide',),
+            'description': '⚠️ เลื่อนลงดูตารางด้านล่างเพื่อดูว่าลูกค้าจองอะไรไว้ แล้วหยิบของมาสแกนใส่ช่องนี้',
+            'classes': ('collapse', 'open', 'fulfillment-box'), # Default open, no tab, Highlight class
         }),
         ('💰 การเงิน (Payment)', {
             'fields': ('payment_slip', 'payment_slip_preview', 'booking_summary'),
-            'description': "ตรวจสอบหลักฐานการโอนเงินและสรุปยอด"
+            'description': "ตรวจสอบหลักฐานการโอนเงินและสรุปยอด",
+            'classes': ('collapse', 'open', 'payment-box'),
         }),
         ('⚙️ ข้อมูลระบบ (System)', {
             'fields': ('created_at', 'updated_at'),
@@ -475,35 +453,50 @@ class BookingAdmin(SimpleHistoryAdmin):
         if not obj.pk:
             return "บันทึกข้อมูลก่อนเพื่อดูสรุป"
         
-        html = "<div style='line-height: 1.8;'>"
+        html = "<div style='line-height: 1.6; font-size: 0.95rem;'>"
         html += f"<p><strong>📋 ลูกค้า:</strong> {obj.customer_name}</p>"
         if obj.customer_phone:
             html += f"<p><strong>📞 โทร:</strong> {obj.customer_phone}</p>"
         html += f"<p><strong>📅 ระยะเวลา:</strong> {self.duration_display(obj)}</p>"
         
-        # อุปกรณ์
-        equip_count = obj.equipment.count()
-        html += f"<p><strong>📷 อุปกรณ์:</strong> {equip_count} รายการ</p>"
-        if equip_count > 0:
-            html += "<ul>"
-            for eq in obj.equipment.all():
-                html += f"<li>{eq.product.name if eq.product else 'Unknown'} - {eq.serial_number}</li>"
+        html += "<hr style='margin: 12px 0; border: 0; border-top: 1px solid #e2e8f0;'>"
+        
+        # 1. สิ่งที่ลูกค้าจอง (Ordered)
+        booking_items = obj.items.all()
+        if booking_items.exists():
+            html += f"<p style='color: #3b82f6; font-weight: bold;'>🛒 สิ่งที่ลูกค้าจอง (Ordered):</p>"
+            html += "<ul style='margin-top: 4px; padding-left: 20px; margin-bottom: 12px;'>"
+            for item in booking_items:
+                html += f"<li>{item.product.name} <span style='color: #64748b;'>(x{item.quantity})</span></li>"
             html += "</ul>"
+        else:
+            html += "<p style='color: #94a3b8;'>- ไม่มีรายการสินค้าที่จอง -</p>"
+
+        # 2. สิ่งที่หยิบจริง (Fulfillment)
+        equip_count = obj.equipment.count()
+        html += f"<p style='color: #10b981; font-weight: bold;'>📷 สิ่งที่หยิบจริง (Fulfillment):</p>"
+        if equip_count > 0:
+            html += "<ul style='margin-top: 4px; padding-left: 20px; margin-bottom: 12px;'>"
+            for eq in obj.equipment.all():
+                html += f"<li>{eq.product.name if eq.product else 'Unknown'} - <code style='background: #f1f5f9; padding: 2px 4px; border-radius: 4px; color: #334155;'>{eq.serial_number}</code></li>"
+            html += "</ul>"
+        else:
+            html += "<p style='color: #ef4444; margin-bottom: 12px;'>⚠️ ยังไม่ได้ระบุ Serial Number</p>"
         
         # สตูดิโอ
         studio_count = obj.studios.count()
-        html += f"<p><strong>🎬 สตูดิโอ:</strong> {studio_count} ห้อง</p>"
         if studio_count > 0:
-            html += "<ul>"
+            html += f"<p><strong>🎬 สตูดิโอ:</strong> {studio_count} ห้อง</p>"
+            html += "<ul style='margin-top: 4px; padding-left: 20px;'>"
             for st in obj.studios.all():
                 html += f"<li>{st.name} (฿{st.daily_rate:,.0f}/วัน)</li>"
             html += "</ul>"
         
         # พนักงาน
         staff_count = obj.staff.count()
-        html += f"<p><strong>👥 พนักงาน:</strong> {staff_count} คน</p>"
         if staff_count > 0:
-            html += "<ul>"
+            html += f"<p><strong>👥 พนักงาน:</strong> {staff_count} คน</p>"
+            html += "<ul style='margin-top: 4px; padding-left: 20px;'>"
             for st in obj.staff.all():
                 html += f"<li>{st.name} ({st.get_position_display()})</li>"
             html += "</ul>"
@@ -610,6 +603,12 @@ class BookingAdmin(SimpleHistoryAdmin):
     
     approve_bookings.short_description = "✅ อนุมัติการจองที่เลือก"
 
+    class Media:
+        css = {
+            "all": ("rentals/css/admin_theme_v100.css",)
+        }
+
+
 
 @admin.register(IssueReport)
 class IssueReportAdmin(SimpleHistoryAdmin):
@@ -663,6 +662,12 @@ class IssueReportAdmin(SimpleHistoryAdmin):
             obj.get_status_display()
         )
     status_display.short_description = "สถานะ"
+
+    class Media:
+        css = {
+            "all": ("rentals/css/admin_theme_v100.css",)
+        }
+
 
 
 # ==========================================================

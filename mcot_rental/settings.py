@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+from django.templatetags.static import static
+from django.urls import reverse_lazy
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -38,7 +40,10 @@ CSRF_TRUSTED_ORIGINS = [
 # Application definition
 
 INSTALLED_APPS = [
-    'jazzmin',  # Modern Admin UI - ต้องอยู่ก่อน django.contrib.admin
+    'unfold',  # Django Unfold Theme (Must be before admin)
+    'unfold.contrib.filters',  # Optional: Better filters
+    'unfold.contrib.forms',    # Optional: Better forms
+    'unfold.contrib.inlines',  # Optional: Better inlines
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -145,107 +150,48 @@ LOGOUT_REDIRECT_URL = '/'  # Redirect to home after logout
 # JAZZMIN UI CONFIGURATION - การตั้งค่า Admin Interface สวยงาม
 # ==============================================================================
 
-JAZZMIN_SETTINGS = {
-    # ชื่อระบบ
-    "site_title": "MCOT Rental System",
-    "site_header": "🎬 MCOT Enterprise",
-    "site_brand": "MCOT Rental System",
-    "welcome_sign": "ยินดีต้อนรับสู่ระบบจัดการการเช่าอุปกรณ์ MCOT",
-    
-    # โลโก้
-    "site_logo": None,
-    "site_icon": None,
-    
-    # ข้อความ copyright
-    "copyright": "MCOT Enterprise Rental System 2025",
-    
-    # ปิด Google Font โหลดเร็วขึ้น
-    "use_google_fonts_cdn": False,
-    
-    # ธีมสี
-    "show_ui_builder": False,
-    "changeform_format": "single", # ปิด Tabs ของ Jazzmin เพื่อใช้ Custom Dashboard
-    
-    # เมนูด้านซ้าย
-    "topmenu_links": [
-        {"name": "📊 Dashboard", "url": "/staff/dashboard/"},
-        {"name": "📅 ปฏิทิน", "url": "calendar"},
-        {"name": "⚙️ System Admin", "url": "admin:index", "permissions": ["auth.view_user"]},
-    ],
-    
-    # ลำดับการแสดงในเมนู
-    "order_with_respect_to": [
-        "rentals",
-        "auth",
-        "simple_history",
-    ],
-    
-    # ไอคอนสำหรับแต่ละโมเดล
-    "icons": {
-        "auth": "fas fa-users-cog",
-        "auth.user": "fas fa-user",
-        "auth.Group": "fas fa-users",
-        
-        "rentals.booking": "fas fa-calendar-check",
-        "rentals.equipment": "fas fa-video",
-        "rentals.studio": "fas fa-door-open",
-        "rentals.staff": "fas fa-user-tie",
-        
-        "rentals.historicalbooking": "fas fa-history",
-        "rentals.historical equipment": "fas fa-history",
-        "rentals.historicalstudio": "fas fa-history",
-        "rentals.historicalstaff": "fas fa-history",
+# ==============================================================================
+# DJANGO UNFOLD CONFIGURATION - Theming
+# ==============================================================================
+
+UNFOLD_SETTINGS = {
+    "SITE_TITLE": "MCOT Rental System",
+    "SITE_HEADER": "MCOT Enterprise",
+    "SITE_URL": "/",
+    "SITE_ICON": {
+        "light": lambda request: static("rentals/img/logo.png"),  # example
+        "dark": lambda request: static("rentals/img/logo.png"),
     },
-    
-    # ธีมสีหลัก
-    "default_icon_parents": "fas fa-chevron-circle-right",
-    "default_icon_children": "fas fa-circle",
-    
-    # ปรับแต่งเมนู
-    "custom_css": "rentals/css/admin_custom_v2.css",  # Premium Modern Admin Theme (Cache Busted)
-    "custom_js": None,
-    "show_sidebar": True,
-    "navigation_expanded": True,
-    
-    # ซ่อนโมเดลที่ไม่ต้องการ
-    "hide_apps": [],
-    "hide_models": [],
-    
-    # ภาษาไทย
-    "language_chooser": False,
+    "DASHBOARD_CALLBACK": "rentals.views.dashboard_callback", # Optional
+    "SIDEBAR": {
+        "show_search": True,
+        "show_all_applications": True,
+        "navigation": [
+            {
+                "title": "Navigation",
+                "separator": True,
+                "items": [
+                    {
+                        "title": "Dashboard",
+                        "icon": "dashboard",
+                        "link": reverse_lazy("admin:index"),
+                    },
+                    {
+                        "title": "Go to Site",
+                        "icon": "web",
+                        "link": "/",
+                    },
+                ],
+            },
+        ],
+    },
+    "STYLES": [
+        lambda request: static("rentals/css/admin_theme_v100.css"),
+    ],
 }
 
-JAZZMIN_UI_TWEAKS = {
-    "navbar_small_text": False,
-    "footer_small_text": False,
-    "body_small_text": False,
-    "brand_small_text": False,
-    "brand_colour": "navbar-primary",
-    "accent": "accent-primary",
-    "navbar": "navbar-dark",
-    "no_navbar_border": False,
-    "navbar_fixed": True,
-    "layout_boxed": False,
-    "footer_fixed": False,
-    "sidebar_fixed": True,
-    "sidebar": "sidebar-dark-primary",
-    "sidebar_nav_small_text": False,
-    "sidebar_disable_expand": False,
-    "sidebar_nav_child_indent": True,
-    "sidebar_nav_compact_style": False,
-    "sidebar_nav_legacy_style": False,
-    "sidebar_nav_flat_style": True,
-    "theme": "flatly",
-    "dark_mode_theme": None,
-    "button_classes": {
-        "primary": "btn-primary",
-        "secondary": "btn-secondary",
-        "info": "btn-info",
-        "warning": "btn-warning",
-        "danger": "btn-danger",
-        "success": "btn-success"
-    }
-}
+# Jazzmin settings removed.
+
 
 CART_SESSION_ID = 'cart'
 
