@@ -22,7 +22,8 @@ class StaffAdmin(ModelAdmin, SimpleHistoryAdmin):
     """
     form = StaffAdminForm
     
-    list_display = ['name', 'position', 'phone', 'is_active_display']
+    list_display = ['name', 'position', 'phone', 'is_active_display', 'edit_button']
+    list_display_links = ['name', 'position', 'phone', 'is_active_display']
     list_filter = ['position', 'is_active']
     search_fields = ['name', 'phone', 'position']
     ordering = ['name']
@@ -47,6 +48,13 @@ class StaffAdmin(ModelAdmin, SimpleHistoryAdmin):
             '<span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs font-bold">✗ ไม่ใช้งาน</span>'
         )
     is_active_display.short_description = 'สถานะ'
+
+    def edit_button(self, obj):
+        return format_html(
+            '<a href="{}/change/" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 font-bold text-xs" style="text-decoration: none;">✏️ แก้ไข</a>',
+            obj.id
+        )
+    edit_button.short_description = 'จัดการ'
 
     class Media:
         css = {
@@ -81,7 +89,8 @@ class ProductAdmin(ModelAdmin, SimpleHistoryAdmin):
     """
     การจัดการหน้า Admin สำหรับสินค้า (Unfold Theme)
     """
-    list_display = ['image_preview', 'name', 'category', 'price_display', 'quantity', 'is_active']
+    list_display = ['image_preview', 'name', 'category', 'price_display', 'quantity', 'is_active', 'edit_button']
+    list_display_links = ['image_preview', 'name', 'category', 'price_display', 'quantity', 'is_active']
     list_filter = ['category', 'is_active']
     list_filter_submit = True
     search_fields = ['name', 'items__serial_number']
@@ -125,6 +134,13 @@ class ProductAdmin(ModelAdmin, SimpleHistoryAdmin):
             return format_html('<img src="{}" class="h-10 w-10 rounded object-cover" />', obj.image.url)
         return "-"
     image_preview.short_description = "รูปภาพ"
+    
+    def edit_button(self, obj):
+        return format_html(
+            '<a href="{}/change/" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 font-bold text-xs" style="text-decoration: none;">✏️ แก้ไข</a>',
+            obj.id
+        )
+    edit_button.short_description = 'จัดการ'
     
     class Media:
         css = {
@@ -184,9 +200,14 @@ class PackageAdmin(ModelAdmin, SimpleHistoryAdmin):
     """
     การจัดการแพ็คเกจ (Unfold Theme)
     """
-    list_display = ['name', 'price', 'is_active', 'created_at']
-    search_fields = ['name']
+    list_display = ['name', 'short_description', 'price', 'item_count', 'is_highlight', 'is_active']
+    list_editable = ['price', 'is_highlight', 'is_active']
+    search_fields = ['name', 'short_description']
     inlines = [PackageItemInline]
+
+    def item_count(self, obj):
+        return obj.items.count()
+    item_count.short_description = "จำนวนสินค้า"
 
     class Media:
         css = {
@@ -206,7 +227,8 @@ class EquipmentAdmin(ModelAdmin, SimpleHistoryAdmin):
     def has_module_permission(self, request):
         return False
 
-    list_display = ['product', 'serial_number', 'status_display']
+    list_display = ['product', 'serial_number', 'status_display', 'edit_button']
+    list_display_links = ['product', 'serial_number', 'status_display']
     list_filter = ['status', 'product__category']
     search_fields = ['product__name', 'serial_number']
     autocomplete_fields = ['product']
@@ -230,6 +252,13 @@ class EquipmentAdmin(ModelAdmin, SimpleHistoryAdmin):
         )
     status_display.short_description = 'สถานะ'
 
+    def edit_button(self, obj):
+        return format_html(
+            '<a href="{}/change/" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 font-bold text-xs" style="text-decoration: none;">✏️ แก้ไข</a>',
+            obj.id
+        )
+    edit_button.short_description = 'จัดการ'
+
     class Media:
         css = {
             "all": ("rentals/css/admin_theme_v100.css",)
@@ -244,7 +273,8 @@ class StudioAdmin(ModelAdmin, SimpleHistoryAdmin):
     """
     form = StudioAdminForm
     
-    list_display = ['name', 'daily_rate', 'created_by']
+    list_display = ['name', 'daily_rate', 'created_by', 'edit_button']
+    list_display_links = ['name', 'daily_rate', 'created_by']
     search_fields = ['name']
     ordering = ['name']
     readonly_fields = ['created_by']
@@ -259,6 +289,13 @@ class StudioAdmin(ModelAdmin, SimpleHistoryAdmin):
             'classes': ('tab',),
         }),
     )
+
+    def edit_button(self, obj):
+        return format_html(
+            '<a href="{}/change/" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 font-bold text-xs" style="text-decoration: none;">✏️ แก้ไข</a>',
+            obj.id
+        )
+    edit_button.short_description = 'จัดการ'
 
     class Media:
         css = {
@@ -280,8 +317,8 @@ class BookingItemInline(TabularInline):
     extra = 1
     autocomplete_fields = ['product']
     verbose_name = "รายการสินค้า (Booking Item)"
-    verbose_name_plural = "รายการสินค้า (Booking Items - ดูรายการที่ลูกค้าจองตรงนี้)"
-    tab = False # รวมอยู่ในหน้าหลัก ไม่แยก Tab
+    verbose_name_plural = "รายการสินค้า (Booking Items - แก้ไขจำนวน/ราคา)"
+    tab = True # แยกเป็น Tab เพื่อความสะอาด
 
 @admin.register(Booking)
 class BookingAdmin(ModelAdmin, SimpleHistoryAdmin):
@@ -310,8 +347,12 @@ class BookingAdmin(ModelAdmin, SimpleHistoryAdmin):
         'end_time_display',
         'status_display',
         'calculate_total_price_display',
-        'created_at'  
+        'created_at',
+        'edit_button'  
     ]
+    
+    # ทำให้กดที่ "ทุกช่อง" (ยกเว้นปุ่ม) เพื่อเข้าไปดูรายละเอียดได้ (Whole Line Clickable feel)
+    list_display_links = ['id', 'customer_name', 'start_time_display', 'end_time_display', 'status_display', 'calculate_total_price_display', 'created_at']
     
     list_filter = ['status', 'start_time', 'created_at', 'staff', 'created_by']
     list_filter_submit = True # Unfold feature
@@ -320,7 +361,7 @@ class BookingAdmin(ModelAdmin, SimpleHistoryAdmin):
     search_fields = ['customer_name', 'customer_phone', 'customer_email', 'id']
     ordering = ['-created_at']
     autocomplete_fields = ['equipment', 'studios', 'staff']
-    readonly_fields = ['booking_summary', 'created_info', 'created_by', 'issue_alert', 'payment_slip_preview', 'created_at', 'updated_at']
+    readonly_fields = ['status_progress', 'quick_actions', 'booking_summary', 'created_info', 'created_by', 'issue_alert', 'payment_slip_preview', 'created_at', 'updated_at']
     
     def issue_alert(self, obj):
         issues = obj.get_issues()
@@ -332,32 +373,34 @@ class BookingAdmin(ModelAdmin, SimpleHistoryAdmin):
 
     # Fieldsets with Unfold-friendly styling (No hardcoded styles)
     fieldsets = (
-        ('📝 รายละเอียดการจอง (Booking Info)', {
+        ('📝 ข้อมูลและการจอง (Summary)', {
             'fields': (
+                'status_progress', # Progress Bar Headline
+                'quick_actions',   # Action Buttons Headline
                 'issue_alert',
                 ('customer_name', 'created_by'),
                 ('customer_phone', 'customer_email'),
                 'customer_address',
                 'status',
                 ('start_time', 'end_time'),
+                'booking_summary', # Moved here as requested
             ),
-            # Plain text description - Unfold renders this nicely
-            'description': 'ตรวจสอบข้อมูลลูกค้า วันเวลา และสถานะการจองที่นี่',
-            'classes': ('info-box',),
+            'description': 'สรุปข้อมูลลูกค้า ช่วงเวลา และรายการที่จอง',
+            'classes': ('tab',), # Tab 1
         }),
-        ('📦 ระบุ Serial Number ที่หยิบจริง (Fulfillment)', {
+        ('📦 จัดของ/ระบุ Serial (Fulfillment)', {
             'fields': ('equipment', 'studios', 'staff'),
-            'description': '⚠️ เลื่อนลงดูตารางด้านล่างเพื่อดูว่าลูกค้าจองอะไรไว้ แล้วหยิบของมาสแกนใส่ช่องนี้',
-            'classes': ('collapse', 'open', 'fulfillment-box'), # Default open, no tab, Highlight class
+            'description': '⚠️ เลือก Serial Number ของอุปกรณ์ที่จะให้ลูกค้าที่นี่',
+            'classes': ('tab',), # Tab 2
         }),
         ('💰 การเงิน (Payment)', {
-            'fields': ('payment_slip', 'payment_slip_preview', 'booking_summary'),
-            'description': "ตรวจสอบหลักฐานการโอนเงินและสรุปยอด",
-            'classes': ('collapse', 'open', 'payment-box'),
+            'fields': ('payment_slip', 'payment_slip_preview'),
+            'description': "ตรวจสอบหลักฐานการโอนเงิน",
+            'classes': ('tab',), # Tab 3
         }),
-        ('⚙️ ข้อมูลระบบ (System)', {
+        ('⚙️ ระบบ (System)', {
             'fields': ('created_at', 'updated_at'),
-            'classes': ('collapse',),
+            'classes': ('tab',), # Tab 4
         }),
     )
     
@@ -401,31 +444,172 @@ class BookingAdmin(ModelAdmin, SimpleHistoryAdmin):
     end_time_display.short_description = 'วันเวลาสิ้นสุด'
     
     def status_display(self, obj):
-        """แสดงสถานะด้วยสีและไอคอน"""
-        colors = {
-            'draft': '#999999',
-            'approved': '#28a745',
-            'completed': '#007bff',
+        """แสดงสถานะด้วยสีและไอคอน (Inline Styles)"""
+        # Define styles for each status (Background, Text Color)
+        styles = {
+            'draft': ('#e5e7eb', '#374151'),          # Gray-200, Gray-700
+            'quotation_sent': ('#fef3c7', '#92400e'), # Yellow-100, Yellow-800
+            'pending_deposit': ('#ffedd5', '#9a3412'),# Orange-100, Orange-800
+            'approved': ('#dcfce7', '#166534'),       # Green-100, Green-800
+            'active': ('#dbeafe', '#1e40af'),         # Blue-100, Blue-800
+            'completed': ('#3730a3', '#ffffff'),      # Indigo-800, White
+            'problem': ('#fee2e2', '#991b1b'),        # Red-100, Red-800
         }
-        icons = {
-            'draft': '📝',
-            'approved': '✓',
-            'completed': '✓✓',
-        }
-        labels = {
-            'draft': 'แบบร่าง',
-            'approved': 'อนุมัติแล้ว',
-            'completed': 'เสร็จสิ้น',
-        }
-        color = colors.get(obj.status, 'black')
-        icon = icons.get(obj.status, '')
-        label = labels.get(obj.status, obj.status)
-        return format_html(
-            '<span style="color: {}; font-weight: bold;">{} {}</span>',
-            color, icon, label
-        )
+        
+        bg, text = styles.get(obj.status, ('#e5e7eb', '#374151'))
+        
+        # English translation map for safer display length
+        # label = obj.get_status_display().split('(')[0]
+        
+        return mark_safe(f'''
+            <span style="
+                display: inline-block;
+                padding: 4px 12px;
+                border-radius: 9999px;
+                background-color: {bg};
+                color: {text};
+                font-size: 12px;
+                font-weight: 700;
+                white-space: nowrap;
+                box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            ">
+                {obj.get_status_display()}
+            </span>
+        ''')
     status_display.short_description = 'สถานะ'
+
+    def status_progress(self, obj):
+        """แถบความคืบหน้าของสถานะ (Modern Stepper)"""
+        steps = ['draft', 'quotation_sent', 'pending_deposit', 'approved', 'active', 'completed']
+        try:
+            current_index = steps.index(obj.status)
+        except ValueError:
+            current_index = -1 
+
+        # Colors
+        c_done = "#10b981" # Emerald 500
+        c_active = "#3b82f6" # Blue 500
+        c_future = "#e5e7eb" # Gray 200
+        t_future = "#9ca3af" # Gray 400
+        
+        html = '<div style="display: flex; align-items: flex-start; justify-content: space-between; position: relative; width: 100%; margin: 20px 0;">'
+        
+        # Background Line
+        html += f'<div style="position: absolute; top: 15px; left: 0; width: 100%; height: 4px; background-color: {c_future}; z-index: 0; border-radius: 2px;"></div>'
+        
+        # Colored Line (Progress)
+        if current_index >= 0:
+            progress_pct = (current_index / (len(steps) - 1)) * 100
+            html += f'<div style="position: absolute; top: 15px; left: 0; width: {progress_pct}%; height: 4px; background-color: {c_done}; z-index: 0; border-radius: 2px; transition: width 0.5s;"></div>'
+
+        for i, step in enumerate(steps):
+            label = dict(Booking.STATUS_CHOICES).get(step, step).split('(')[0].strip()
+            
+            # State Styles
+            if i < current_index:
+                # Completed
+                bg = c_done
+                border = c_done
+                color = "white"
+                content = "✓" # Checkmark
+                font_weight = "bold"
+            elif i == current_index:
+                # Active
+                bg = "white"
+                border = c_active
+                color = c_active
+                content = str(i + 1)
+                font_weight = "800"
+                # Add a glowing ring effect via box-shadow
+                box_shadow = f"0 0 0 4px {c_active}33" # 33 = 20% opacity
+            else:
+                # Future
+                bg = "white"
+                border = c_future
+                color = t_future
+                content = str(i + 1)
+                font_weight = "normal"
+                box_shadow = "none"
+
+            if i != current_index:
+                box_shadow = "none"
+
+            html += f'''
+            <div style="z-index: 10; display: flex; flex-direction: column; align-items: center; width: 16.66%;">
+                <div style="width: 34px; height: 34px; border-radius: 50%; background-color: {bg}; border: 3px solid {border}; color: {color}; display: flex; align-items: center; justify-content: center; font-weight: {font_weight}; font-size: 14px; box-shadow: {box_shadow}; transition: all 0.3s ease;">
+                    {content}
+                </div>
+                <div style="margin-top: 10px; font-size: 12px; color: #4b5563; text-align: center; font-weight: 500; max-width: 120px; line-height: 1.4;">
+                    {label}
+                </div>
+            </div>
+            '''
+        html += '</div>'
+        return mark_safe(html)
+    status_progress.short_description = "สถานะดำเนินการ (Workflow)"
+
+    def quick_actions(self, obj):
+        """Action Buttons to change status quickly"""
+        if not obj.pk:
+            return "กรุณาบันทึกข้อมูลก่อนจัดการสถานะ"
+        
+        # Styles
+        container_style = "display: flex; gap: 12px; flex-wrap: wrap; padding: 16px; background-color: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; align-items: center;"
+        
+        btn_base = "display: inline-flex; align-items: center; padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 14px; text-decoration: none; border: 1px solid transparent; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);"
+        # Helper to create button
+        def btn(status, label, bg, text="white", icon=""):
+            # Refactored to use class-based event delegation (admin_booking_actions.js)
+            hover_opacity = "0.9"
+            return f'''
+            <button type="button" 
+               class="js-booking-action"
+               data-status="{status}"
+               style="{btn_base} background-color: {bg}; color: {text};"
+               onmouseover="this.style.opacity='{hover_opacity}'" 
+               onmouseout="this.style.opacity='1'">
+               <span style="margin-right: 6px;">{icon}</span> {label}
+            </button>
+            '''
+        
+        buttons = []
+        
+        # Logic Flow
+        if obj.status == 'draft':
+            buttons.append(btn('quotation_sent', 'ส่งใบเสนอราคา', '#eab308', 'black', '📄')) # Yellow
+        elif obj.status == 'quotation_sent':
+            buttons.append(btn('pending_deposit', 'เรียกเก็บมัดจำ', '#f97316', 'white', '💰')) # Orange
+        elif obj.status == 'pending_deposit':
+            buttons.append(btn('approved', 'ยืนยันการโอน/จอง', '#10b981', 'white', '✅')) # Green
+        elif obj.status == 'approved':
+            buttons.append(btn('active', 'ส่งของ/เริ่มงาน', '#3b82f6', 'white', '🚀')) # Blue
+        elif obj.status == 'active':
+            buttons.append(btn('completed', 'จบงาน/คืนของ', '#6366f1', 'white', '🏁')) # Indigo
+        
+        # Always available secondary actions (if not completed)
+        extra_actions = []
+        if obj.status not in ['completed', 'problem']:
+            extra_actions.append(btn('problem', 'แจ้งปัญหา', '#ef4444', 'white', '⚠️')) # Red
+        
+        if obj.status == 'problem':
+            extra_actions.append(btn('draft', 'รีเซ็ตสถานะ', '#6b7280', 'white', '🔄'))
+
+        # Combine
+        actions_html = "".join(buttons)
+        
+        if extra_actions:
+             # Add separator if we have main actions
+            if actions_html:
+                actions_html += '<div style="width: 1px; height: 24px; background-color: #cbd5e1; margin: 0 8px;"></div>'
+            actions_html += "".join(extra_actions)
+
+        # Script is now loaded via templates/admin/rentals/booking/change_form.html
+        
+        return mark_safe(f'<div style="{container_style}"> <span style="font-size:13px; font-weight:600; color:#64748b; margin-right:8px;">เปลี่ยนสถานะ:</span> {actions_html}</div>')
+    quick_actions.short_description = "จัดการสถานะ (Actions)"
     
+    # Removed independent Media class to rely on direct injection
+
     def calculate_total_price_display(self, obj):
         """แสดงราคารวมในรูปแบบเงินบาท"""
         total = obj.calculate_total_price()
@@ -435,6 +619,13 @@ class BookingAdmin(ModelAdmin, SimpleHistoryAdmin):
             f'{float(total):,.2f}'
         )
     calculate_total_price_display.short_description = 'ราคารวม'
+    
+    def edit_button(self, obj):
+        return format_html(
+            '<a href="{}/change/" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 font-bold text-xs" style="text-decoration: none;">✏️ รายละเอียด</a>',
+            obj.id
+        )
+    edit_button.short_description = 'จัดการ'
     
     def duration_display(self, obj):
         """แสดงระยะเวลาการเช่า"""
@@ -609,6 +800,91 @@ class BookingAdmin(ModelAdmin, SimpleHistoryAdmin):
         }
 
 
+@admin.register(Notification)
+class NotificationAdmin(ModelAdmin):
+    """
+    การแจ้งเตือนสำหรับ Admin (Unfold Theme)
+    """
+    list_display = ['message', 'recipient', 'notification_type_display', 'is_read_display', 'created_at', 'action_button']
+    list_filter = ['notification_type', 'is_read', 'created_at']
+    search_fields = ['message', 'recipient__username']
+    list_per_page = 20
+    
+    # Make it a strict log (Read-Only)
+    readonly_fields = ['recipient', 'message', 'link', 'notification_type', 'is_read', 'created_at', 'view_target_link']
+    fields = ('view_target_link', 'message', 'recipient', 'notification_type', 'is_read', 'created_at', 'link') # Reorder to put button on top
+    
+    def has_add_permission(self, request):
+        return False
+        
+    def has_change_permission(self, request, obj=None):
+        return False # Lock the form completely (View Only)
+        
+    def has_delete_permission(self, request, obj=None):
+        return True # Allow deleting old logs
+
+    def get_queryset(self, request):
+        """
+        แสดงเฉพาะการแจ้งเตือนของตัวเองเท่านั้น (Privacy)
+        """
+        qs = super().get_queryset(request)
+        # ถ้าเป็น Superuser อาจจะอยากเห็นทั้งหมด? 
+        # แต่ตามโจทย์คือ "ของคนๆนั้นเท่านั้น" ดังนั้น Filter เลยดีกว่า
+        return qs.filter(recipient=request.user)
+
+    def view_target_link(self, obj):
+        if obj.link:
+            return format_html(
+                '<a href="{}" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700">'
+                '🔗 ไปยังหน้าที่เกี่ยวข้อง (Go to Link)'
+                '</a>',
+                obj.link
+            )
+        return "-"
+    view_target_link.short_description = "การดำเนินการ"
+    
+    def action_button(self, obj):
+        if obj.link:
+             return format_html(
+                '<a href="{}" class="bg-blue-100 text-blue-700 px-3 py-1 rounded-md text-xs font-bold hover:bg-blue-200">'
+                'ไปดู'
+                '</a>',
+                obj.link
+            )
+        return "-"
+    action_button.short_description = "ไปดู"
+
+    def notification_type_display(self, obj):
+        colors = {
+            'info': 'bg-blue-100 text-blue-800',
+            'success': 'bg-green-100 text-green-800',
+            'warning': 'bg-yellow-100 text-yellow-800',
+            'error': 'bg-red-100 text-red-800',
+        }
+        labels = {
+            'info': 'ℹ️ ข้อมูล',
+            'success': '✅ สำเร็จ',
+            'warning': '⚠️ เตือน',
+            'error': '❌ ผิดพลาด',
+        }
+        color_class = colors.get(obj.notification_type, 'bg-gray-100 text-gray-800')
+        label = labels.get(obj.notification_type, obj.notification_type)
+        return format_html(
+            '<span class="{} px-2 py-1 rounded text-xs font-bold">{}</span>',
+            color_class, label
+        )
+    notification_type_display.short_description = 'ประเภท'
+
+    def is_read_display(self, obj):
+        if obj.is_read:
+            return format_html('<span class="text-green-600">✓ อ่านแล้ว</span>')
+        return format_html('<span class="text-red-600 font-bold">● ยังไม่อ่าน</span>')
+    is_read_display.short_description = 'สถานะ'
+
+    class Media:
+        css = {
+            "all": ("rentals/css/admin_theme_v100.css",)
+        }
 
 @admin.register(IssueReport)
 class IssueReportAdmin(SimpleHistoryAdmin):
@@ -677,16 +953,47 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
 from .models import UserProfile
 
-class UserProfileInline(admin.StackedInline):
-    model = UserProfile
-    can_delete = False
-    verbose_name_plural = 'ข้อมูลเพิ่มเติม (Profile)'
-    verbose_name = 'ข้อมูลเพิ่มเติม (Profile)'
+# Re-register UserAdmin
+from django.contrib.auth.forms import UserChangeForm
+from django import forms
 
+class CustomUserChangeForm(UserChangeForm):
+    phone = forms.CharField(label='เบอร์โทรศัพท์', required=False, max_length=20)
+
+    class Meta(UserChangeForm.Meta):
+        model = User
+        labels = {
+            'password': 'รหัสผ่าน (Password)',
+            'is_active': 'เปิดใช้งาน (Active)',
+            'is_staff': 'ทีมงาน (Staff Status) - เข้า Admin ได้',
+            'is_superuser': 'ผู้ดูแลระบบสูงสุด (Superuser) - มีสิทธิ์ทุกอย่าง',
+            'groups': 'กลุ่มผู้ใช้ (Groups)',
+            'user_permissions': 'สิทธิ์รายรุคคล (User Permissions)',
+            'username': 'ชื่อผู้ใช้ (Username)',
+            'first_name': 'ชื่อจริง',
+            'last_name': 'นามสกุล',
+            'email': 'อีเมล',
+        }
+        help_texts = {
+            'is_active': 'ควรเลือกไว้เสมอ หากต้องการระงับการใช้งานให้ติ๊กออกแทนการลบทิ้ง',
+            'is_staff': 'ติ๊กเลือกเพื่อให้ผู้ใช้นี้สามารถล็อกอินเข้าสู่หน้า Admin Panel นี้ได้',
+            'is_superuser': 'ติ๊กเลือกเพื่อให้มีสิทธิ์ทุกอย่างในระบบโดยอัตโนมัติ (ไม่ต้องกำหนดสิทธิ์เพิ่ม)',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk and hasattr(self.instance, 'profile'):
+            self.fields['phone'].initial = self.instance.profile.phone
+
+admin.site.unregister(User)
+
+@admin.register(User)
 class UserAdmin(BaseUserAdmin):
-    inlines = (UserProfileInline,)
+    form = CustomUserChangeForm
+    inlines = () # Remove Inline as requested
     
-    list_display = ('username', 'email', 'get_phone', 'first_name', 'last_name', 'is_staff')
+    list_display = ('username', 'email', 'get_phone', 'first_name', 'last_name', 'is_staff', 'is_active_display', 'edit_button')
+    list_display_links = ('username', 'email', 'get_phone')
     readonly_fields = ('last_login_be', 'date_joined_be')
     
     def get_phone(self, instance):
@@ -694,6 +1001,19 @@ class UserAdmin(BaseUserAdmin):
             return instance.profile.phone
         return "-"
     get_phone.short_description = "เบอร์โทรศัพท์"
+
+    def is_active_display(self, obj):
+        if obj.is_active:
+            return format_html('<span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-bold">ใช้งาน</span>')
+        return format_html('<span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs font-bold">ระงับ</span>')
+    is_active_display.short_description = "สถานะ"
+
+    def edit_button(self, obj):
+        return format_html(
+            '<a href="{}/change/" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 font-bold text-xs" style="text-decoration: none;">✏️ แก้ไข</a>',
+            obj.id
+        )
+    edit_button.short_description = 'จัดการ'
 
     def _to_thai_date(self, dt):
         if not dt:
@@ -708,49 +1028,47 @@ class UserAdmin(BaseUserAdmin):
 
     def last_login_be(self, obj):
         return self._to_thai_date(obj.last_login)
-    last_login_be.short_description = "เข้าสู่ระบบครั้งสุดท้าย (พ.ศ.)"
+    last_login_be.short_description = "เข้าสู่ระบบครั้งสุดท้าย"
 
     def date_joined_be(self, obj):
         return self._to_thai_date(obj.date_joined)
-    date_joined_be.short_description = "วันที่เข้าร่วม (พ.ศ.)"
+    date_joined_be.short_description = "วันที่เข้าร่วม"
 
-    # จัดกลุ่ม Fieldsets ใหม่ให้ดูง่าย (ลดจำนวน Tab ใน Jazzmin)
+    # จัดกลุ่ม Fieldsets ใหม่ด้วย Tabs
     fieldsets = (
-        ('ข้อมูลบัญชีและส่วนตัว', {
-            'fields': ('username', 'password', 'first_name', 'last_name', 'email')
+        ('👤 ข้อมูลส่วนตัว (Profile)', {
+            'fields': ('username', 'first_name', 'last_name', 'email', 'phone'), # Add Phone here
+            'description': 'ข้อมูลพื้นฐานของผู้ใช้งาน',
+            'classes': ('tab',), # Tab 1
         }),
-        ('ข้อมูลระบบ', {
+        ('🔐 ความปลอดภัย (Security)', {
+            'fields': ('password', 'is_active', 'is_staff', 'is_superuser'),
+            'description': 'จัดการรหัสผ่านและสถานะการเข้าถึง',
+            'classes': ('tab',), # Tab 2
+        }),
+        ('🎭 บทบาท (Roles)', {
+            'fields': ('groups',),
+            'description': 'กำหนดตำแหน่งงาน (เลือก Group เช่น Manager หรือ Operations)',
+            'classes': ('tab',), # Tab 3
+        }),
+        ('🕒 ข้อมูลระบบ (System)', {
             'fields': ('last_login_be', 'date_joined_be'),
-            'classes': ('collapse',),
+            'classes': ('tab',), # Tab 4
         }),
     )
 
-    # ปรับแต่งหน้าสร้างใหม่ (Create) ให้กรอกข้อมูลได้เลย
-    add_fieldsets = (
-        (None, {
-            'classes': ('wide',),
-            'fields': ('username', 'first_name', 'last_name', 'email'),
-        }),
-        ('กำหนดรหัสผ่าน', {
-            'classes': ('wide',),
-            'fields': ('password', 'confirm_password'),  # ใช้ confirm_password ถ้ามี หรือปล่อยให้ Django จัดการ
-        }),
-    )
-    # หมายเหตุ: Django UserCreationForm ปกติมีแค่ user/pass/confirm
-    # การเพิ่ม email/name ใน add_fieldsets ต้องใช้ Form ที่รองรับ
-    # แต่ BaseUserAdmin ใช้ UserCreationForm ซึ่งไม่มี field เหล่านี้
-    # ดังนั้นเราจะใช้ fieldsets มาตรฐานของ BaseUserAdmin แต่เพิ่ม field เข้าไป
-    # *แก้ไข* : ถ้าใช้ default UserCreationForm มันจะรับแค่ user/pass
-    # เราต้อง override form ด้วยถ้าอยากให้ save ได้จริง
-    # แต่เพื่อลดความเสี่ยง Error เดี๋ยวผมใช้ add_fieldsets แบบ Standard ที่เปิด field ให้กรอกได้ แต่ต้องระวังเรื่อง Form validation
-    
-    # เพื่อความชัวร์ ใช้ add_fieldsets แบบที่ Django แนะนำคือ username/password ก่อน
-    # แต่ user request อยากได้ email ด้วย
-    # งั้นเราปรับ fieldsets หน้า Edit ให้สวยก่อน ส่วนหน้า Create เอาเท่าที่ได้ หรือถ้า user ซีเรียสเรื่อง Create ค่อยแก้ Form
-    
-    # เอาใหม่: User ขอ "หน้าเพิ่มผู้ใช้ต้องใส่ เบอร์กับอีเมลด้วยสิ"
-    # ผมจะจัดหน้า Edit ให้สวยมากๆ เพื่อให้พอกด Save หน้าบัญชีแล้ว เด้งมาหน้านี้แล้วกรอกได้เลยแบบง่ายๆ
+    class Media:
+        css = {
+            "all": ("rentals/css/admin_theme_v100.css",)
+        }
 
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        # Handle Phone Save
+        phone = form.cleaned_data.get('phone')
+        profile, created = UserProfile.objects.get_or_create(user=obj)
+        profile.phone = phone
+        profile.save()
 
 # Re-register UserAdmin
 admin.site.unregister(User)

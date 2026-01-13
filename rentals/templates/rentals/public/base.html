@@ -481,16 +481,24 @@
 
             // Global functions for onClick
             window.markRead = function (id, event) {
-                // event.preventDefault(); // Don't prevent default if link exists
+                event.preventDefault(); // Stop immediate navigation
+                const url = event.currentTarget.getAttribute('href');
+
                 fetch(`/api/notifications/read/${id}/`, {
                     method: 'POST',
                     headers: {
                         'X-CSRFToken': '{{ csrf_token }}'
                     }
                 }).then(() => {
-                    fetchNotifications(); // Refresh
-                    if (event.target.closest('a').getAttribute('href') === '#') {
-                        event.preventDefault();
+                    fetchNotifications(); // Update UI (in case we stay)
+                    if (url && url !== '#') {
+                        window.location.href = url; // Navigate manually after read works
+                    }
+                }).catch(err => {
+                    console.error('Error marking read:', err);
+                    // Fallback navigation even if error
+                    if (url && url !== '#') {
+                        window.location.href = url;
                     }
                 });
             };

@@ -86,6 +86,18 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
+    def get_icon_class(self):
+        """คืนค่า FontAwesome Icon Class ตามหมวดหมู่"""
+        icons = {
+            'camera': 'fas fa-camera',
+            'lens': 'fas fa-circle-notch',
+            'lighting': 'fas fa-lightbulb',
+            'sound': 'fas fa-microphone',
+            'grip': 'fas fa-columns',
+            'other': 'fas fa-box'
+        }
+        return icons.get(self.category, 'fas fa-box')
+
 
 class Equipment(models.Model):
     """
@@ -177,10 +189,15 @@ class Booking(models.Model):
     """
     
     # ตัวเลือกสถานะการจอง
+    # ตัวเลือกสถานะการจอง
     STATUS_CHOICES = [
-        ('draft', 'Draft'),
-        ('approved', 'Approved'),
-        ('completed', 'Completed'),
+        ('draft', 'สอบถาม / รอใบเสนอราคา (Draft)'),
+        ('quotation_sent', 'ส่งใบเสนอราคาแล้ว (Quotation Sent)'),
+        ('pending_deposit', 'รอชำระเงินมัดจำ (Waiting for Deposit)'),
+        ('approved', 'ยืนยันแล้ว / รอรับของ (Approved)'),
+        ('active', 'กำลังใช้งาน (Active)'),
+        ('completed', 'จบงาน / คืนของแล้ว (Completed)'),
+        ('problem', 'มีปัญหา / แจ้งซ่อม (Problem)'),
     ]
     
     customer_name = models.CharField(max_length=200, verbose_name="ชื่อลูกค้า")
@@ -297,9 +314,11 @@ class Package(models.Model):
     เช่น "Set A: กล้อง + เลนส์ + ไฟ" ในราคาพิเศษ
     """
     name = models.CharField(max_length=200, verbose_name="ชื่อแพ็คเกจ")
+    short_description = models.CharField(max_length=200, verbose_name="คำอธิบายสั้น", blank=True, help_text="ตัวอย่าง: สำหรับงานสัมภาษณ์ / Vlog")
     description = models.TextField(verbose_name="รายละเอียด", blank=True, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="ราคาเหมาจ่าย")
     image = models.ImageField(upload_to='packages/', null=True, blank=True, verbose_name="รูปภาพแพ็คเกจ")
+    is_highlight = models.BooleanField(default=False, verbose_name="แนะนำ (Highlight)", help_text="ติ๊กเลือกเมื่อต้องการให้เป็นสินค้าแนะนำ (กรอบม่วง)")
     is_active = models.BooleanField(default=True, verbose_name="เปิดใช้งาน")
     created_at = models.DateTimeField(auto_now_add=True)
 

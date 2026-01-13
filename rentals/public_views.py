@@ -90,7 +90,7 @@ def packages(request):
     """
     หน้าแสดงแพ็คเกจราคา (Packages)
     """
-    packages = Package.objects.filter(is_active=True).order_by('price')
+    packages = Package.objects.filter(is_active=True).prefetch_related('items__product').order_by('price')
     return render(request, 'rentals/public/packages.html', {
         'packages': packages
     })
