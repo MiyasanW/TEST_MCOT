@@ -290,6 +290,21 @@ class Booking(models.Model):
             
         return total * days
 
+    def calculate_total_price_per_day(self):
+        """
+        คำนวณราคารวมต่อวัน (Daily Items + Services)
+        """
+        total = 0
+        # Items
+        for item in self.items.all():
+            total += (item.price_at_booking or 0) * item.quantity
+            
+        # Studios
+        for studio in self.studios.all():
+            total += studio.daily_rate
+            
+        return total
+
     def get_issues(self):
         """
         ตรวจสอบปัญหาของการจอง (เช่น อุปกรณ์ชน, สถานะไม่พร้อม)

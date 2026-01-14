@@ -1,32 +1,230 @@
 {% extends 'rentals/public/base.html' %}
+{% load humanize %}
+{% load static %}
+
+{% block title %}จองสำเร็จ | MCOT Rental{% endblock %}
 
 {% block content %}
-<div class="container py-5 text-center">
-    <div class="mb-4">
-        <i class="fas fa-check-circle text-success" style="font-size: 5rem;"></i>
-    </div>
-    <h1 class="display-5 fw-bold">ส่งคำขอจองสำเร็จ!</h1>
-    <p class="lead mb-4">ขอบคุณที่ใช้บริการ MCOT Rental<br>เจ้าหน้าที่จะตรวจสอบและติดต่อกลับภายใน 24 ชั่วโมง</p>
+<div class="bg-light min-vh-100 py-5">
+    <div class="container">
 
-    <div class="card mx-auto shadow-sm mb-4" style="max-width: 600px;">
-        <div class="card-body text-start">
-            <h5 class="card-title border-bottom pb-2">รายละเอียดการจอง #{{ booking.id }}</h5>
-            <p><strong>ชื่อผู้จอง:</strong> {{ booking.customer_name }}</p>
-            <p><strong>วันที่รับของ:</strong> {{ booking.start_time|date:"d M Y H:i" }}</p>
-            <p><strong>วันที่คืนของ:</strong> {{ booking.end_time|date:"d M Y H:i" }}</p>
-            <p><strong>รายการ:</strong></p>
-            <ul>
-                {% for item in booking.items.all %}
-                <li>{{ item.product.name }} (x{{ item.quantity }})</li>
-                {% endfor %}
-            </ul>
-            <p class="text-muted small">* ราคาจะถูกคำนวณและยืนยันในใบเสนอราคา</p>
+        <!-- Success Header -->
+        <div class="text-center mb-5">
+            <div class="d-inline-flex align-items-center justify-content-center bg-success bg-gradient text-white rounded-circle shadow-lg mb-4"
+                style="width: 100px; height: 100px;">
+                <i class="fas fa-check fa-4x"></i>
+            </div>
+            <h1 class="fw-bold display-5 text-dark mb-2">ส่งคำขอจองสำเร็จ!</h1>
+            <p class="text-muted fs-5">รหัสการจอง (Booking ID): <span class="text-primary fw-bold">#{{ booking.id }}</span></p>
+            <p class="text-muted">ขอบคุณที่เลือกใช้บริการ MCOT Rental เจ้าหน้าที่จะติดต่อกลับเพื่อยืนยันคิวภายใน 24 ชม.
+            </p>
+        </div>
+
+        <div class="row g-4 justify-content-center">
+
+            <!-- Main Content: Booking Details -->
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+
+                    <!-- Header Bar -->
+                    <div
+                        class="card-header bg-dark text-white py-3 px-4 d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold"><i class="fas fa-file-invoice me-2"></i>รายละเอียดการจอง</h5>
+                        <span class="badge bg-warning text-dark"><i class="fas fa-clock me-1"></i> {{ booking.get_status_display }}</span>
+                    </div>
+
+                    <div class="card-body p-4">
+
+                        <!-- Customer & Date Info -->
+                        <div class="row g-4 mb-4">
+                            <!-- Customer -->
+                            <div class="col-md-6">
+                                <h6 class="text-uppercase text-muted fw-bold small mb-3">ข้อมูลผู้จอง</h6>
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="bg-light rounded-circle p-2 me-3 text-primary"><i
+                                            class="fas fa-user"></i></div>
+                                    <div>
+                                        <small class="text-muted d-block">ชื่อ-นามสกุล / หน่วยงาน</small>
+                                        <span class="fw-bold text-dark">{{ booking.customer_name }}</span>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="bg-light rounded-circle p-2 me-3 text-primary"><i
+                                            class="fas fa-phone"></i></div>
+                                    <div>
+                                        <small class="text-muted d-block">เบอร์โทรศัพท์</small>
+                                        <span class="fw-bold text-dark">{{ booking.customer_phone }}</span>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-light rounded-circle p-2 me-3 text-primary"><i
+                                            class="fas fa-envelope"></i></div>
+                                    <div>
+                                        <small class="text-muted d-block">อีเมล</small>
+                                        <span class="fw-bold text-dark">{{ booking.customer_email|default:"-" }}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Rental Period Line -->
+                            <div class="col-md-6 border-start-md ps-md-4">
+                                <h6 class="text-uppercase text-muted fw-bold small mb-3">ระยะเวลาเช่า</h6>
+                                <div class="d-flex align-items-start position-relative">
+                                    <div class="d-flex flex-column align-items-center me-3" style="height: 100%;">
+                                        <div class="bg-success rounded-circle border border-2 border-white shadow-sm"
+                                            style="width: 12px; height: 12px; z-index: 2;"></div>
+                                        <div class="bg-secondary opacity-25" style="width: 2px; height: 40px;"></div>
+                                        <div class="bg-danger rounded-circle border border-2 border-white shadow-sm"
+                                            style="width: 12px; height: 12px; z-index: 2;"></div>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="mb-3">
+                                            <span class="d-block text-success fw-bold small">วันรับของ (Start)</span>
+                                            <span class="fw-bold">{{ booking.start_time|date:"d M Y" }}</span>
+                                            <span class="badge bg-light text-dark ms-2">{{ booking.start_time|date:"H:i"}}</span>
+                                        </div>
+                                        <div>
+                                            <span class="d-block text-danger fw-bold small">วันคืนของ (End)</span>
+                                            <span class="fw-bold">{{ booking.end_time|date:"d M Y" }}</span>
+                                            <span class="badge bg-light text-dark ms-2">{{ booking.end_time|date:"H:i"}}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="border-light my-4">
+
+                        <!-- Item List -->
+                        <h6 class="text-uppercase text-muted fw-bold small mb-3">รายการอุปกรณ์ที่จอง</h6>
+                        <div class="table-responsive mb-4">
+                            <table class="table table-borderless align-middle mb-0">
+                                <thead class="bg-light text-secondary small">
+                                    <tr>
+                                        <th class="ps-3 py-2">สินค้า</th>
+                                        <th class="text-center py-2">ราคา/วัน</th>
+                                        <th class="text-center py-2">จำนวน</th>
+                                        <th class="text-end pe-3 py-2">รวม (ต่อวัน)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in booking.items.all %}
+                                    <tr class="border-bottom border-light">
+                                        <td class="ps-3 py-3">
+                                            <div class="d-flex align-items-center">
+                                                <div class="rounded-3 overflow-hidden me-3 border bg-white flex-shrink-0"
+                                                    style="width: 50px; height: 50px;">
+                                                    {% if item.product.image %}
+                                                    <img src="{{ item.product.image.url }}"
+                                                        alt="{{ item.product.name }}"
+                                                        class="w-100 h-100 object-fit-cover">
+                                                    {% else %}
+                                                    <div
+                                                        class="w-100 h-100 bg-light d-flex align-items-center justify-content-center text-muted small">
+                                                        <i class="fas fa-image"></i></div>
+                                                    {% endif %}
+                                                </div>
+                                                <div>
+                                                    <!-- Use booking-snapshot product name if possible, or live relation -->
+                                                    <h6 class="fw-bold text-dark mb-0 text-truncate"
+                                                        style="max-width: 200px;">{{ item.product.name }}</h6>
+                                                    <small class="text-muted">{{ item.product.category|default:"อุปกรณ์"}}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-center py-3">฿{{ item.price_at_booking|intcomma }}</td>
+                                        <td class="text-center py-3"><span
+                                                class="badge bg-light text-dark border rounded-pill px-3">x{{ item.quantity }}</span></td>
+                                        <td class="text-end pe-3 py-3 fw-bold text-dark">฿{{ item.total_price|intcomma}}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Summary Footer -->
+                        <div class="bg-light rounded-3 p-4">
+                            <div class="row align-items-center">
+                                <div class="col-md-6 mb-3 mb-md-0">
+                                    <small class="text-muted d-block"><i class="fas fa-info-circle me-1"></i>
+                                        หมายเหตุ</small>
+                                    <small class="text-muted">ราคาที่แสดงในหน้านี้เป็นราคาประเมินเบื้องต้น
+                                        เจ้าหน้าที่จะส่งใบเสนอราคา (Quotation) ฉบับจริงให้ทางอีเมลอีกครั้ง</small>
+                                </div>
+                                <div class="col-md-6 text-md-end">
+                                    <div
+                                        class="d-flex justify-content-between justify-content-md-end align-items-center mb-1">
+                                        <span class="text-muted me-3">รวมมูลค่าสินค้า (ต่อวัน)</span>
+                                        <span class="fw-bold">฿{{ booking.calculate_total_price_per_day|default:"0"|intcomma }}</span>
+                                        <!-- Note: calculate_total_price_per_day needs valid method or loop. 
+                                             Let's allow Jinja sum or custom logic. For now, rely on manual sum if View doesn't pass it.
+                                             Actually, booking.calculate_total_price returns TOTAL (days * daily). 
+                                        -->
+                                    </div>
+                                    <div
+                                        class="d-flex justify-content-between justify-content-md-end align-items-center">
+                                        <span class="fw-bold fs-5 me-3 text-dark">ยอดรวม (โดยประมาณ)</span>
+                                        <span class="fw-bolder fs-3 text-primary">฿{{ booking.calculate_total_price|intcomma }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Action Button -->
+                <div class="text-center mt-5">
+                    <a href="{% url 'public_home' %}"
+                        class="btn btn-outline-secondary rounded-pill px-4 mx-2 fw-bold"><i
+                            class="fas fa-home me-2"></i>กลับหน้าแรก</a>
+                    <a href="javascript:window.print()"
+                        class="btn btn-primary rounded-pill px-5 py-3 mx-2 fw-bold shadow-sm hover-scale"><i
+                            class="fas fa-print me-2"></i>พิมพ์รายละเอียด</a>
+                </div>
+            </div>
         </div>
     </div>
-
-    <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-        <a href="{% url 'public_home' %}" class="btn btn-outline-secondary btn-lg px-4 gap-3">กลับหน้าแรก</a>
-        <a href="{% url 'equipment_catalog' %}" class="btn btn-primary btn-lg px-4">ดูรายการอื่นๆ</a>
-    </div>
 </div>
+
+<style>
+    .border-start-md {
+        border-left: 0;
+    }
+
+    @media (min-width: 768px) {
+        .border-start-md {
+            border-left: 1px dashed #dee2e6;
+        }
+    }
+
+    .hover-scale {
+        transition: transform 0.2s;
+    }
+
+    .hover-scale:hover {
+        transform: translateY(-2px);
+    }
+
+    @media print {
+
+        .btn,
+        .bg-light,
+        footer,
+        nav,
+        header {
+            display: none !important;
+        }
+
+        .container {
+            width: 100% !important;
+            max-width: none !important;
+        }
+
+        .card {
+            border: none !important;
+            box-shadow: none !important;
+        }
+    }
+</style>
 {% endblock %}

@@ -6,150 +6,159 @@
 {% block content %}
 <div class="bg-light min-vh-100 py-5">
     <div class="container">
-
-        <!-- Header Section -->
-        <div class="text-center mb-5 fade-in-up">
+        <!-- Title -->
+        <div class="text-center mb-5">
             <h2 class="fw-bold display-5 mb-2 text-dark">ยืนยันการจอง</h2>
             <p class="text-muted lead">กรุณาตรวจสอบรายการและข้อมูลติดต่อของคุณ</p>
         </div>
 
         <div class="row g-5">
-            <!-- Order Summary (Right Column on Desktop) -->
-            <div class="col-md-5 col-lg-4 order-md-last fade-in-up" style="animation-delay: 0.1s;">
-                <div class="card border-0 shadow-sm rounded-4 overflow-hidden sticky-top"
-                    style="top: 100px; z-index: 900;">
-                    <div class="card-header bg-gradient-primary text-white py-3 position-relative"
+            <!-- 1. Booking Form (Left) -->
+            <div class="col-lg-7">
+                <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+                    <div class="card-header bg-white py-3 px-4 border-bottom">
+                        <h5 class="fw-bold mb-0 text-primary"><i class="fas fa-user-circle me-2"></i>ข้อมูลผู้จอง</h5>
+                    </div>
+                    <div class="card-body p-4 bg-white">
+                        {% if error %}
+                        <div class="alert alert-danger shadow-sm border-0 rounded-3 mb-4 d-flex align-items-center"
+                            role="alert">
+                            <i class="fas fa-exclamation-circle fs-4 me-3"></i>
+                            <div>
+                                <strong class="d-block">เกิดข้อผิดพลาด!</strong>
+                                {{ error }}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <form method="POST" class="needs-validation" novalidate id="bookingForm">
+                            {% csrf_token %}
+
+                            <!-- User Info -->
+                            <div class="row g-3 mb-4">
+                                <div class="col-12">
+                                    <label for="customer_name"
+                                        class="form-label small fw-bold text-muted text-uppercase">ชื่อ-นามสกุล /
+                                        หน่วยงาน <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control bg-light border-0 py-3" id="customer_name"
+                                        name="customer_name" placeholder="ระบุชื่อผู้จองหรือหน่วยงาน" required
+                                        value="{{ initial_name|default:'' }}">
+                                    <div class="invalid-feedback">กรุณาระบุชื่อผู้จอง</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="customer_phone"
+                                        class="form-label small fw-bold text-muted text-uppercase">เบอร์โทรศัพท์ <span
+                                            class="text-danger">*</span></label>
+                                    <input type="tel" class="form-control bg-light border-secondary py-3"
+                                        id="customer_phone" name="customer_phone" placeholder="08x-xxx-xxxx" required
+                                        value="{{ initial_phone|default:'' }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="customer_email"
+                                        class="form-label small fw-bold text-muted text-uppercase">อีเมล</label>
+                                    <input type="email" class="form-control bg-light border-secondary py-3"
+                                        id="customer_email" name="customer_email" placeholder="example@mcot.net"
+                                        value="{{ initial_email|default:'' }}">
+                                </div>
+                            </div>
+
+                            <hr class="border-light my-4">
+
+                            <!-- Date Info -->
+                            <h5 class="fw-bold mb-3 text-primary"><i
+                                    class="far fa-calendar-alt me-2"></i>กำหนดการเช่า-คืน</h5>
+
+                            <div
+                                class="p-3 bg-primary bg-opacity-10 rounded-3 mb-4 border border-primary border-opacity-25">
+                                <small class="text-primary fw-bold"><i class="fas fa-info-circle me-1"></i>
+                                    ระบบดึงวันที่ที่คุณเลือกไว้มาให้แล้วครับ</small>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="start_date"
+                                        class="form-label small fw-bold text-muted text-uppercase">วันรับของ <span
+                                            class="text-danger">*</span></label>
+                                    <input type="date" class="form-control border-secondary" id="start_date"
+                                        name="start_date" min="{{ today }}" required
+                                        value="{{ initial_start_date|default:'' }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="start_time"
+                                        class="form-label small fw-bold text-muted text-uppercase">เวลารับของ</label>
+                                    <input type="time" class="form-control border-secondary" id="start_time"
+                                        name="start_time" value="09:00" required>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="end_date"
+                                        class="form-label small fw-bold text-muted text-uppercase">วันคืนของ <span
+                                            class="text-danger">*</span></label>
+                                    <input type="date" class="form-control border-secondary" id="end_date"
+                                        name="end_date" min="{{ today }}" required
+                                        value="{{ initial_end_date|default:'' }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="end_time"
+                                        class="form-label small fw-bold text-muted text-uppercase">เวลาคืนของ</label>
+                                    <input type="time" class="form-control border-secondary" id="end_time"
+                                        name="end_time" value="18:00" required>
+                                </div>
+                            </div>
+
+                            <!-- Hidden Submit Button (Controlled by Sticky Sidebar) -->
+                            <button type="submit" id="submitBtnHidden" class="d-none"></button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Order Summary (Right - Sticky) -->
+            <div class="col-lg-5">
+                <div class="card border-0 shadow-lg rounded-4 overflow-hidden sticky-top"
+                    style="top: 2rem; z-index: 100;">
+                    <div class="card-header bg-gradient-brand text-white py-3 position-relative"
                         style="background: linear-gradient(135deg, #FF6600 0%, #FF9933 100%);">
-                        <h5 class="mb-0 fw-bold"><i class="fas fa-shopping-cart me-2"></i>สรุปรายการ (Cart)</h5>
+                        <h5 class="mb-0 fw-bold"><i class="fas fa-receipt me-2"></i>สรุปรายการ (Order Summary)</h5>
                     </div>
                     <div class="card-body p-4 bg-white">
                         <ul class="list-group list-group-flush mb-3">
                             {% for item in cart %}
                             <li
                                 class="list-group-item d-flex justify-content-between align-items-center px-0 py-3 border-bottom-dashed">
-                                <div class="me-2">
-                                    <h6 class="my-0 fw-bold text-dark">{{ item.product.name }}</h6>
-                                    <small class="text-muted">จำนวน: <span class="badge bg-light text-dark border">{{
-                                            item.quantity }}</span></small>
+                                <div class="d-flex align-items-center overflow-hidden">
+                                    <span class="badge bg-light text-dark border me-3 rounded-pill">{{ item.quantity }}x</span>
+                                    <div class="text-truncate">
+                                        <h6 class="my-0 fw-bold text-dark text-truncate">{{ item.product.name }}</h6>
+                                        <small class="text-muted">{{ item.product.category }}</small>
+                                    </div>
                                 </div>
-                                <span class="text-secondary fw-bold">฿{{ item.total_price|intcomma }}</span>
+                                <span class="text-secondary fw-bold flex-shrink-0 ms-2">฿{{ item.total_price|intcomma }}</span>
                             </li>
                             {% endfor %}
 
-                            <li class="list-group-item d-flex justify-content-between px-0 py-3 mt-2 bg-transparent">
-                                <span class="text-muted">ยอดรวม (ต่อวัน)</span>
-                                <strong class="fs-4 text-primary">฿{{ cart.get_total_price|intcomma }}</strong>
+                            <li
+                                class="list-group-item d-flex justify-content-between px-0 py-3 mt-2 bg-transparent border-top">
+                                <span class="text-muted">จำนวนวันเช่า</span>
+                                <strong class="fs-5 text-dark">{{ duration_days }} วัน</strong>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between px-0 py-3 bg-transparent">
+                                <span class="text-muted">รวมมูลค่าสินค้า (ต่อวัน)</span>
+                                <strong class="fs-5 text-dark">฿{{ cart.get_total_price|intcomma }}</strong>
                             </li>
                         </ul>
 
-                        <div class="alert alert-warning border-0 d-flex align-items-center small mb-0 rounded-3"
-                            role="alert">
-                            <i class="fas fa-info-circle me-2 fs-5"></i>
-                            <div>
-                                ราคาข้างต้นเป็นราคาเช่าต่อวัน <br>ยังไม่รวมภาษีมูลค่าเพิ่ม (VAT 7%)
-                            </div>
+                        <button onclick="document.getElementById('submitBtnHidden').click()"
+                            class="w-100 btn btn-lg rounded-pill fw-bold shadow-sm text-uppercase py-3 btn-hover-scale text-white border-0 mb-3"
+                            style="background: linear-gradient(135deg, #FF6600 0%, #FF9933 100%); letter-spacing: 1px;">
+                            <i class="fas fa-check-circle me-2"></i> ยืนยันการจอง
+                        </button>
+
+                        <div class="text-center">
+                            <small class="text-muted">
+                                <i class="fas fa-lock me-1"></i> ข้อมูลของคุณปลอดภัย
+                            </small>
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Booking Form (Left Column) -->
-            <div class="col-md-7 col-lg-8 fade-in-up" style="animation-delay: 0.2s;">
-                <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-                    <div class="card-body p-4 p-md-5 bg-white">
-                        <h4 class="mb-4 fw-bold text-dark border-bottom pb-2">ข้อมูลผู้จอง</h4>
-
-                        {% if error %}
-                        <div class="alert alert-danger shadow-sm border-0 rounded-3 mb-4" role="alert">
-                            <i class="fas fa-exclamation-circle me-2"></i>{{ error }}
-                        </div>
-                        {% endif %}
-
-                        <form method="POST" class="needs-validation" novalidate>
-                            {% csrf_token %}
-                            <div class="row g-4">
-                                <!-- Contact Info -->
-                                <div class="col-12">
-                                    <div class="form-floating">
-                                        <input type="text" class="form-control bg-light border-0" id="customer_name"
-                                            name="customer_name" placeholder="ระบุชื่อผู้จองหรือหน่วยงาน" required
-                                            value="{{ initial_name|default:'' }}">
-                                        <label for="customer_name" class="text-muted">ชื่อ-นามสกุล / ชื่อองค์กร</label>
-                                    </div>
-                                    <div class="invalid-feedback">กรุณาระบุชื่อผู้จอง</div>
-                                </div>
-
-                                <div class="col-md-6">
-                                    <div class="form-floating">
-                                        <input type="tel" class="form-control bg-light border-0" id="customer_phone"
-                                            name="customer_phone" placeholder="08x-xxx-xxxx" required>
-                                        <label for="customer_phone" class="text-muted">เบอร์โทรศัพท์
-                                            (08x-xxx-xxxx)</label>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6">
-                                    <div class="form-floating">
-                                        <input type="email" class="form-control bg-light border-0" id="customer_email"
-                                            name="customer_email" placeholder="example@mcot.net"
-                                            value="{{ initial_email|default:'' }}">
-                                        <label for="customer_email" class="text-muted">อีเมล (ถ้ามี)</label>
-                                    </div>
-                                </div>
-
-                                <div class="col-12 mt-4 mb-2">
-                                    <div class="d-flex align-items-center">
-                                        <div class="bg-primary rounded-circle p-2 text-white me-3"
-                                            style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
-                                            <i class="fas fa-calendar-alt"></i>
-                                        </div>
-                                        <h5 class="fw-bold text-dark mb-0">วันเวลาที่ต้องการเช่า-คืน</h5>
-                                    </div>
-                                </div>
-
-                                <!-- Date Selection -->
-                                <div class="col-md-6">
-                                    <div class="form-floating">
-                                        <input type="date" class="form-control bg-light border-0" id="start_date"
-                                            name="start_date" min="{{ today }}" required>
-                                        <label for="start_date" class="text-muted">วันที่รับของ</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-floating">
-                                        <input type="time" class="form-control bg-light border-0" id="start_time"
-                                            name="start_time" value="09:00" required>
-                                        <label for="start_time" class="text-muted">เวลารับของ</label>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6">
-                                    <div class="form-floating">
-                                        <input type="date" class="form-control bg-light border-0" id="end_date"
-                                            name="end_date" min="{{ today }}" required>
-                                        <label for="end_date" class="text-muted">วันที่คืนของ</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-floating">
-                                        <input type="time" class="form-control bg-light border-0" id="end_time"
-                                            name="end_time" value="18:00" required>
-                                        <label for="end_time" class="text-muted">เวลาคืนของ</label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <hr class="my-5 border-light">
-
-                            <button
-                                class="w-100 btn btn-lg rounded-pill fw-bold shadow text-uppercase py-3 btn-hover-scale text-white border-0"
-                                type="submit"
-                                style="background: linear-gradient(135deg, #FF6600 0%, #FF9933 100%); letter-spacing: 1px;">
-                                <i class="fas fa-check-circle me-2"></i> ยืนยันการจอง
-                            </button>
-                            <p class="text-center text-muted mt-3 small">
-                                เจ้าหน้าที่จะติดต่อกลับเพื่อยืนยันคิวและแจ้งยอดชำระเงิน</p>
-                        </form>
                     </div>
                 </div>
             </div>
@@ -163,25 +172,34 @@
     }
 
     .btn-hover-scale {
-        transition: all 0.2s ease;
+        transition: transform 0.2s;
     }
 
     .btn-hover-scale:hover {
-        transform: scale(1.02);
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(255, 102, 0, 0.2);
     }
 
-    .fade-in-up {
-        animation: fadeInUp 0.5s ease-out forwards;
-        opacity: 0;
-        transform: translateY(20px);
-    }
-
-    @keyframes fadeInUp {
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    .bg-gradient-brand {
+        background: linear-gradient(135deg, #FF6600 0%, #FF9933 100%);
     }
 </style>
+
+<script>
+    // Form Validation Logic
+    (function () {
+        'use strict'
+        var forms = document.querySelectorAll('.needs-validation')
+        Array.prototype.slice.call(forms)
+            .forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
+    })()
+</script>
 {% endblock %}

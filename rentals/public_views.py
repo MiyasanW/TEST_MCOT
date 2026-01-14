@@ -240,7 +240,9 @@ def cart_add(request, product_id):
         # Stock might have changed or was invalid
         return redirect('product_detail', product_id=product.id)
         
-    cart.add(product=product, quantity=quantity)
+    # Use update_quantity=True to REPLACE the quantity instead of adding to it
+    # This prevents accidental "9x" if user clicks repeatedly
+    cart.add(product=product, quantity=quantity, update_quantity=True)
     return redirect('cart_detail')
 
 def cart_remove(request, product_id):
@@ -251,9 +253,31 @@ def cart_remove(request, product_id):
 
 def cart_detail(request):
     cart = Cart(request)
-    return render(request, 'rentals/public/cart_detail.html', {'cart': cart})
+    # Pass persistent booking dates to template
+    start_date = request.session.get('booking_start_date')
+    end_date = request.session.get('booking_end_date')
+    
+    # Calculate Duration Days
+    duration_days = 1
+    if start_date and end_date:
+        try:
+            from datetime import datetime
+            s = datetime.strptime(start_date, "%Y-%m-%d")
+            e = datetime.strptime(end_date, "%Y-%m-%d")
+            delta = e - s
+            duration_days = max(1, delta.days + 1)
+        except ValueError:
+            pass
+
+    return render(request, 'rentals/public/cart_detail.html', {
+        'cart': cart,
+        'start_date': start_date,
+        'end_date': end_date,
+        'duration_days': duration_days
+    })
 
 def checkout(request):
+    from datetime import datetime
     cart = Cart(request)
     if len(cart) == 0:
         return redirect('equipment_catalog')
@@ -337,10 +361,30 @@ def checkout(request):
     
     # Pre-fill data for GET request
     context = {'cart': cart, 'today': timezone.now().date().isoformat()}
+
+    # Pre-fill Booking Dates from Session if available
+    context['initial_start_date'] = request.session.get('booking_start_date')
+    context['initial_end_date'] = request.session.get('booking_end_date')
+
+    # Calculate Duration Days for Display
+    if context['initial_start_date'] and context['initial_end_date']:
+        try:
+            from datetime import datetime
+            s = datetime.strptime(context['initial_start_date'], "%Y-%m-%d")
+            e = datetime.strptime(context['initial_end_date'], "%Y-%m-%d")
+            delta = e - s
+            context['duration_days'] = max(1, delta.days + 1) # Inclusive
+        except ValueError:
+             context['duration_days'] = 1
+    else:
+        context['duration_days'] = 1
+
     if request.user.is_authenticated:
         context['initial_name'] = f"{request.user.first_name} {request.user.last_name}".strip() or request.user.username
         context['initial_email'] = request.user.email
-        # Phone might be in Profile model if extended, but for now leave empty
+        # Try to get phone from Profile if exists
+        if hasattr(request.user, 'profile'):
+            context['initial_phone'] = request.user.profile.phone
         
     return render(request, 'rentals/public/checkout.html', context)
 
