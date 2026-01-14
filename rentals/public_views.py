@@ -52,19 +52,100 @@ def equipment_catalog(request):
     if category:
         product_list = product_list.filter(category=category)
         
+    # --- Date-Based Availability Logic ---
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    
+    # Validation Date
+    search_start_date = None
+    search_end_date = None
+    
+    if start_date and end_date:
+        try:
+            from datetime import datetime
+            from django.db.models import Sum
+            from .models import BookingItem # Already imported at top, but keeping for context of snippet
+            
+            # Parse Date (Assuming format YYYY-MM-DD from HTML5 input)
+            search_start_date = datetime.strptime(start_date, "%Y-%m-%d")
+            search_end_date = datetime.strptime(end_date, "%Y-%m-%d")
+            
+            # Adjust end date to cover the full day (if needed) or assuming user inputs inclusive range
+            # For simplicity, let's assume end_date is inclusive 23:59:59 or handle as date object comparison
+            
+            # Calculate Remaining for EACH product in the list
+            for product in product_list:
+                # Find overlapping bookings
+                booked_qty = BookingItem.objects.filter(
+                    product=product,
+                    booking__status__in=['draft', 'quotation_sent', 'pending_deposit', 'approved', 'active'],
+                    booking__start_time__lte=search_end_date,
+                    booking__end_time__gte=search_start_date
+                ).aggregate(Sum('quantity'))['quantity__sum'] or 0
+                
+                # Attach attribute dynamically
+                product.calculated_remaining = max(0, product.quantity - booked_qty)
+                product.is_date_filtered = True
+                
+        except ValueError:
+            pass # Invalid date format, ignore
+            
+    if not search_start_date:
+        # Default case: Show TOTAL quantity if no date selected
+        for product in product_list:
+            product.calculated_remaining = product.quantity
+            product.is_date_filtered = False
+            
     context = {
-        'equipment_list': product_list, # ใช้ชื่อตัวแปรเดิมเพื่อไม่ต้องแก้ Template เยอะ
+        'equipment_list': product_list, 
         'categories': Product.CATEGORY_CHOICES,
         'current_category': category,
         'query': query,
+        'start_date': start_date,
+        'end_date': end_date,
     }
     return render(request, 'rentals/public/catalog.html', context)
 
 def product_detail(request, product_id):
     """
     หน้ารายละเอียดสินค้า (Product Detail)
+    รองรับการระบุวันที่เช่า (start_date, end_date) เพื่อเช็ค Available
     """
     product = get_object_or_404(Product, id=product_id)
+    
+    # --- Date-Based Availability Logic ---
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    
+    search_start_date = None
+    search_end_date = None
+    
+    # Default: Show "Total Available Now" if no date selected
+    # But if date selected, calculate "Available in Range"
+    product.calculated_remaining = product.remaining_quantity # Default fallback
+    
+    if start_date and end_date:
+        try:
+            from datetime import datetime
+            from django.db.models import Sum
+            from .models import BookingItem
+            
+            search_start_date = datetime.strptime(start_date, "%Y-%m-%d")
+            search_end_date = datetime.strptime(end_date, "%Y-%m-%d")
+            
+            # Check overlap
+            booked_qty = BookingItem.objects.filter(
+                product=product,
+                booking__status__in=['draft', 'quotation_sent', 'pending_deposit', 'approved', 'active'],
+                booking__start_time__lte=search_end_date,
+                booking__end_time__gte=search_start_date
+            ).aggregate(Sum('quantity'))['quantity__sum'] or 0
+            
+            product.calculated_remaining = max(0, product.quantity - booked_qty)
+            product.is_date_filtered = True
+            
+        except ValueError:
+            pass 
     
     # Related products (Same category, exclude self)
     related_products = Product.objects.filter(
@@ -74,7 +155,9 @@ def product_detail(request, product_id):
     
     return render(request, 'rentals/public/product_detail.html', {
         'product': product,
-        'related_products': related_products
+        'related_products': related_products,
+        'start_date': start_date,
+        'end_date': end_date,
     })
 
 def studios(request):
@@ -119,8 +202,44 @@ def contact(request):
 def cart_add(request, product_id):
     cart = Cart(request)
     product = get_object_or_404(Product, id=product_id)
-    # รับ quantity จาก form ถ้ามี
     quantity = int(request.POST.get('quantity', 1))
+    
+    # Validation: Date is mandatory for rental
+    start_date = request.POST.get('start_date')
+    end_date = request.POST.get('end_date')
+    
+    if not start_date or not end_date:
+        # If accessing directly without dates, redirect back to product detail
+        # In a real app, add a flash message "Please select dates"
+        return redirect('product_detail', product_id=product.id)
+
+    # Save dates to SESSION (Global Booking Period)
+    # This assumes a "One Booking = One Period" model for simplicity
+    request.session['booking_start_date'] = start_date
+    request.session['booking_end_date'] = end_date
+    
+    # Check Stock for Specific Dates
+    # (Re-calculate availability for server-side security)
+    from datetime import datetime
+    from django.db.models import Sum
+    from .models import BookingItem
+    
+    s_date = datetime.strptime(start_date, "%Y-%m-%d")
+    e_date = datetime.strptime(end_date, "%Y-%m-%d")
+    
+    booked_qty = BookingItem.objects.filter(
+        product=product,
+        booking__status__in=['draft', 'quotation_sent', 'pending_deposit', 'approved', 'active'],
+        booking__start_time__lte=e_date,
+        booking__end_time__gte=s_date
+    ).aggregate(Sum('quantity'))['quantity__sum'] or 0
+    
+    real_available = max(0, product.quantity - booked_qty)
+    
+    if real_available < quantity:
+        # Stock might have changed or was invalid
+        return redirect('product_detail', product_id=product.id)
+        
     cart.add(product=product, quantity=quantity)
     return redirect('cart_detail')
 
@@ -153,6 +272,15 @@ def checkout(request):
         try:
             start_dt = datetime.strptime(f"{start_date} {start_time}", "%Y-%m-%d %H:%M")
             end_dt = datetime.strptime(f"{end_date} {end_time}", "%Y-%m-%d %H:%M")
+            
+            # --- STOCK VALIDATION ---
+            for item in cart:
+                product = item['product']
+                req_qty = item['quantity']
+                if product.remaining_quantity < req_qty:
+                    error = f"ขออภัย สินค้า '{product.name}' คงเหลือไม่เพียงพอ (เหลือ {product.remaining_quantity} ชิ้น)"
+                    return render(request, 'rentals/public/checkout.html', {'cart': cart, 'error': error})
+            # ------------------------
             
             # Create Booking
             booking_data = {

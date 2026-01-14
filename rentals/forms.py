@@ -261,6 +261,9 @@ class StaffAdminForm(forms.ModelForm):
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 
+from django.core.validators import RegexValidator
+from django.core.exceptions import ValidationError
+
 class RegisterForm(UserCreationForm):
     """
     แบบฟอร์มลงทะเบียนลูกค้าใหม่ พร้อมยอมรับเงื่อนไข
@@ -278,7 +281,33 @@ class RegisterForm(UserCreationForm):
     email = forms.EmailField(
         required=True,
         label="อีเมล",
-        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'example@email.com'})
+        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'example@email.com'}),
+        error_messages={
+            'invalid': 'รูปแบบอีเมลไม่ถูกต้อง (ต้องมีเครื่องหมาย @ และห้ามใส่ภาษาไทย)',
+            'required': 'กรุณาระบุอีเมล',
+            'unique': 'อีเมลนี้มีผู้ใช้งานแล้ว'
+        }
+    )
+    phone = forms.CharField(
+        required=True,
+        label="เบอร์โทรศัพท์",
+        max_length=10,
+        validators=[
+            RegexValidator(
+                regex=r'^\d+$',
+                message="เบอร์โทรศัพท์ต้องเป็นตัวเลขเท่านั้น"
+            ),
+            RegexValidator(
+                regex=r'^0\d{9}$',
+                message="รูปแบบไม่ถูกต้อง (ต้องขึ้นต้นด้วย 0 และมีครบ 10 หลัก)"
+            )
+        ],
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': '08X-XXX-XXXX'}),
+        error_messages={
+            'required': 'กรุณาระบุเบอร์โทรศัพท์',
+            'max_length': 'เบอร์โทรศัพท์ต้องไม่เกิน 10 หลัก',
+            'min_length': 'เบอร์โทรศัพท์ต้องมีอย่างน้อย 10 หลัก'
+        }
     )
     terms_accepted = forms.BooleanField(
         required=True,
@@ -288,7 +317,7 @@ class RegisterForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'last_name', 'email']
+        fields = ['username', 'first_name', 'last_name', 'email', 'phone']
         labels = {
             'username': 'ชื่อผู้ใช้',
         }
@@ -296,16 +325,23 @@ class RegisterForm(UserCreationForm):
             'username': 'ใช้ตัวอักษรภาษาอังกฤษ ตัวเลข และอักขระ @/./+/-/_ เท่านั้น (ไม่เกิน 150 ตัวอักษร)',
         }
         
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email=email).exists():
+            raise ValidationError("อีเมลนี้มีผู้ใช้งานแล้ว")
+        return email
+
+    def clean_phone(self):
+        phone = self.cleaned_data.get('phone')
+        return phone
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
         # Style all standard fields
         for field_name, field in self.fields.items():
-            # Force Thai Error Messages
-            field.error_messages.update({
-                'required': 'กรุณาระบุข้อมูลนี้',
-                'invalid': 'ข้อมูลไม่ถูกต้อง',
-            })
+            # Force Thai Error Messages (Only required, let individual fields handle invalid)
+            field.error_messages.setdefault('required', 'กรุณาระบุข้อมูลนี้')
             
             if field_name == 'terms_accepted':
                 field.error_messages['required'] = 'กรุณายอมรับเงื่อนไขการใช้งาน'
@@ -313,7 +349,7 @@ class RegisterForm(UserCreationForm):
                 
             # Add Bootstrap classes
             existing_class = field.widget.attrs.get('class', '')
-            field.widget.attrs['class'] = f"{existing_class} form-control form-control-lg bg-light border-0".strip()
+            field.widget.attrs['class'] = f"{existing_class} form-control form-control-lg".strip()
             field.widget.attrs['style'] = 'font-size: 0.95rem;'
 
         # Customization for specific fields
@@ -331,6 +367,9 @@ class RegisterForm(UserCreationForm):
         if 'email' in self.fields:
             self.fields['email'].widget.attrs['placeholder'] = 'example@email.com'
             self.fields['email'].label = "อีเมล"
+            
+        if 'phone' in self.fields:
+            self.fields['phone'].widget.attrs['placeholder'] = '08X-XXX-XXXX'
 
         # Password 1 (Create)
         if 'password1' in self.fields:
@@ -344,3 +383,21 @@ class RegisterForm(UserCreationForm):
              self.fields['password2'].help_text = "ระบุรหัสผ่านเดิมอีกครั้งเพื่อความถูกต้อง"
              self.fields['password2'].widget.attrs['placeholder'] = 'ยืนยันรหัสผ่านอีกครั้ง'
 
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.email = self.cleaned_data['email']
+        user.first_name = self.cleaned_data['first_name']
+        user.last_name = self.cleaned_data['last_name']
+        
+        if commit:
+            user.save()
+            # Save Phone to Profile
+            if hasattr(user, 'profile'):
+                user.profile.phone = self.cleaned_data['phone']
+                user.profile.save()
+            else:
+                # Fallback if signal didn't run or race condition
+                from .models import UserProfile
+                UserProfile.objects.create(user=user, phone=self.cleaned_data['phone'])
+                
+        return user

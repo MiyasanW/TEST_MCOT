@@ -97,6 +97,29 @@ class Product(models.Model):
             'other': 'fas fa-box'
         }
         return icons.get(self.category, 'fas fa-box')
+        
+    @property
+    def remaining_quantity(self):
+        """
+        คำนวณจำนวนคงเหลือที่ว่างจริง ณ ปัจจุบัน (Available Now)
+        สูตร: จำนวนทั้งหมด - จำนวนที่ถูกจองในช่วงเวลานี้ (Approved/Active)
+        """
+        from django.db.models import Sum
+        from django.utils import timezone
+        
+        now = timezone.now()
+        # Import Booking inside method to avoid circular import
+        from .models import BookingItem 
+        
+        # หา Booking ที่ Active อยู่ตอนนี้ (รวม Draft/Pending เพื่อตัด Stock หน้าเว็บ)
+        booked_qty = BookingItem.objects.filter(
+            product=self,
+            booking__status__in=['draft', 'quotation_sent', 'pending_deposit', 'approved', 'active'], 
+            booking__start_time__lte=now,
+            booking__end_time__gte=now
+        ).aggregate(Sum('quantity'))['quantity__sum'] or 0
+        
+        return max(0, self.quantity - booked_qty)
 
 
 class Equipment(models.Model):

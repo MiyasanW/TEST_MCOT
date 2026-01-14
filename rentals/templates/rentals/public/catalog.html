@@ -12,39 +12,65 @@
         </div>
 
         <div class="row">
-            <!-- Sidebar Filters -->
-            <div class="col-lg-3 mb-4">
-                <div class="card border-0 shadow-sm sticky-top rounded-4 overflow-hidden" style="top: 100px;">
-                    <div class="card-body p-4">
-                        <h5 class="fw-bold mb-3 text-dark"><i class="fas fa-filter text-brand me-2"></i> ตัวกรอง</h5>
+            <!-- Filter by Category & Date -->
+            <div class="col-lg-3">
+                <div class="card border-0 shadow-sm rounded-4 p-4 sticky-top" style="top: 2rem; z-index: 100;">
+                    <h5 class="fw-bold mb-3"><i class="fas fa-filter me-2"></i>ตัวกรอง</h5>
 
-                        <!-- Search -->
-                        <form method="get" class="mb-4">
-                            <div class="input-group">
-                                <input type="text" name="q" class="form-control bg-light border-0 py-2"
-                                    placeholder="ค้นหา..." value="{{ query|default:'' }}">
-                                <button class="btn btn-brand" type="submit"><i class="fas fa-search"></i></button>
-                            </div>
-                        </form>
-
-                        <!-- Categories -->
-                        <h6 class="fw-bold text-muted mb-3 text-uppercase small ls-1">หมวดหมู่</h6>
-                        <div class="list-group list-group-flush gap-2">
-                            <a href="?q={{ query|default:'' }}"
-                                class="list-group-item list-group-item-action rounded-3 px-3 py-2 d-flex align-items-center justify-content-between {% if not current_category %}active-category{% else %}text-secondary{% endif %}">
-                                <span>ทั้งหมด</span>
-                                <i class="fas fa-chevron-right small opacity-50"></i>
-                            </a>
-                            {% for cat_val, cat_label in categories %}
-                            <a href="?category={{ cat_val }}&q={{ query|default:'' }}"
-                                class="list-group-item list-group-item-action rounded-3 px-3 py-2 d-flex align-items-center justify-content-between {% if current_category == cat_val %}active-category{% else %}text-secondary{% endif %}">
-                                <span>{{ cat_label }}</span>
-                                {% if current_category == cat_val %}
-                                <i class="fas fa-chevron-right small"></i>
-                                {% endif %}
-                            </a>
-                            {% endfor %}
+                    <!-- Search -->
+                    <form action="{% url 'equipment_catalog' %}" method="GET" class="mb-4">
+                        {% if current_category %}
+                        <input type="hidden" name="category" value="{{ current_category }}">
+                        {% endif %}
+                        <div class="input-group">
+                            <input type="text" name="q" class="form-control border-end-0" placeholder="ค้นหา..."
+                                value="{{ query }}" style="border-color: #ced4da;">
+                            <button class="btn btn-outline-secondary border-start-0" type="submit"
+                                style="border-color: #ced4da; color: #6c757d;">
+                                <i class="fas fa-search"></i>
+                            </button>
                         </div>
+                    </form>
+
+                    <!-- Date Filter (Restored) -->
+                    <form action="{% url 'equipment_catalog' %}" method="GET" class="mb-4">
+                        <label class="form-label small fw-bold text-muted">เช็คความว่างตามวันที่</label>
+                        {% if query %}
+                        <input type="hidden" name="q" value="{{ query }}">
+                        {% endif %}
+
+                        {% if current_category %}
+                        <input type="hidden" name="category" value="{{ current_category }}">
+                        {% endif %}
+
+                        <div class="mb-2">
+                            <input type="date" name="start_date" class="form-control mb-2" value="{{ start_date }}"
+                                required>
+                            <input type="date" name="end_date" class="form-control" value="{{ end_date }}" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 btn-sm rounded-pill">
+                            <i class="far fa-calendar-check me-1"></i> ตรวจสอบ
+                        </button>
+
+                        {% if start_date %}
+                        <a href="{% url 'equipment_catalog' %}?{% if current_category %}category={{ current_category }}{% endif %}"
+                            class="btn btn-link w-100 btn-sm text-muted text-decoration-none mt-1">ล้างวันที่</a>
+                        {% endif %}
+                    </form>
+
+                    <!-- Categories -->
+                    <h6 class="fw-bold mb-3 text-muted small text-uppercase">หมวดหมู่</h6>
+                    <div class="list-group list-group-flush">
+                        <a href="{% url 'equipment_catalog' %}"
+                            class="list-group-item list-group-item-action border-0 rounded-3 mb-1 px-3 py-2 {% if not current_category %}active bg-primary text-white shadow-sm{% else %}bg-transparent{% endif %}">
+                            <i class="fas fa-th-large me-2"></i>ทั้งหมด
+                        </a>
+                        {% for key, label in categories %}
+                        <a href="{% url 'equipment_catalog' %}?category={{ key }}{% if start_date %}&start_date={{ start_date }}&end_date={{ end_date }}{% endif %}"
+                            class="list-group-item list-group-item-action border-0 rounded-3 mb-1 px-3 py-2 {% if current_category == key %}active bg-primary text-white shadow-sm{% else %}bg-transparent text-secondary{% endif %}">
+                            {{ label }}
+                        </a>
+                        {% endfor %}
                     </div>
                 </div>
             </div>
@@ -52,44 +78,49 @@
             <!-- Product Grid -->
             <div class="col-lg-9">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <span class="text-muted">พบ {{ equipment_list.count }} รายการ</span>
+                    <p class="mb-0 text-muted">พบ {{ equipment_list.count }} รายการ</p>
                     <div class="dropdown">
-                        <button class="btn btn-white border shadow-sm dropdown-toggle px-3 py-2 rounded-pill"
-                            type="button" data-bs-toggle="dropdown">
+                        <button class="btn btn-light dropdown-toggle rounded-pill px-4 shadow-sm border" type="button"
+                            data-bs-toggle="dropdown">
                             เรียงตาม: ล่าสุด
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-4 mt-2">
-                            <li><a class="dropdown-item py-2" href="#">ล่าสุด</a></li>
-                            <li><a class="dropdown-item py-2" href="#">ราคา: ต่ำ-สูง</a></li>
-                            <li><a class="dropdown-item py-2" href="#">ราคา: สูง-ต่ำ</a></li>
+                        <ul class="dropdown-menu border-0 shadow-lg rounded-4">
+                            <li><a class="dropdown-item" href="#">ล่าสุด</a></li>
+                            <li><a class="dropdown-item" href="#">ราคา (น้อยไปมาก)</a></li>
+                            <li><a class="dropdown-item" href="#">ราคา (มากไปน้อย)</a></li>
                         </ul>
                     </div>
                 </div>
 
                 <div class="row g-4">
                     {% for item in equipment_list %}
-                    <div class="col-md-6 col-lg-4">
-                        <div class="card h-100 border-0 shadow-hover product-card rounded-4 overflow-hidden bg-white">
-                            <a href="{% url 'product_detail' item.id %}" class="text-decoration-none">
-                                <div class="position-relative overflow-hidden product-image-container">
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-hover h-100 rounded-4 overflow-hidden product-card">
+                            <a href="{% url 'product_detail' item.id %}{% if start_date %}?start_date={{ start_date }}&end_date={{ end_date }}{% endif %}"
+                                class="text-decoration-none">
+                                <div class="position-relative">
                                     {% if item.image %}
-                                    <img src="{{ item.image.url }}"
-                                        class="card-img-top object-fit-cover w-100 h-100 transition-transform"
-                                        alt="{{ item.name }}">
+                                    <img src="{{ item.image.url }}" class="card-img-top object-fit-cover"
+                                        alt="{{ item.name }}" style="height: 250px;">
                                     {% else %}
-                                    <div
-                                        class="bg-light text-muted d-flex align-items-center justify-content-center w-100 h-100">
-                                        <i class="fas fa-image fa-2x opacity-25"></i>
+                                    <div class="bg-light d-flex align-items-center justify-content-center text-muted"
+                                        style="height: 250px;">
+                                        <i class="fas fa-image fa-3x opacity-25"></i>
                                     </div>
                                     {% endif %}
 
-                                    <!-- Status Badge -->
                                     <div class="position-absolute top-0 end-0 m-3">
-                                        {% if item.is_active and item.quantity > 0 %}
-                                        <span
-                                            class="badge bg-white text-success shadow-sm rounded-pill px-3 py-2 d-flex align-items-center gap-1">
-                                            <i class="fas fa-circle small" style="font-size: 0.5rem;"></i> ว่าง {{                       item.quantity }}
+                                        {% if item.is_active and item.calculated_remaining > 0 %}
+                                        {% if item.is_date_filtered %}
+                                        <span class="badge bg-white text-success shadow-sm rounded-pill px-3 py-2">
+                                            <i class="fas fa-check-circle small"></i> ว่าง {{ item.calculated_remaining
+                                            }}
                                         </span>
+                                        {% else %}
+                                        <span class="badge bg-white text-primary shadow-sm rounded-pill px-3 py-2">
+                                            <i class="fas fa-box small"></i> มี {{ item.calculated_remaining }}
+                                        </span>
+                                        {% endif %}
                                         {% else %}
                                         <span
                                             class="badge bg-white text-secondary shadow-sm rounded-pill px-3 py-2">หมด</span>
