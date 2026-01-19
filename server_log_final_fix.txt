@@ -1,0 +1,50 @@
+Watching for file changes with StatReloader
+[16/Jan/2026 14:34:05] "GET /admin/ HTTP/1.1" 200 49419
+[16/Jan/2026 14:34:51] "GET /rentals/inventory/ HTTP/1.1" 200 40776
+[16/Jan/2026 14:39:15] "GET /rentals/api/notifications/ HTTP/1.1" 200 1129
+[16/Jan/2026 14:43:32] "GET /admin/ HTTP/1.1" 200 49419
+Performing system checks...
+
+System check identified no issues (0 silenced).
+January 16, 2026 - 14:34:01
+Django version 4.2.27, using settings 'mcot_rental.settings'
+Starting development server at http://0.0.0.0:8000/
+Quit the server with CONTROL-C.
+
+Watching for file changes with StatReloader
+[16/Jan/2026 16:05:55] "GET /admin/ HTTP/1.1" 200 41489
+/Users/thanandorn/Desktop/TESTMCOT/rentals/templatetags/dashboard_tags.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+January 16, 2026 - 16:05:52
+Django version 4.2.27, using settings 'mcot_rental.settings'
+Starting development server at http://0.0.0.0:8000/
+Quit the server with CONTROL-C.
+
+Watching for file changes with StatReloader
+Performing system checks...
+
+System check identified no issues (0 silenced).
+January 16, 2026 - 16:08:35
+Django version 4.2.27, using settings 'mcot_rental.settings'
+Starting development server at http://0.0.0.0:8000/
+Quit the server with CONTROL-C.
+
+Watching for file changes with StatReloader
+[16/Jan/2026 16:36:59] "GET /admin/ HTTP/1.1" 200 62654
+[16/Jan/2026 16:37:08] "GET /admin/rentals/booking/23/change/ HTTP/1.1" 200 90878
+[16/Jan/2026 16:37:08] "GET /static/rentals/js/admin_booking_actions.js?v=4 HTTP/1.1" 304 0
+[16/Jan/2026 16:37:08] "GET /admin/jsi18n/ HTTP/1.1" 200 3343
+[16/Jan/2026 16:37:15] "GET /admin/ HTTP/1.1" 200 62643
+[16/Jan/2026 16:50:29] "GET /admin/rentals/booking/23/change/ HTTP/1.1" 200 90878
+[16/Jan/2026 16:50:29] "GET /admin/jsi18n/ HTTP/1.1" 200 3343
+[16/Jan/2026 16:50:34] "GET /admin/ HTTP/1.1" 200 62644
+Performing system checks...
+
+System check identified no issues (0 silenced).
+January 16, 2026 - 16:36:56
+Django version 4.2.27, using settings 'mcot_rental.settings'
+Starting development server at http://0.0.0.0:8000/
+Quit the server with CONTROL-C.
+

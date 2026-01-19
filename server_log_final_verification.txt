@@ -1,0 +1,11 @@
+Watching for file changes with StatReloader
+[16/Jan/2026 16:03:49] "GET /admin/ HTTP/1.1" 200 61739
+[16/Jan/2026 16:04:00] "GET /admin/ HTTP/1.1" 200 61739
+Performing system checks...
+
+System check identified no issues (0 silenced).
+January 16, 2026 - 16:03:46
+Django version 4.2.27, using settings 'mcot_rental.settings'
+Starting development server at http://0.0.0.0:8000/
+Quit the server with CONTROL-C.
+

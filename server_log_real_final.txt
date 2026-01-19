@@ -1,0 +1,341 @@
+Watching for file changes with StatReloader
+Internal Server Error: /admin/
+Traceback (most recent call last):
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/core/handlers/base.py", line 220, in _get_response
+    response = response.render()
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/response.py", line 90, in rendered_content
+    template = self.resolve_template(self.template_name)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/response.py", line 74, in resolve_template
+    return get_template(template, using=self.using)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/backends/django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/engine.py", line 175, in get_template
+    template, origin = self.find_template(template_name)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/engine.py", line 157, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/loaders/cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/loaders/base.py", line 28, in get_template
+    return Template(
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 200, in compile_nodelist
+    return parser.parse()
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 513, in parse
+    raise self.error(token, e)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 511, in parse
+    compiled_result = compile_func(self, token)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/loader_tags.py", line 293, in do_extends
+    nodelist = parser.parse()
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 513, in parse
+    raise self.error(token, e)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 511, in parse
+    compiled_result = compile_func(self, token)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/loader_tags.py", line 232, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 484, in parse
+    raise self.error(token, e)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 482, in parse
+    filter_expression = self.compile_filter(token.contents)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 600, in compile_filter
+    return FilterExpression(token, self)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 699, in __init__
+    self.args_check(filter_name, filter_func, args)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 761, in args_check
+    raise TemplateSyntaxError(
+django.template.exceptions.TemplateSyntaxError: default requires 2 arguments, 1 provided
+[16/Jan/2026 15:14:26] "GET /admin/ HTTP/1.1" 500 190371
+[16/Jan/2026 15:14:44] "GET /admin/login/ HTTP/1.1" 302 0
+Internal Server Error: /admin/
+Traceback (most recent call last):
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/core/handlers/base.py", line 220, in _get_response
+    response = response.render()
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/response.py", line 90, in rendered_content
+    template = self.resolve_template(self.template_name)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/response.py", line 74, in resolve_template
+    return get_template(template, using=self.using)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/backends/django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/engine.py", line 175, in get_template
+    template, origin = self.find_template(template_name)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/engine.py", line 157, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/loaders/cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/loaders/base.py", line 28, in get_template
+    return Template(
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 200, in compile_nodelist
+    return parser.parse()
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 513, in parse
+    raise self.error(token, e)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 511, in parse
+    compiled_result = compile_func(self, token)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/loader_tags.py", line 293, in do_extends
+    nodelist = parser.parse()
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 513, in parse
+    raise self.error(token, e)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 511, in parse
+    compiled_result = compile_func(self, token)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/loader_tags.py", line 232, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 484, in parse
+    raise self.error(token, e)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 482, in parse
+    filter_expression = self.compile_filter(token.contents)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 600, in compile_filter
+    return FilterExpression(token, self)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 699, in __init__
+    self.args_check(filter_name, filter_func, args)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 761, in args_check
+    raise TemplateSyntaxError(
+django.template.exceptions.TemplateSyntaxError: default requires 2 arguments, 1 provided
+[16/Jan/2026 15:14:44] "GET /admin/ HTTP/1.1" 500 190371
+[16/Jan/2026 15:14:48] "GET /rentals/api/notifications/ HTTP/1.1" 200 1101
+Internal Server Error: /admin/
+Traceback (most recent call last):
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/core/handlers/base.py", line 220, in _get_response
+    response = response.render()
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/response.py", line 90, in rendered_content
+    template = self.resolve_template(self.template_name)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/response.py", line 74, in resolve_template
+    return get_template(template, using=self.using)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/backends/django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/engine.py", line 175, in get_template
+    template, origin = self.find_template(template_name)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/engine.py", line 157, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/loaders/cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/loaders/base.py", line 28, in get_template
+    return Template(
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 200, in compile_nodelist
+    return parser.parse()
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 513, in parse
+    raise self.error(token, e)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 511, in parse
+    compiled_result = compile_func(self, token)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/loader_tags.py", line 293, in do_extends
+    nodelist = parser.parse()
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 513, in parse
+    raise self.error(token, e)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 511, in parse
+    compiled_result = compile_func(self, token)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/loader_tags.py", line 232, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 484, in parse
+    raise self.error(token, e)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 482, in parse
+    filter_expression = self.compile_filter(token.contents)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 600, in compile_filter
+    return FilterExpression(token, self)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 699, in __init__
+    self.args_check(filter_name, filter_func, args)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 761, in args_check
+    raise TemplateSyntaxError(
+django.template.exceptions.TemplateSyntaxError: default requires 2 arguments, 1 provided
+[16/Jan/2026 15:14:56] "GET /admin/ HTTP/1.1" 500 190665
+[16/Jan/2026 15:15:10] "GET / HTTP/1.1" 200 42395
+[16/Jan/2026 15:15:10] "GET /rentals/api/notifications/ HTTP/1.1" 200 1101
+[16/Jan/2026 15:15:18] "GET /rentals/api/notifications/ HTTP/1.1" 200 1087
+Internal Server Error: /admin/
+Traceback (most recent call last):
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/core/handlers/base.py", line 220, in _get_response
+    response = response.render()
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/response.py", line 90, in rendered_content
+    template = self.resolve_template(self.template_name)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/response.py", line 74, in resolve_template
+    return get_template(template, using=self.using)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/backends/django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/engine.py", line 175, in get_template
+    template, origin = self.find_template(template_name)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/engine.py", line 157, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/loaders/cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/loaders/base.py", line 28, in get_template
+    return Template(
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 200, in compile_nodelist
+    return parser.parse()
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 513, in parse
+    raise self.error(token, e)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 511, in parse
+    compiled_result = compile_func(self, token)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/loader_tags.py", line 293, in do_extends
+    nodelist = parser.parse()
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 513, in parse
+    raise self.error(token, e)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 511, in parse
+    compiled_result = compile_func(self, token)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/loader_tags.py", line 232, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 484, in parse
+    raise self.error(token, e)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 482, in parse
+    filter_expression = self.compile_filter(token.contents)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 600, in compile_filter
+    return FilterExpression(token, self)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 699, in __init__
+    self.args_check(filter_name, filter_func, args)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 761, in args_check
+    raise TemplateSyntaxError(
+django.template.exceptions.TemplateSyntaxError: default requires 2 arguments, 1 provided
+[16/Jan/2026 15:15:36] "GET /admin/ HTTP/1.1" 500 190371
+[16/Jan/2026 15:15:40] "GET /rentals/api/notifications/ HTTP/1.1" 200 1087
+[16/Jan/2026 15:15:48] "GET /rentals/api/notifications/ HTTP/1.1" 200 1087
+Not Found: /admin/rentals/rental/
+[16/Jan/2026 15:15:48] "GET /admin/rentals/rental/ HTTP/1.1" 404 6079
+[16/Jan/2026 15:15:56] "GET /admin/rentals/booking/ HTTP/1.1" 200 208496
+[16/Jan/2026 15:15:56] "GET /admin/jsi18n/ HTTP/1.1" 200 3343
+[16/Jan/2026 15:16:10] "GET /rentals/api/notifications/ HTTP/1.1" 200 1087
+Internal Server Error: /admin/
+Traceback (most recent call last):
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/core/handlers/base.py", line 220, in _get_response
+    response = response.render()
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/response.py", line 90, in rendered_content
+    template = self.resolve_template(self.template_name)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/response.py", line 74, in resolve_template
+    return get_template(template, using=self.using)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/backends/django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/engine.py", line 175, in get_template
+    template, origin = self.find_template(template_name)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/engine.py", line 157, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/loaders/cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/loaders/base.py", line 28, in get_template
+    return Template(
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 200, in compile_nodelist
+    return parser.parse()
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 513, in parse
+    raise self.error(token, e)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 511, in parse
+    compiled_result = compile_func(self, token)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/loader_tags.py", line 293, in do_extends
+    nodelist = parser.parse()
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 513, in parse
+    raise self.error(token, e)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 511, in parse
+    compiled_result = compile_func(self, token)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/loader_tags.py", line 232, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 484, in parse
+    raise self.error(token, e)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 482, in parse
+    filter_expression = self.compile_filter(token.contents)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 600, in compile_filter
+    return FilterExpression(token, self)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 699, in __init__
+    self.args_check(filter_name, filter_func, args)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 761, in args_check
+    raise TemplateSyntaxError(
+django.template.exceptions.TemplateSyntaxError: default requires 2 arguments, 1 provided
+[16/Jan/2026 15:16:11] "GET /admin/ HTTP/1.1" 500 190371
+[16/Jan/2026 15:16:18] "GET /rentals/api/notifications/ HTTP/1.1" 200 1087
+[16/Jan/2026 15:16:40] "GET /rentals/api/notifications/ HTTP/1.1" 200 1087
+Internal Server Error: /admin/
+Traceback (most recent call last):
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/core/handlers/base.py", line 220, in _get_response
+    response = response.render()
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/response.py", line 90, in rendered_content
+    template = self.resolve_template(self.template_name)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/response.py", line 74, in resolve_template
+    return get_template(template, using=self.using)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/backends/django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/engine.py", line 175, in get_template
+    template, origin = self.find_template(template_name)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/engine.py", line 157, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/loaders/cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/loaders/base.py", line 28, in get_template
+    return Template(
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 200, in compile_nodelist
+    return parser.parse()
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 513, in parse
+    raise self.error(token, e)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 511, in parse
+    compiled_result = compile_func(self, token)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/loader_tags.py", line 293, in do_extends
+    nodelist = parser.parse()
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 513, in parse
+    raise self.error(token, e)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 511, in parse
+    compiled_result = compile_func(self, token)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/loader_tags.py", line 232, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 484, in parse
+    raise self.error(token, e)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 482, in parse
+    filter_expression = self.compile_filter(token.contents)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 600, in compile_filter
+    return FilterExpression(token, self)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 699, in __init__
+    self.args_check(filter_name, filter_func, args)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 761, in args_check
+    raise TemplateSyntaxError(
+django.template.exceptions.TemplateSyntaxError: default requires 2 arguments, 1 provided
+[16/Jan/2026 15:16:42] "GET /admin/ HTTP/1.1" 500 190665
+[16/Jan/2026 15:16:48] "GET /rentals/api/notifications/ HTTP/1.1" 200 1087
+Not Found: /admin/dashboard/
+[16/Jan/2026 15:17:00] "GET /admin/dashboard/ HTTP/1.1" 404 6064
+[16/Jan/2026 15:17:10] "GET /rentals/api/notifications/ HTTP/1.1" 200 1087
+[16/Jan/2026 15:17:18] "GET /rentals/api/notifications/ HTTP/1.1" 200 1087
+[16/Jan/2026 15:17:40] "GET /rentals/api/notifications/ HTTP/1.1" 200 1087
+Performing system checks...
+
+System check identified no issues (0 silenced).
+January 16, 2026 - 15:14:23
+Django version 4.2.27, using settings 'mcot_rental.settings'
+Starting development server at http://0.0.0.0:8000/
+Quit the server with CONTROL-C.
+

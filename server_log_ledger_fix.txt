@@ -1,0 +1,9 @@
+Watching for file changes with StatReloader
+[19/Jan/2026 10:02:17] "GET /rentals/inventory/?date=2026-01-19 HTTP/1.1" 200 64111
+[19/Jan/2026 10:03:04] "GET /rentals/inventory/?date=2026-01-20 HTTP/1.1" 200 64111
+[19/Jan/2026 10:03:14] "GET /rentals/inventory/?date=2026-01-19 HTTP/1.1" 200 64111
+[19/Jan/2026 10:03:33] "GET /admin/ HTTP/1.1" 200 131064
+[19/Jan/2026 10:03:44] "GET /rentals/inventory/?date=2026-01-19 HTTP/1.1" 200 64111
+[19/Jan/2026 10:04:03] "GET /rentals/inventory/?date=2026-01-13 HTTP/1.1" 200 65854
+[19/Jan/2026 10:04:27] "GET /rentals/inventory/?date=2026-01-19 HTTP/1.1" 200 64111
+[19/Jan/2026 10:04:38] "GET /rentals/inventory/?date=2026-01-13 HTTP/1.1" 200 65854

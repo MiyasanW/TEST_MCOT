@@ -1,0 +1,39 @@
+Watching for file changes with StatReloader
+[19/Jan/2026 09:58:15] "GET /rentals/inventory/ HTTP/1.1" 200 64111
+[19/Jan/2026 09:59:04] "GET /rentals/inventory/ HTTP/1.1" 200 64111
+[19/Jan/2026 10:00:10] "GET /rentals/inventory/?date=2026-01-16 HTTP/1.1" 200 64095
+[19/Jan/2026 10:00:12] "GET /rentals/inventory/?date=2026-01-16 HTTP/1.1" 200 64095
+[19/Jan/2026 10:00:13] "GET /rentals/inventory/?date=2026-01-16 HTTP/1.1" 200 64095
+[19/Jan/2026 10:00:13] "GET /rentals/inventory/?date=2026-01-16 HTTP/1.1" 200 64095
+[19/Jan/2026 10:00:13] "GET /rentals/inventory/?date=2026-01-16 HTTP/1.1" 200 64095
+[19/Jan/2026 10:00:19] "GET /admin/ HTTP/1.1" 200 131064
+[19/Jan/2026 10:00:20] "GET /rentals/inventory/ HTTP/1.1" 200 64111
+[19/Jan/2026 10:00:23] "GET /rentals/inventory/ HTTP/1.1" 200 64111
+[19/Jan/2026 10:00:23] "GET /rentals/inventory/ HTTP/1.1" 200 64111
+[19/Jan/2026 10:00:23] "GET /rentals/inventory/ HTTP/1.1" 200 64111
+[19/Jan/2026 10:00:23] "GET /rentals/inventory/ HTTP/1.1" 200 64111
+[19/Jan/2026 10:00:29] "GET /admin/ HTTP/1.1" 200 131064
+[19/Jan/2026 10:00:33] "GET /rentals/inventory/ HTTP/1.1" 200 64111
+[19/Jan/2026 10:00:35] "GET /admin/ HTTP/1.1" 200 131064
+[19/Jan/2026 10:00:41] "GET /rentals/inventory/ HTTP/1.1" 200 64111
+[19/Jan/2026 10:00:52] "GET /admin/ HTTP/1.1" 200 131064
+[19/Jan/2026 10:00:55] "GET /rentals/inventory/ HTTP/1.1" 200 64111
+[19/Jan/2026 10:01:01] "GET /rentals/inventory/?date=2026-01-16 HTTP/1.1" 200 64095
+/Users/thanandorn/Desktop/TESTMCOT/rentals/views.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+January 19, 2026 - 09:58:12
+Django version 4.2.27, using settings 'mcot_rental.settings'
+Starting development server at http://0.0.0.0:8000/
+Quit the server with CONTROL-C.
+
+Watching for file changes with StatReloader
+Performing system checks...
+
+System check identified no issues (0 silenced).
+January 19, 2026 - 10:02:01
+Django version 4.2.27, using settings 'mcot_rental.settings'
+Starting development server at http://0.0.0.0:8000/
+Quit the server with CONTROL-C.
+

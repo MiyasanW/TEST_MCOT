@@ -1,15 +1,19 @@
-from django.shortcuts import render
+# Standard library
+from datetime import datetime
+
+# Django
+from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Q
+from django.views.decorators.http import require_POST
+from django.utils import timezone
+from django.contrib.auth.models import User
+
+# Local
 from .models import Equipment, Studio, Product, Package, Booking, BookingItem, Notification
 from .cart import Cart
-from .cart import Cart
-from django.shortcuts import render, redirect, get_object_or_404
-from django.views.decorators.http import require_POST
 from .forms import BookingAdminForm
-from django.utils import timezone
-from datetime import datetime
 from .services.notify import send_line_notify
-from django.contrib.auth.models import User
+from .services.availability import AvailabilityService
 
 
 def home(request):
@@ -62,9 +66,7 @@ def equipment_catalog(request):
     
     if start_date and end_date:
         try:
-            from datetime import datetime
             from django.db.models import Sum
-            from .models import BookingItem # Already imported at top, but keeping for context of snippet
             
             # Parse Date (Assuming format YYYY-MM-DD from HTML5 input)
             search_start_date = datetime.strptime(start_date, "%Y-%m-%d")
@@ -74,17 +76,9 @@ def equipment_catalog(request):
             # For simplicity, let's assume end_date is inclusive 23:59:59 or handle as date object comparison
             
             # Calculate Remaining for EACH product in the list
+            from rentals.services.availability import AvailabilityService
             for product in product_list:
-                # Find overlapping bookings
-                booked_qty = BookingItem.objects.filter(
-                    product=product,
-                    booking__status__in=['draft', 'quotation_sent', 'pending_deposit', 'approved', 'active'],
-                    booking__start_time__lte=search_end_date,
-                    booking__end_time__gte=search_start_date
-                ).aggregate(Sum('quantity'))['quantity__sum'] or 0
-                
-                # Attach attribute dynamically
-                product.calculated_remaining = max(0, product.quantity - booked_qty)
+                product.calculated_remaining = AvailabilityService.get_available_quantity(product, search_start_date, search_end_date)
                 product.is_date_filtered = True
                 
         except ValueError:
@@ -126,22 +120,14 @@ def product_detail(request, product_id):
     
     if start_date and end_date:
         try:
-            from datetime import datetime
             from django.db.models import Sum
-            from .models import BookingItem
             
             search_start_date = datetime.strptime(start_date, "%Y-%m-%d")
             search_end_date = datetime.strptime(end_date, "%Y-%m-%d")
             
-            # Check overlap
-            booked_qty = BookingItem.objects.filter(
-                product=product,
-                booking__status__in=['draft', 'quotation_sent', 'pending_deposit', 'approved', 'active'],
-                booking__start_time__lte=search_end_date,
-                booking__end_time__gte=search_start_date
-            ).aggregate(Sum('quantity'))['quantity__sum'] or 0
-            
-            product.calculated_remaining = max(0, product.quantity - booked_qty)
+            # Check overlap via Service
+            from rentals.services.availability import AvailabilityService
+            product.calculated_remaining = AvailabilityService.get_available_quantity(product, search_start_date, search_end_date)
             product.is_date_filtered = True
             
         except ValueError:
@@ -220,7 +206,7 @@ def cart_add(request, product_id):
     
     # Check Stock for Specific Dates
     # (Re-calculate availability for server-side security)
-    from datetime import datetime
+
     from django.db.models import Sum
     from .models import BookingItem
     
@@ -261,7 +247,7 @@ def cart_detail(request):
     duration_days = 1
     if start_date and end_date:
         try:
-            from datetime import datetime
+
             s = datetime.strptime(start_date, "%Y-%m-%d")
             e = datetime.strptime(end_date, "%Y-%m-%d")
             delta = e - s
@@ -277,7 +263,7 @@ def cart_detail(request):
     })
 
 def checkout(request):
-    from datetime import datetime
+
     cart = Cart(request)
     if len(cart) == 0:
         return redirect('equipment_catalog')
@@ -297,16 +283,13 @@ def checkout(request):
             start_dt = datetime.strptime(f"{start_date} {start_time}", "%Y-%m-%d %H:%M")
             end_dt = datetime.strptime(f"{end_date} {end_time}", "%Y-%m-%d %H:%M")
             
-            # --- STOCK VALIDATION ---
-            for item in cart:
-                product = item['product']
-                req_qty = item['quantity']
-                if product.remaining_quantity < req_qty:
-                    error = f"ขออภัย สินค้า '{product.name}' คงเหลือไม่เพียงพอ (เหลือ {product.remaining_quantity} ชิ้น)"
-                    return render(request, 'rentals/public/checkout.html', {'cart': cart, 'error': error})
-            # ------------------------
+            # Validate stock availability
+            is_valid, error = AvailabilityService.validate_cart(cart, start_dt, end_dt)
+            if not is_valid:
+                return render(request, 'rentals/public/checkout.html', {'cart': cart, 'error': error})
             
-            # Create Booking
+            # Create booking using service
+            from rentals.services.booking_service import BookingService
             booking_data = {
                 'customer_name': customer_name,
                 'customer_phone': customer_phone,
@@ -316,40 +299,14 @@ def checkout(request):
                 'status': 'draft'
             }
             
-            # Associate with User if logged in
-            if request.user.is_authenticated:
-                booking_data['created_by'] = request.user
-                
-            booking = Booking.objects.create(**booking_data)
+            booking = BookingService.create_booking_from_cart(
+                cart=cart,
+                booking_data=booking_data,
+                user=request.user if request.user.is_authenticated else None
+            )
             
-            # Create BookingItems
-            for item in cart:
-                BookingItem.objects.create(
-                    booking=booking,
-                    product=item['product'],
-                    quantity=item['quantity'],
-                    price_at_booking=item['price']
-                )
-                
-            # Clear Cart
+            # Clear cart
             cart.clear()
-            
-            # Notify
-            message = f"\n📦 New Booking Request #{booking.id}\n" \
-                      f"Customer: {booking.customer_name}\n" \
-                      f"Items: {booking.items.count()} items\n" \
-                      f"Date: {start_dt.strftime('%d/%m')} - {end_dt.strftime('%d/%m')}"
-            send_line_notify(message)
-            
-            # Notify In-App (To Staff)
-            staff_users = User.objects.filter(is_staff=True)
-            for staff in staff_users:
-                Notification.objects.create(
-                    recipient=staff,
-                    message=f"📦 New Booking #{booking.id} by {booking.customer_name}",
-                    link=f"/admin/rentals/booking/{booking.id}/change/",
-                    notification_type='info'
-                )
 
             
             return render(request, 'rentals/public/booking_success.html', {'booking': booking})
@@ -369,7 +326,7 @@ def checkout(request):
     # Calculate Duration Days for Display
     if context['initial_start_date'] and context['initial_end_date']:
         try:
-            from datetime import datetime
+
             s = datetime.strptime(context['initial_start_date'], "%Y-%m-%d")
             e = datetime.strptime(context['initial_end_date'], "%Y-%m-%d")
             delta = e - s

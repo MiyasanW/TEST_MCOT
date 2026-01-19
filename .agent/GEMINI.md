@@ -1,0 +1,1 @@
+/Users/thanandorn/.gemini/GEMINI.md

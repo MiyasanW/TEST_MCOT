@@ -1,0 +1,223 @@
+{% extends 'unfold/layouts/base.html' %}
+{% load static humanize dashboard_tags %}
+
+{% block content %}
+{% get_dashboard_stats as stats %}
+{% get_recent_bookings 100 as recent_bookings %}
+
+<div class="dashboard-bg p-4 md:p-8 space-y-8 font-sans bg-gray-50/50 min-h-screen transition-colors duration-200">
+    
+    <!-- Top Bar -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+            <h1 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 tracking-tight">ยินดีต้อนรับ, {{ user.username|title }} 👋</h1>
+            <p class="dashboard-text-sub text-gray-500 mt-1 text-base font-medium">{{ stats.today_thai }} | ภาพรวมระบบ</p>
+        </div>
+        
+        <div class="dashboard-card flex gap-3 bg-white p-1.5 rounded-2xl shadow-sm border border-gray-100">
+            <a href="{% url 'inventory_dashboard' %}" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-all">Inventory</a>
+            <a href="{% url 'admin:rentals_booking_add' %}" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-700 hover:to-primary-600 rounded-xl shadow-md transition-all">New Booking</a>
+        </div>
+    </div>
+
+    <!-- Alert -->
+    {% if stats.bookings_pending > 0 %}
+    <div class="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-2xl p-4 flex items-center justify-between shadow-sm relative overflow-hidden group">
+        <div class="flex items-center gap-4 relative z-10">
+            <div class="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-xl text-amber-600 dark:text-amber-400">!</div>
+            <div>
+                <h4 class="font-bold text-gray-900 dark:text-white">Attention Needed</h4>
+                <p class="text-sm text-gray-600 dark:text-gray-300">You have <strong class="text-amber-600 dark:text-amber-400 underline">{{ stats.bookings_pending }} pending bookings</strong>.</p>
+            </div>
+        </div>
+        <a href="{% url 'admin:rentals_booking_changelist' %}?status__exact=draft" class="relative z-10 text-sm font-semibold bg-white dark:bg-gray-800 text-amber-600 px-4 py-2 rounded-lg shadow-sm">Review Now &rarr;</a>
+    </div>
+    {% endif %}
+
+    <!-- Metrics -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Revenue -->
+        <div class="relative overflow-hidden bg-gradient-to-br from-emerald-500 to-teal-600 rounded-3xl p-6 text-white shadow-lg cursor-default group">
+            <div class="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-10 transition-opacity"></div>
+            <div class="flex justify-between items-start relative z-10">
+                <div>
+                     <p class="text-emerald-100 font-medium text-sm">Monthly Revenue</p>
+                     <h3 class="text-3xl font-extrabold mt-1 tracking-tight">{{ stats.revenue_this_month|intcomma }}</h3>
+                     <span class="text-xs text-emerald-100 uppercase tracking-widest font-semibold">THB</span>
+                </div>
+                <div class="flex items-center gap-1 bg-white/20 backdrop-blur-sm px-2 py-1 rounded-lg text-xs font-bold text-white shadow-sm">{{ stats.revenue_growth }}%</div>
+            </div>
+            <div class="mt-4 pt-4 border-t border-white/20 relative z-10">
+                <div class="flex items-center justify-between text-sm">
+                    <span class="text-emerald-100">Last Month</span>
+                    <span class="font-bold">{{ stats.revenue_last_month|intcomma }} THB</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bookings -->
+        <div class="relative overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 rounded-3xl p-6 text-white shadow-lg cursor-default group">
+            <div class="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-10 transition-opacity"></div>
+            <p class="text-blue-100 font-medium text-sm">Monthly Bookings</p>
+            <h3 class="text-3xl font-extrabold mt-1 tracking-tight">{{ stats.bookings_this_month }}</h3>
+            <div class="mt-4 flex items-center text-blue-50 text-sm font-medium bg-white/10 w-fit px-2 py-1 rounded-lg">Active Orders</div>
+        </div>
+
+        <!-- Equipment -->
+        <div class="dashboard-card bg-white rounded-3xl p-6 border border-gray-100 shadow-sm transition-all hover:scale-[1.02]">
+            <div class="flex justify-between items-start">
+                <div><p class="dashboard-text-sub text-gray-500 text-sm font-medium">Equipment Ready</p><h3 class="dashboard-text-main text-2xl font-bold text-gray-900">{{ stats.equipment_available }}</h3></div>
+                 <div class="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-xl text-purple-600"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path></svg></div>
+            </div>
+        </div>
+
+        <!-- Staff -->
+        <div class="dashboard-card bg-white rounded-3xl p-6 border border-gray-100 shadow-sm transition-all hover:scale-[1.02]">
+             <div class="flex justify-between items-start">
+                <div><p class="dashboard-text-sub text-gray-500 text-sm font-medium">Active Staff</p><h3 class="dashboard-text-main text-2xl font-bold text-gray-900 mt-1">{{ stats.staff_active }}</h3></div>
+                <div class="p-2 bg-orange-50 dark:bg-orange-900/20 rounded-xl text-orange-600"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        
+        <!-- Table -->
+        <div class="dashboard-card xl:col-span-2 bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="dashboard-table-header p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                <h3 class="dashboard-text-main font-bold text-gray-900">Recent Transactions</h3>
+            </div>
+            <div class="overflow-x-auto max-h-[600px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-700">
+                <table class="w-full text-left text-sm text-gray-500 dark:text-gray-400">
+                    <thead class="dashboard-table-header bg-gray-50 text-xs uppercase text-gray-700 font-semibold sticky top-0 z-10">
+                        <tr>
+                            <th class="px-6 py-4 bg-gray-50 dark:bg-gray-800">ID</th>
+                            <th class="px-6 py-4 bg-gray-50 dark:bg-gray-800">Customer</th>
+                            <th class="px-6 py-4 bg-gray-50 dark:bg-gray-800">Date & Time</th>
+                            <th class="px-6 py-4 bg-gray-50 dark:bg-gray-800">Total</th>
+                            <th class="px-6 py-4 bg-gray-50 dark:bg-gray-800">Status</th>
+                            <th class="px-6 py-4 bg-gray-50 dark:bg-gray-800"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                        {% for booking in recent_bookings %}
+                        <tr class="dashboard-table-row hover:bg-gray-50 dark:hover:bg-gray-800 transition duration-150 cursor-pointer group" onclick="window.location='{% url 'admin:rentals_booking_change' booking.id %}'">
+                            <td class="px-6 py-4 font-mono font-medium dashboard-text-main text-gray-900">#{{ booking.id }}</td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-bold text-white shadow-sm ring-2 ring-white dark:ring-gray-800 group-hover:ring-indigo-100 dark:group-hover:ring-indigo-900 transition-all">{{ booking.created_by.first_name|first|default:"U"|upper }}</div>
+                                    <div class="flex flex-col">
+                                        <span class="font-bold dashboard-text-main text-gray-900 text-sm group-hover:text-primary-600 transition-colors">{% firstof booking.created_by.first_name booking.created_by.username "User"|title %}</span>
+                                        <span class="text-xs text-gray-400">Customer</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex flex-col">
+                                    <span class="font-medium dashboard-text-main text-gray-900">{{ booking.start_time|date:"d M Y" }}</span>
+                                    <span class="text-xs text-gray-400">{{ booking.start_time|date:"H:i" }} - {{ booking.end_time|date:"H:i" }}</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex flex-col">
+                                    <span class="font-bold text-emerald-500">{{ booking.calculate_total_price|intcomma }} THB</span>
+                                    <span class="text-xs text-gray-400">{{ booking.items_count }} Items</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                {% if booking.status == 'approved' %}
+                                <span class="badge badge-success">Approved</span>
+                                {% elif booking.status == 'draft' %}
+                                <span class="badge badge-draft">Draft</span>
+                                {% elif booking.status == 'active' %}
+                                <span class="badge badge-active">Active</span>
+                                {% else %}
+                                <span class="badge badge-draft">{{ booking.status|title }}</span>
+                                {% endif %}
+                            </td>
+                             <td class="px-6 py-4 text-right">
+                                <svg class="w-5 h-5 text-gray-300 group-hover:text-primary-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="6" class="px-6 py-8 text-center text-gray-400">No recent activity</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Logs -->
+        <div class="dashboard-card xl:col-span-1 bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-full">
+            <div class="dashboard-table-header p-6 border-b border-gray-100 bg-gray-50/50">
+                <h3 class="dashboard-text-main font-bold text-gray-900">System Activity</h3>
+            </div>
+            <div class="p-0 overflow-y-auto flex-1 max-h-[600px] scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-700">
+                <ul class="divide-y divide-gray-100 dark:divide-gray-700">
+                    {% for log in stats.recent_logs %}
+                    <li class="dashboard-table-row p-4 hover:bg-gray-50 transition duration-150">
+                        <div class="flex gap-3">
+                            <div class="mt-1">
+                                {% if log.is_addition %}
+                                    <div class="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 flex items-center justify-center"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg></div>
+                                {% elif log.is_change %}
+                                     <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></div>
+                                {% else %}
+                                    <div class="w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 flex items-center justify-center"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></div>
+                                {% endif %}
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-bold dashboard-text-main text-gray-900 truncate">{{ log.user.username|title }}</p>
+                                <p class="text-xs dashboard-text-sub text-gray-500 font-medium">{{ log.object_repr }}</p>
+                                {% if log.message %}
+                                <p class="text-xs text-gray-400 dark:text-gray-500 truncate mt-0.5" title="{{ log.message }}">{{ log.message }}</p>
+                                {% endif %}
+                                <p class="text-[10px] text-gray-400 mt-1 uppercase tracking-wide">{{ log.action_time|timesince }} ago</p>
+                            </div>
+                        </div>
+                    </li>
+                    {% empty %}
+                    <li class="p-8 text-center text-sm text-gray-400">No recent logs</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<style>
+    /* Dark Mode Global Overrides */
+    html.dark .dashboard-bg { background-color: #111827 !important; }
+    html.dark .dashboard-card { background-color: #1f2937 !important; border-color: #374151 !important; color: #f3f4f6 !important; }
+    html.dark .dashboard-text-main { color: #f9fafb !important; }
+    html.dark .dashboard-text-sub { color: #9ca3af !important; }
+    html.dark .dashboard-table-header { background-color: #1f2937 !important; color: #d1d5db !important; }
+    html.dark .dashboard-table-row:hover { background-color: #374151 !important; }
+    html.dark .divide-gray-100 { border-color: #374151 !important; }
+    html.dark .ring-gray-800 { --tw-ring-color: #1f2937 !important; } 
+
+    /* Badges */
+    .badge { display: inline-flex; align-items: center; padding: 0.125rem 0.625rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.025em; }
+    
+    /* Light Mode Badge Defaults */
+    .badge-success { background-color: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; } 
+    .badge-draft { background-color: #f9fafb; color: #374151; border: 1px solid #e5e7eb; } 
+    .badge-active { background-color: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe; } 
+
+    /* Dark Mode Badge Overrides */
+    html.dark .badge-success { background-color: rgba(6, 95, 70, 0.4) !important; color: #34d399 !important; border-color: rgba(16, 185, 129, 0.3) !important; }
+    html.dark .badge-draft { background-color: rgba(55, 65, 81, 0.4) !important; color: #d1d5db !important; border-color: rgba(75, 85, 99, 0.3) !important; }
+    html.dark .badge-active { background-color: rgba(91, 33, 182, 0.4) !important; color: #a78bfa !important; border-color: rgba(139, 92, 246, 0.3) !important; }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Observer for class changes on html to toggle dark mode
+        const observer = new MutationObserver(function(mutations) {});
+        observer.observe(document.documentElement, { attributes: true });
+    });
+</script>
+{% endblock %}

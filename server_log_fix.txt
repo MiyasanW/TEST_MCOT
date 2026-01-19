@@ -1,0 +1,28 @@
+Watching for file changes with StatReloader
+[16/Jan/2026 14:31:19] "GET /admin/ HTTP/1.1" 200 36224
+[16/Jan/2026 14:31:36] "GET /rentals/inventory/ HTTP/1.1" 200 40776
+[16/Jan/2026 14:31:47] "GET /admin/ HTTP/1.1" 200 36224
+[16/Jan/2026 14:32:05] "GET /admin/rentals/package/ HTTP/1.1" 200 61397
+[16/Jan/2026 14:32:05] "GET /admin/jsi18n/ HTTP/1.1" 200 3343
+[16/Jan/2026 14:32:19] "GET /admin/rentals/booking/ HTTP/1.1" 200 208496
+[16/Jan/2026 14:32:19] "GET /admin/jsi18n/ HTTP/1.1" 200 3343
+[16/Jan/2026 14:32:32] "GET /admin/ HTTP/1.1" 200 36224
+[16/Jan/2026 14:32:44] "GET /rentals/inventory/ HTTP/1.1" 200 40776
+/Users/thanandorn/Desktop/TESTMCOT/rentals/templatetags/dashboard_tags.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+January 16, 2026 - 14:31:15
+Django version 4.2.27, using settings 'mcot_rental.settings'
+Starting development server at http://0.0.0.0:8000/
+Quit the server with CONTROL-C.
+
+Watching for file changes with StatReloader
+Performing system checks...
+
+System check identified no issues (0 silenced).
+January 16, 2026 - 14:33:56
+Django version 4.2.27, using settings 'mcot_rental.settings'
+Starting development server at http://0.0.0.0:8000/
+Quit the server with CONTROL-C.
+

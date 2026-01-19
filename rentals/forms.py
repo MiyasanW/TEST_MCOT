@@ -128,41 +128,33 @@ class BookingAdminForm(forms.ModelForm):
             elif equip.status == 'lost':
                 raise forms.ValidationError(f"อุปกรณ์ '{equip_name} - {equip.serial_number}' สูญหาย (Lost)")
 
-        # ตรวจสอบการจองซ้อน (Conflict) - เฉพาะ Approved
-        if status == 'approved' and start_time and end_time:
-            from django.db.models import Q
-            from .models import Booking # Avoid circular import if needed, but it's fine here
-            
-            overlapping_bookings = Booking.objects.filter(
-                Q(start_time__lt=end_time) & Q(end_time__gt=start_time),
-                status='approved'
-            )
-            if instance_pk:
-                overlapping_bookings = overlapping_bookings.exclude(pk=instance_pk)
+        # ตรวจสอบการจองซ้อน (Conflict) - ใช้ Service กลาง
+        if start_time and end_time:
+            from rentals.services.availability import AvailabilityService
             
             # เช็คอุปกรณ์ชน
             for equip in equipment:
-                conflict = overlapping_bookings.filter(equipment=equip).first()
-                if conflict:
+                is_valid, conflict = AvailabilityService.check_resource_overlap('equipment', equip, start_time, end_time, instance_pk)
+                if not is_valid:
                     equip_name = equip.product.name if equip.product else "Unknown"
                     raise forms.ValidationError(
-                        f"อุปกรณ์ '{equip_name} - {equip.serial_number}' ถูกจองแล้วโดย {conflict.customer_name}"
+                        f"อุปกรณ์ '{equip_name} - {equip.serial_number}' ถูกจองแล้วในช่วงเวลานี้ (Booked by: {conflict.customer_name})"
                     )
             
             # เช็คสตูดิโอชน
             for studio in studios:
-                conflict = overlapping_bookings.filter(studios=studio).first()
-                if conflict:
+                is_valid, conflict = AvailabilityService.check_resource_overlap('studios', studio, start_time, end_time, instance_pk)
+                if not is_valid:
                     raise forms.ValidationError(
-                        f"สตูดิโอ '{studio.name}' ถูกจองแล้วโดย {conflict.customer_name}"
+                        f"สตูดิโอ '{studio.name}' ถูกจองแล้วในช่วงเวลานี้ (Booked by: {conflict.customer_name})"
                     )
                     
             # เช็คพนักงานชน
             for staff_member in staff:
-                conflict = overlapping_bookings.filter(staff=staff_member).first()
-                if conflict:
+                is_valid, conflict = AvailabilityService.check_resource_overlap('staff', staff_member, start_time, end_time, instance_pk)
+                if not is_valid:
                     raise forms.ValidationError(
-                         f"พนักงาน '{staff_member.name}' ติดงานแล้ว ({conflict.customer_name})"
+                         f"พนักงาน '{staff_member.name}' ติดงานแล้วในช่วงเวลานี้ (Booked by: {conflict.customer_name})"
                     )
 
         return cleaned_data

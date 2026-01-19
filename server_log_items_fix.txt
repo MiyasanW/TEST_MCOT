@@ -1,0 +1,6 @@
+Watching for file changes with StatReloader
+[16/Jan/2026 16:32:10] "GET /admin/ HTTP/1.1" 200 71530
+[16/Jan/2026 16:34:40] "GET /admin/ HTTP/1.1" 200 71530
+[16/Jan/2026 16:34:40] "GET /admin/ HTTP/1.1" 200 71530
+[16/Jan/2026 16:34:40] "GET /admin/ HTTP/1.1" 200 71530
+[16/Jan/2026 16:34:41] "GET /admin/ HTTP/1.1" 200 71530

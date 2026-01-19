@@ -320,6 +320,34 @@ class BookingItemInline(TabularInline):
     verbose_name_plural = "รายการสินค้า (Booking Items - แก้ไขจำนวน/ราคา)"
     tab = True # แยกเป็น Tab เพื่อความสะอาด
 
+    tab = True # แยกเป็น Tab เพื่อความสะอาด
+
+class OverdueListFilter(admin.SimpleListFilter):
+    """
+    ตัวกรองสำหรับหาการจองที่เกินกำหนด (Overdue)
+    """
+    title = 'สถานะเกินกำหนด (Overdue)'
+    parameter_name = 'overdue'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('yes', '⚠️ เกินกำหนด (Overdue)'),
+            ('no', 'ปกติ (On Time)'),
+        )
+
+    def queryset(self, request, queryset):
+        from django.utils import timezone
+        now = timezone.now()
+        
+        if self.value() == 'yes':
+            # Active และ หมดเวลาแล้ว
+            return queryset.filter(status='active', end_time__lt=now)
+        
+        if self.value() == 'no':
+            return queryset.exclude(status='active', end_time__lt=now)
+            
+        return queryset
+
 @admin.register(Booking)
 class BookingAdmin(ModelAdmin, SimpleHistoryAdmin):
     """
@@ -354,7 +382,8 @@ class BookingAdmin(ModelAdmin, SimpleHistoryAdmin):
     # ทำให้กดที่ "ทุกช่อง" (ยกเว้นปุ่ม) เพื่อเข้าไปดูรายละเอียดได้ (Whole Line Clickable feel)
     list_display_links = ['id', 'customer_name', 'start_time_display', 'end_time_display', 'status_display', 'calculate_total_price_display', 'created_at']
     
-    list_filter = ['status', 'start_time', 'created_at', 'staff', 'created_by']
+    # เพิ่ม OverdueListFilter เข้าไปใน list_filter
+    list_filter = ['status', OverdueListFilter, 'start_time', 'created_at', 'staff', 'created_by']
     list_filter_submit = True # Unfold feature
     
     date_hierarchy = 'created_at'
@@ -442,9 +471,28 @@ class BookingAdmin(ModelAdmin, SimpleHistoryAdmin):
         """แสดงวันเวลาสิ้นสุดในรูปแบบไทย"""
         return obj.end_time.strftime('%d/%m/%Y %H:%M น.')
     end_time_display.short_description = 'วันเวลาสิ้นสุด'
-    
+
     def status_display(self, obj):
         """แสดงสถานะด้วยสีและไอคอน (Inline Styles)"""
+        
+        # Check Overdue First!
+        if obj.is_overdue:
+            return mark_safe(f'''
+                <span style="
+                    display: inline-block;
+                    padding: 4px 12px;
+                    border-radius: 9999px;
+                    background-color: #ef4444; 
+                    color: white;
+                    font-size: 12px;
+                    font-weight: 700;
+                    white-space: nowrap;
+                    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+                ">
+                    ⚠️ เกินกำหนด (Overdue)
+                </span>
+            ''')
+
         # Define styles for each status (Background, Text Color)
         styles = {
             'draft': ('#e5e7eb', '#374151'),          # Gray-200, Gray-700
@@ -554,7 +602,8 @@ class BookingAdmin(ModelAdmin, SimpleHistoryAdmin):
             return "กรุณาบันทึกข้อมูลก่อนจัดการสถานะ"
         
         # Styles
-        container_style = "display: flex; gap: 12px; flex-wrap: wrap; padding: 16px; background-color: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; align-items: center;"
+        # Styles
+        # container_style removed in favor of Tailwind classes
         
         btn_base = "display: inline-flex; align-items: center; padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 14px; text-decoration: none; border: 1px solid transparent; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);"
         # Helper to create button
@@ -605,7 +654,12 @@ class BookingAdmin(ModelAdmin, SimpleHistoryAdmin):
 
         # Script is now loaded via templates/admin/rentals/booking/change_form.html
         
-        return mark_safe(f'<div style="{container_style}"> <span style="font-size:13px; font-weight:600; color:#64748b; margin-right:8px;">เปลี่ยนสถานะ:</span> {actions_html}</div>')
+        return mark_safe(f'''
+            <div class="flex flex-wrap items-center gap-3 p-4 rounded-xl border border-gray-200 bg-gray-50 dark:bg-gray-800 dark:border-gray-700"> 
+                <span class="text-sm font-semibold text-gray-500 dark:text-gray-400 mr-2">เปลี่ยนสถานะ:</span> 
+                {actions_html}
+            </div>
+        ''')
     quick_actions.short_description = "จัดการสถานะ (Actions)"
     
     # Removed independent Media class to rely on direct injection
@@ -985,6 +1039,7 @@ class CustomUserChangeForm(UserChangeForm):
         if self.instance.pk and hasattr(self.instance, 'profile'):
             self.fields['phone'].initial = self.instance.profile.phone
 
+# Unregister default User admin to replace with custom one
 admin.site.unregister(User)
 
 @admin.register(User)

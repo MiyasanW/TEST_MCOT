@@ -1,0 +1,167 @@
+Watching for file changes with StatReloader
+Internal Server Error: /admin/
+Traceback (most recent call last):
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/core/handlers/base.py", line 220, in _get_response
+    response = response.render()
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/backends/django.py", line 61, in render
+    return self.template.render(context)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 175, in render
+    return self._render(context)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 167, in _render
+    return self.nodelist.render(context)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 1005, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/loader_tags.py", line 157, in render
+    return compiled_parent._render(context)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 167, in _render
+    return self.nodelist.render(context)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 1005, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/loader_tags.py", line 157, in render
+    return compiled_parent._render(context)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 167, in _render
+    return self.nodelist.render(context)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 1005, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/loader_tags.py", line 157, in render
+    return compiled_parent._render(context)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 167, in _render
+    return self.nodelist.render(context)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 1005, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/loader_tags.py", line 63, in render
+    result = block.nodelist.render(context)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 1005, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/loader_tags.py", line 63, in render
+    result = block.nodelist.render(context)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 1005, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/library.py", line 237, in render
+    output = self.func(*resolved_args, **resolved_kwargs)
+  File "/Users/thanandorn/Desktop/TESTMCOT/rentals/templatetags/dashboard_tags.py", line 85, in get_dashboard_stats
+    day_thai_short = thai_days.get(d.strftime('%A'), '')
+UnboundLocalError: local variable 'thai_days' referenced before assignment
+[16/Jan/2026 15:49:58] "GET /admin/ HTTP/1.1" 500 419267
+Internal Server Error: /admin/
+Traceback (most recent call last):
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/core/handlers/base.py", line 220, in _get_response
+    response = response.render()
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/backends/django.py", line 61, in render
+    return self.template.render(context)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 175, in render
+    return self._render(context)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 167, in _render
+    return self.nodelist.render(context)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 1005, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/loader_tags.py", line 157, in render
+    return compiled_parent._render(context)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 167, in _render
+    return self.nodelist.render(context)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 1005, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/loader_tags.py", line 157, in render
+    return compiled_parent._render(context)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 167, in _render
+    return self.nodelist.render(context)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 1005, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/loader_tags.py", line 157, in render
+    return compiled_parent._render(context)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 167, in _render
+    return self.nodelist.render(context)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 1005, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/loader_tags.py", line 63, in render
+    result = block.nodelist.render(context)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 1005, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/loader_tags.py", line 63, in render
+    result = block.nodelist.render(context)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 1005, in <listcomp>
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/base.py", line 966, in render_annotated
+    return self.render(context)
+  File "/Users/thanandorn/Library/Python/3.9/lib/python/site-packages/django/template/library.py", line 237, in render
+    output = self.func(*resolved_args, **resolved_kwargs)
+  File "/Users/thanandorn/Desktop/TESTMCOT/rentals/templatetags/dashboard_tags.py", line 85, in get_dashboard_stats
+    day_thai_short = thai_days.get(d.strftime('%A'), '')
+UnboundLocalError: local variable 'thai_days' referenced before assignment
+[16/Jan/2026 15:50:43] "GET /admin/ HTTP/1.1" 500 419267
+/Users/thanandorn/Desktop/TESTMCOT/rentals/templatetags/dashboard_tags.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+January 16, 2026 - 15:49:55
+Django version 4.2.27, using settings 'mcot_rental.settings'
+Starting development server at http://0.0.0.0:8000/
+Quit the server with CONTROL-C.
+
+Watching for file changes with StatReloader
+Performing system checks...
+
+System check identified no issues (0 silenced).
+January 16, 2026 - 15:51:30
+Django version 4.2.27, using settings 'mcot_rental.settings'
+Starting development server at http://0.0.0.0:8000/
+Quit the server with CONTROL-C.
+

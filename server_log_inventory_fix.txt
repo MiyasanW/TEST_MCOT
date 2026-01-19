@@ -1,0 +1,2 @@
+Watching for file changes with StatReloader
+[19/Jan/2026 09:47:26] "GET /rentals/inventory/ HTTP/1.1" 200 63986

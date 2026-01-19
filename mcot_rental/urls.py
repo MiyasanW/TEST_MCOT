@@ -20,7 +20,7 @@ from rentals import views as rentals_views
 from rentals import public_views as public_views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('admin/', admin.site.urls),  # Default admin site
     
     # Public Website (Customer Facing)
     path('', public_views.home, name='public_home'),

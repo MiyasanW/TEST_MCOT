@@ -1,12 +1,125 @@
 from django.shortcuts import render, get_object_or_404
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.models import User
 from django.db.models import Count, Q, Sum
 from django.utils import timezone
-from datetime import timedelta
-from .models import Booking, Equipment, Studio, Staff, Notification
+from datetime import datetime, timedelta
+from simple_history.models import HistoricalRecords  # สำหรับ Audit Trailt
+from .models import Booking, Equipment, Studio, Staff, Notification, Product, BookingItem, PackageItem
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.utils.timesince import timesince
+
+
+
+def dashboard_callback(request, context):
+    """
+    Callback function for Unfold admin index page.
+    Adds dashboard stats and recent bookings to the admin index context.
+    """
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.warning("🎯 Dashboard callback called!")
+    
+    today = timezone.now().date()
+    logger.warning(f"Today's date: {today}")
+    
+    # สถิติการจอง
+    bookings_today = Booking.objects.filter(
+        start_time__date=today
+    ).count()
+    
+    bookings_pending = Booking.objects.filter(
+        status='draft'
+    ).count()
+    
+    bookings_this_month = Booking.objects.filter(
+        start_time__year=today.year,
+        start_time__month=today.month
+    ).count()
+    
+    # สถิติอุปกรณ์ (ใช้ Product model)
+    equipment_total = Product.objects.count()
+    equipment_available = Product.objects.filter(
+        is_active=True,
+        quantity__gt=0
+    ).count()
+    
+    # สถิติพนักงาน (ใช้ User model)
+    staff_active = User.objects.filter(is_staff=True, is_active=True).count()
+    
+    # รายการจองล่าสุด (5 รายการ)
+    recent_bookings = Booking.objects.select_related(
+        'created_by'
+    ).order_by('-created_at')[:5]
+    
+    # คำนวณรายได้เดือนนี้
+    revenue_this_month = 0
+    for booking in Booking.objects.filter(
+        start_time__year=today.year,
+        start_time__month=today.month,
+        status__in=['approved', 'completed']
+    ):
+        revenue_this_month += booking.calculate_total_price()
+    
+    stats = {
+        'bookings_today': bookings_today,
+        'bookings_pending': bookings_pending,
+        'bookings_this_month': bookings_this_month,
+        'equipment_available': equipment_available,
+        'equipment_total': equipment_total,
+        'staff_active': staff_active,
+        'revenue_this_month': revenue_this_month,
+    }
+
+    # --- Chart Data Calculation (New) ---
+    # 1. 7-Day Revenue Trend
+    days = []
+    revenue_trend = []
+    for i in range(6, -1, -1):
+        d = today - timedelta(days=i)
+        days.append(d.strftime('%d %b')) # e.g. "16 Jan"
+        daily_rev = 0
+        # Naive calculation: sum of bookings starting on that day
+        for b in Booking.objects.filter(start_time__date=d, status__in=['approved', 'completed']):
+             daily_rev += float(b.calculate_total_price())
+        revenue_trend.append(daily_rev)
+    
+    # 2. Status Distribution
+    status_counts = {
+        'draft': Booking.objects.filter(status='draft').count(),
+        'approved': Booking.objects.filter(status='approved').count(),
+        'completed': Booking.objects.filter(status='completed').count(),
+        'active': Booking.objects.filter(status='active').count(),
+        'problem': Booking.objects.filter(status='problem').count(),
+    }
+    
+    # Thai Date for Header
+    thai_full_months = [
+        "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+        "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
+    ]
+    today_thai = f"วัน{today.strftime('%A')}ที่ {today.day} {thai_full_months[today.month-1]} {today.year + 543}"
+
+    stats.update({
+        'chart_labels': days,
+        'chart_revenue': revenue_trend,
+        'status_counts': status_counts,
+        'today_thai': today_thai,
+    })
+    # ------------------------------------
+    
+    logger.warning(f"📊 Stats: {stats}")
+    logger.warning(f"📅 Recent bookings count: {len(list(recent_bookings))}")
+    
+    # Add data to context
+    context.update({
+        'stats': stats,
+        'recent_bookings': recent_bookings,
+    })
+    
+    logger.warning(f"✅ Context updated. Keys: {context.keys()}")
+    return context
 
 
 @staff_member_required
@@ -318,3 +431,106 @@ def mark_all_notifications_read(request):
     
     Notification.objects.filter(recipient=request.user, is_read=False).update(is_read=True)
     return JsonResponse({'success': True})
+
+@staff_member_required
+def inventory_dashboard(request):
+    # 1. Determine Selected Date
+    date_str = request.GET.get('date')
+    if date_str:
+        try:
+            target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        except ValueError:
+            target_date = timezone.localtime().date()
+    else:
+        target_date = timezone.localtime().date()
+
+    # Create time range for the selected date (Start of day to End of day)
+    target_start = timezone.make_aware(datetime.combine(target_date, datetime.min.time()))
+    target_end = timezone.make_aware(datetime.combine(target_date, datetime.max.time()))
+
+    products = Product.objects.filter(is_active=True).order_by('category', 'name')
+    inventory_data = []
+
+    for product in products:
+        # Calculate Ledger (Keep showing all future/recent active logs for context, or filter? 
+        # Requirement implies "check stock for that day", so ledger can remain "recent view" or be filtered.
+        # For now, let's keep ledger showing *relevant* activity around that time?)
+        # Actually, let's keep the ledger as a general "what is going on" view, 
+        # but the AVAILABLE COUNT must be specific to the date.
+        
+        ledger = []
+        
+        # Find bookings relevant to this product (for Ledger)
+        booking_items = BookingItem.objects.filter(
+            product=product,
+            booking__status__in=['approved', 'active', 'pending_deposit', 'quotation_sent'], 
+            booking__start_time__lte=target_end,
+            booking__end_time__gte=target_start
+        ).select_related('booking')
+
+        for bi in booking_items:
+            # Check assigned equipment (Serial Numbers)
+            assigned_equipment = bi.booking.equipment.filter(product=product)
+            if assigned_equipment.exists():
+                detail_text = f"Assigned: {', '.join([e.serial_number for e in assigned_equipment])}"
+                qty = assigned_equipment.count()
+            else:
+                detail_text = "Requested (Pending Assignment)"
+                qty = bi.quantity
+
+            # Format Date Range to show temporary usage (Thai)
+            thai_months = [
+                "", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
+                "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."
+            ]
+            
+            def to_thai_date(dt):
+                return f"{dt.day} {thai_months[dt.month]}"
+
+            start_str = to_thai_date(bi.booking.start_time)
+            end_str = to_thai_date(bi.booking.end_time)
+            date_display = f"{start_str} - {end_str}" if start_str != end_str else start_str
+
+            ledger.append({
+                'date': bi.booking.start_time,
+                'booking': bi.booking,
+                'date': bi.booking.start_time,
+                'booking': bi.booking,
+                'date_display': date_display, # Renamed to fix rendering
+                # Combined string to avoid template parsing issues
+                'entry_title': f"{bi.booking.customer_name}",
+                'change': -qty,
+                'detail': detail_text,
+                'package_name': None 
+            })
+
+        # Sort ledger by date
+        ledger.sort(key=lambda x: x['date'])
+
+        # --- KEY CHANGE: Calculate Available Stock for TARGET DATE ---
+        from django.db.models import Sum
+        booked_qty_result = BookingItem.objects.filter(
+             product=product,
+             booking__status__in=['approved', 'active', 'pending_deposit', 'quotation_sent'], # Include pending to be safe
+             # Overlap Logic: Booking Start <= Target End AND Booking End >= Target Start
+             booking__start_time__lte=target_end,
+             booking__end_time__gte=target_start
+        ).aggregate(Sum('quantity'))
+        
+        booked_qty = booked_qty_result['quantity__sum'] or 0
+        available_stock = max(0, product.quantity - booked_qty)
+
+        inventory_data.append({
+            'product': product,
+            'total_stock': product.quantity,
+            'available_stock': available_stock, 
+            'ledger': ledger
+        })
+
+    return render(request, 'admin/inventory_dashboard.html', {
+        'inventory': inventory_data,
+        'title': 'Inventory Dashboard',
+        'selected_date': target_date.strftime('%Y-%m-%d'),
+        'pretty_date': target_date.strftime('%d %B %Y')
+    })
+

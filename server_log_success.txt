@@ -1,0 +1,23 @@
+Watching for file changes with StatReloader
+[16/Jan/2026 15:22:31] "GET /admin/ HTTP/1.1" 200 36449
+[16/Jan/2026 15:23:42] "GET /admin/ HTTP/1.1" 200 36449
+[16/Jan/2026 15:26:21] "GET /admin/ HTTP/1.1" 200 38639
+[16/Jan/2026 15:28:22] "GET /admin/ HTTP/1.1" 200 38639
+/Users/thanandorn/Desktop/TESTMCOT/rentals/templatetags/dashboard_tags.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+January 16, 2026 - 15:22:29
+Django version 4.2.27, using settings 'mcot_rental.settings'
+Starting development server at http://0.0.0.0:8000/
+Quit the server with CONTROL-C.
+
+Watching for file changes with StatReloader
+Performing system checks...
+
+System check identified no issues (0 silenced).
+January 16, 2026 - 15:29:34
+Django version 4.2.27, using settings 'mcot_rental.settings'
+Starting development server at http://0.0.0.0:8000/
+Quit the server with CONTROL-C.
+

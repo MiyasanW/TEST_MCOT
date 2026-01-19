@@ -1,0 +1,25 @@
+Watching for file changes with StatReloader
+[16/Jan/2026 14:50:33] "GET /admin/ HTTP/1.1" 200 47714
+[16/Jan/2026 14:50:55] "GET /rentals/api/notifications/ HTTP/1.1" 200 1129
+[16/Jan/2026 14:51:14] "GET /admin/ HTTP/1.1" 200 47714
+[16/Jan/2026 14:51:25] "GET /rentals/api/notifications/ HTTP/1.1" 200 1129
+[16/Jan/2026 14:51:55] "GET /rentals/api/notifications/ HTTP/1.1" 200 1129
+[16/Jan/2026 14:52:25] "GET /rentals/api/notifications/ HTTP/1.1" 200 1129
+/Users/thanandorn/Desktop/TESTMCOT/rentals/views.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+January 16, 2026 - 14:50:30
+Django version 4.2.27, using settings 'mcot_rental.settings'
+Starting development server at http://0.0.0.0:8000/
+Quit the server with CONTROL-C.
+
+Watching for file changes with StatReloader
+Performing system checks...
+
+System check identified no issues (0 silenced).
+January 16, 2026 - 14:52:28
+Django version 4.2.27, using settings 'mcot_rental.settings'
+Starting development server at http://0.0.0.0:8000/
+Quit the server with CONTROL-C.
+

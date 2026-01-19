@@ -103,6 +103,10 @@ class Product(models.Model):
         """
         คำนวณจำนวนคงเหลือที่ว่างจริง ณ ปัจจุบัน (Available Now)
         สูตร: จำนวนทั้งหมด - จำนวนที่ถูกจองในช่วงเวลานี้ (Approved/Active)
+        
+        WARNING: Property นี้ใช้สำหรับดูสถานะ "ปัจจุบัน" เท่านั้น
+        ห้ามใช้สำหรับการจองล่วงหน้า (Future Booking)
+        โปรดใช้ services.availability.AvailabilityService แทน
         """
         from django.db.models import Sum
         from django.utils import timezone
@@ -236,6 +240,18 @@ class Booking(models.Model):
         default='draft',
         verbose_name="สถานะ"
     )
+
+    @property
+    def is_overdue(self):
+        """
+        ตรวจสอบว่าจองนี้เกินกำหนดส่งคืนหรือไม่
+        เงื่อนไข: สถานะเป็น 'active' และเวลาสิ้นสุดน้อยกว่าเวลาปัจจุบัน
+        """
+        from django.utils import timezone
+        # ต้องเช็คด้วยว่ามี end_time ไหม เพื่อป้องกัน Error
+        if self.status == 'active' and self.end_time and self.end_time < timezone.now():
+            return True
+        return False
     created_by = models.ForeignKey(
         'auth.User',
         on_delete=models.SET_NULL,

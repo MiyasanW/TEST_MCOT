@@ -1,0 +1,36 @@
+Watching for file changes with StatReloader
+[16/Jan/2026 16:58:24] "GET /admin/ HTTP/1.1" 200 131011
+[16/Jan/2026 16:59:36] "GET /admin/rentals/booking/18/change/ HTTP/1.1" 200 100212
+[16/Jan/2026 16:59:36] "GET /admin/jsi18n/ HTTP/1.1" 200 3343
+[16/Jan/2026 16:59:43] "GET /admin/ HTTP/1.1" 200 131011
+[19/Jan/2026 09:41:19] "GET /admin/ HTTP/1.1" 200 131064
+[19/Jan/2026 09:41:19] "GET /static/unfold/fonts/inter/styles.css HTTP/1.1" 304 0
+[19/Jan/2026 09:41:19] "GET /static/unfold/fonts/material-symbols/styles.css HTTP/1.1" 304 0
+[19/Jan/2026 09:41:19] "GET /static/unfold/css/styles.css HTTP/1.1" 304 0
+[19/Jan/2026 09:41:19] "GET /static/unfold/css/simplebar/simplebar.css HTTP/1.1" 304 0
+[19/Jan/2026 09:41:19] "GET /static/unfold/js/simplebar/simplebar.js HTTP/1.1" 304 0
+[19/Jan/2026 09:41:19] "GET /static/unfold/js/app.js HTTP/1.1" 304 0
+[19/Jan/2026 09:41:19] "GET /static/unfold/js/htmx/htmx.js HTTP/1.1" 304 0
+[19/Jan/2026 09:41:19] "GET /static/unfold/js/chart/chart.js HTTP/1.1" 304 0
+[19/Jan/2026 09:41:19] "GET /static/unfold/js/alpine/alpine.anchor.js HTTP/1.1" 304 0
+[19/Jan/2026 09:41:19] "GET /static/unfold/js/alpine/alpine.persist.js HTTP/1.1" 304 0
+[19/Jan/2026 09:41:19] "GET /static/unfold/js/alpine/alpine.resize.js HTTP/1.1" 304 0
+[19/Jan/2026 09:41:19] "GET /static/unfold/js/alpine/alpine.js HTTP/1.1" 304 0
+[19/Jan/2026 09:41:19] "GET /static/unfold/js/alpine/alpine.sort.js HTTP/1.1" 304 0
+[19/Jan/2026 09:41:19] "GET /static/unfold/fonts/inter/Inter-SemiBold.woff2 HTTP/1.1" 304 0
+[19/Jan/2026 09:41:19] "GET /static/unfold/fonts/inter/Inter-Bold.woff2 HTTP/1.1" 304 0
+[19/Jan/2026 09:41:19] "GET /static/unfold/fonts/material-symbols/Material-Symbols-Outlined.woff2 HTTP/1.1" 304 0
+[19/Jan/2026 09:41:19] "GET /static/unfold/fonts/inter/Inter-Medium.woff2 HTTP/1.1" 304 0
+[19/Jan/2026 09:41:19] "GET /static/unfold/fonts/inter/Inter-Regular.woff2 HTTP/1.1" 304 0
+[19/Jan/2026 09:41:19] "GET /admin/ HTTP/1.1" 200 131064
+[19/Jan/2026 09:41:19] "GET /admin/ HTTP/1.1" 200 131064
+[19/Jan/2026 09:41:20] "GET /admin/ HTTP/1.1" 200 131064
+[19/Jan/2026 09:41:32] "GET /rentals/inventory/ HTTP/1.1" 200 39549
+Performing system checks...
+
+System check identified no issues (0 silenced).
+January 16, 2026 - 16:58:21
+Django version 4.2.27, using settings 'mcot_rental.settings'
+Starting development server at http://0.0.0.0:8000/
+Quit the server with CONTROL-C.
+
