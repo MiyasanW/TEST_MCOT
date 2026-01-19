@@ -8,3 +8,18 @@ Django version 4.2.27, using settings 'mcot_rental.settings'
 Starting development server at http://0.0.0.0:8000/
 Quit the server with CONTROL-C.
 
+Watching for file changes with StatReloader
+[19/Jan/2026 10:39:04] "GET /admin/rentals/booking/25/change/ HTTP/1.1" 200 93834
+[19/Jan/2026 10:39:04] "GET /admin/jsi18n/ HTTP/1.1" 200 3343
+[19/Jan/2026 10:43:03] "GET /admin/rentals/booking/25/change/ HTTP/1.1" 200 93834
+[19/Jan/2026 10:43:03] "GET /admin/jsi18n/ HTTP/1.1" 200 3343
+[19/Jan/2026 10:43:03] "GET /admin/rentals/booking/25/change/ HTTP/1.1" 200 93834
+[19/Jan/2026 10:43:03] "GET /admin/jsi18n/ HTTP/1.1" 200 3343
+[19/Jan/2026 10:43:04] "GET /admin/rentals/booking/25/change/ HTTP/1.1" 200 93834
+[19/Jan/2026 10:43:04] "GET /admin/jsi18n/ HTTP/1.1" 200 3343
+[19/Jan/2026 10:43:04] "GET /admin/rentals/booking/25/change/ HTTP/1.1" 200 93834
+[19/Jan/2026 10:43:04] "GET /admin/jsi18n/ HTTP/1.1" 200 3343
+[19/Jan/2026 10:43:04] "GET /admin/rentals/booking/25/change/ HTTP/1.1" 200 93834
+[19/Jan/2026 10:43:04] "GET /admin/jsi18n/ HTTP/1.1" 200 3343
+[19/Jan/2026 10:43:04] "GET /admin/rentals/booking/25/change/ HTTP/1.1" 200 93834
+[19/Jan/2026 10:43:04] "GET /admin/jsi18n/ HTTP/1.1" 200 3343

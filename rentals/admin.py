@@ -694,65 +694,120 @@ class BookingAdmin(ModelAdmin, SimpleHistoryAdmin):
     duration_display.short_description = 'ระยะเวลา'
     
     def booking_summary(self, obj):
-        """แสดงสรุปการจองแบบละเอียด"""
+        """แสดงสรุปการจองแบบละเอียด (Premium UI)"""
         if not obj.pk:
             return "บันทึกข้อมูลก่อนเพื่อดูสรุป"
         
-        html = "<div style='line-height: 1.6; font-size: 0.95rem;'>"
-        html += f"<p><strong>📋 ลูกค้า:</strong> {obj.customer_name}</p>"
-        if obj.customer_phone:
-            html += f"<p><strong>📞 โทร:</strong> {obj.customer_phone}</p>"
-        html += f"<p><strong>📅 ระยะเวลา:</strong> {self.duration_display(obj)}</p>"
+        # Helper for icons
+        def icon(name, color="text-gray-400"):
+            return f'<i class="fas fa-{name} {color} mr-2"></i>'
+
+        # Helper for badges
+        def badge(text, color_class):
+            return f'<span class="{color_class} text-xs font-bold px-2 py-1 rounded-md">{text}</span>'
+
+        # Main Container
+        html = '''
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
+        '''
+
+        # --- LEFT COLUMN: Customer & Info ---
+        html += f'''
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 relative overflow-hidden group">
+            <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                <i class="fas fa-user-circle text-8xl text-indigo-500"></i>
+            </div>
+            
+            <h3 class="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4 border-b border-gray-100 dark:border-gray-700 pb-2">
+                ข้อมูลลูกค้า (Customer)
+            </h3>
+            
+            <div class="flex items-start mb-4">
+                <div class="h-12 w-12 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-xl shadow-md mr-4 shrink-0">
+                    {obj.customer_name[0].upper() if obj.customer_name else "?"}
+                </div>
+                <div>
+                    <div class="text-lg font-bold text-gray-900 dark:text-white leading-tight">{obj.customer_name}</div>
+                    <div class="text-sm text-gray-500 dark:text-gray-400 flex items-center mt-1">
+                        {icon("phone", "text-emerald-500")} {obj.customer_phone or "-"}
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-2 text-sm">
+                <div class="flex items-center text-gray-600 dark:text-gray-300">
+                    <span class="w-8 text-center">{icon("calendar", "text-blue-500")}</span>
+                    <span>{self.duration_display(obj)}</span>
+                </div>
+                <div class="flex items-center text-gray-600 dark:text-gray-300">
+                    <span class="w-8 text-center">{icon("clock", "text-orange-500")}</span>
+                    <span>เริ่ม: {obj.start_time.strftime('%d/%m/%Y %H:%M')}</span>
+                </div>
+                 <div class="flex items-center text-gray-600 dark:text-gray-300">
+                    <span class="w-8 text-center"><i class="fas fa-flag-checkered text-red-500 mr-2"></i></span>
+                    <span>คืน: {obj.end_time.strftime('%d/%m/%Y %H:%M')}</span>
+                </div>
+            </div>
+        </div>
+        '''
+
+        # --- RIGHT COLUMN: Order Summary ---
+        html += f'''
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 flex flex-col">
+            <h3 class="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4 border-b border-gray-100 dark:border-gray-700 pb-2 flex justify-between items-center">
+                <span>รายการสรุป (Summary)</span>
+                {badge(f"{obj.items.count()} รายการ", "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300")}
+            </h3>
+            
+            <div class="flex-grow overflow-y-auto max-h-48 pr-2 space-y-3 custom-scrollbar">
+        '''
         
-        html += "<hr style='margin: 12px 0; border: 0; border-top: 1px solid #e2e8f0;'>"
-        
-        # 1. สิ่งที่ลูกค้าจอง (Ordered)
+        # Items List
         booking_items = obj.items.all()
         if booking_items.exists():
-            html += f"<p style='color: #3b82f6; font-weight: bold;'>🛒 สิ่งที่ลูกค้าจอง (Ordered):</p>"
-            html += "<ul style='margin-top: 4px; padding-left: 20px; margin-bottom: 12px;'>"
             for item in booking_items:
-                html += f"<li>{item.product.name} <span style='color: #64748b;'>(x{item.quantity})</span></li>"
-            html += "</ul>"
+                html += f'''
+                <div class="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 rounded bg-gray-100 dark:bg-gray-700 flex items-center justify-center mr-3 text-gray-400">
+                           <i class="{item.product.get_icon_class()}"></i>
+                        </div>
+                        <span class="text-sm font-medium text-gray-700 dark:text-gray-200">{item.product.name}</span>
+                    </div>
+                    <span class="text-xs font-bold bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded">x{item.quantity}</span>
+                </div>
+                '''
         else:
-            html += "<p style='color: #94a3b8;'>- ไม่มีรายการสินค้าที่จอง -</p>"
+             html += '<div class="text-center text-gray-400 py-4 italic">ไม่มีรายการสินค้า</div>'
 
-        # 2. สิ่งที่หยิบจริง (Fulfillment)
-        equip_count = obj.equipment.count()
-        html += f"<p style='color: #10b981; font-weight: bold;'>📷 สิ่งที่หยิบจริง (Fulfillment):</p>"
-        if equip_count > 0:
-            html += "<ul style='margin-top: 4px; padding-left: 20px; margin-bottom: 12px;'>"
-            for eq in obj.equipment.all():
-                html += f"<li>{eq.product.name if eq.product else 'Unknown'} - <code style='background: #f1f5f9; padding: 2px 4px; border-radius: 4px; color: #334155;'>{eq.serial_number}</code></li>"
-            html += "</ul>"
-        else:
-            html += "<p style='color: #ef4444; margin-bottom: 12px;'>⚠️ ยังไม่ได้ระบุ Serial Number</p>"
+        # Context Info (Staff/Studios)
+        extras = []
+        if obj.studios.exists(): extras.append(f"{obj.studios.count()} สตูดิโอ")
+        if obj.staff.exists(): extras.append(f"{obj.staff.count()} พนักงาน")
         
-        # สตูดิโอ
-        studio_count = obj.studios.count()
-        if studio_count > 0:
-            html += f"<p><strong>🎬 สตูดิโอ:</strong> {studio_count} ห้อง</p>"
-            html += "<ul style='margin-top: 4px; padding-left: 20px;'>"
-            for st in obj.studios.all():
-                html += f"<li>{st.name} (฿{st.daily_rate:,.0f}/วัน)</li>"
-            html += "</ul>"
-        
-        # พนักงาน
-        staff_count = obj.staff.count()
-        if staff_count > 0:
-            html += f"<p><strong>👥 พนักงาน:</strong> {staff_count} คน</p>"
-            html += "<ul style='margin-top: 4px; padding-left: 20px;'>"
-            for st in obj.staff.all():
-                html += f"<li>{st.name} ({st.get_position_display()})</li>"
-            html += "</ul>"
-        
-        # ราคารวม
+        if extras:
+             html += f'''
+             <div class="mt-3 pt-3 border-t border-dashed border-gray-200 dark:border-gray-700 text-xs text-gray-500">
+                + {' , '.join(extras)}
+             </div>
+             '''
+
+        # Total Price Footer
         total = obj.calculate_total_price()
-        html += f"<p style='font-size: 16px; color: green; font-weight: bold;'>"
-        html += f"💰 <strong>ราคารวมทั้งสิ้น:</strong> ฿{total:,.2f}"
-        html += "</p>"
-        html += "</div>"
-        
+        html += f'''
+            </div>
+            <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                <div class="flex justify-between items-end">
+                    <span class="text-sm text-gray-500 dark:text-gray-400 font-medium">ยอดรวมสุทธิ</span>
+                    <span class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-teal-600">
+                        ฿{total:,.2f}
+                    </span>
+                </div>
+            </div>
+        </div>
+        '''
+
+        html += '</div>'
         return format_html(html)
     booking_summary.short_description = 'สรุปการจอง'
     
